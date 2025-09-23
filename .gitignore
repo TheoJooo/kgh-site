@@ -1,0 +1,25 @@
+# Ignore everything by default
+*
+!/.gitignore
+!/README.md
+
+# Allow only these roots
+!/plugins/
+!/themes/
+
+# In plugins: keep only kgh-booking
+/plugins/*
+!/plugins/kgh-booking/
+/plugins/kgh-booking/*
+!/plugins/kgh-booking/**
+
+# In themes: keep only kgh-theme
+/themes/*
+!/themes/kgh-theme/
+/themes/kgh-theme/*
+!/themes/kgh-theme/**
+
+# OS/editor noise
+.DS_Store
+*.log
+EOF

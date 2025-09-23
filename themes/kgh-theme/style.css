@@ -1,0 +1,36 @@
+/*
+Theme Name: Korean Gourmet Hunters Theme
+Theme URI: https://koreangourmethunters.com
+Author: Théo J.
+Description: Thème custom minimal pour Korean Gourmet Hunters.
+Version: 0.1.0
+Tested up to: 6.6
+Requires PHP: 8.0
+Text Domain: koreangourmethunters
+*/
+
+:root {
+  /* Palette KGH */
+  --kgh-red-clay: #661E11;    /* Red Clay */
+  --kgh-grey:     #373737;    /* Sesame Grey */
+  --kgh-porcelain:#FDFAFA;    /* Porcelain White */
+
+  /* Typos (fallbacks inclus) */
+  --kgh-serif-en: "Merriweather", Georgia, "Times New Roman", serif;
+  --kgh-sans-en:  "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --kgh-serif-kr: "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
+}
+
+/* Base très légère pour voir quelque chose même sans main.css */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0;
+  background: var(--kgh-porcelain);
+  color: var(--kgh-grey);
+  font-family: var(--kgh-sans-en);
+  line-height: 1.6;
+}
+
+a { color: var(--kgh-red-clay); text-decoration: none; }
+a:hover { text-decoration: underline; }
