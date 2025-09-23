@@ -58,7 +58,6 @@ function kgh_enqueue_assets() {
 }
 add_action('wp_enqueue_scripts', 'kgh_enqueue_assets');
 
-
 /**
  * Theme supports basiques
  */
@@ -79,20 +78,39 @@ add_action('after_setup_theme', 'kgh_theme_setup');
 // }
 // add_action('after_setup_theme', 'kgh_register_menus');
 
-
-// Shortcodes: [kgh_checkout_success] et [kgh_checkout_cancel]
+// Success
 add_shortcode('kgh_checkout_success', function () {
   $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+  // --- Capture côté serveur pour fiabilité (et éviter doubles captures) ---
+  if ($token) {
+    $flag = 'kgh_captured_' . md5($token);
+    if (!get_transient($flag) && function_exists('kghp_paypal_request')) {
+      $res = kghp_paypal_request('POST', '/v2/checkout/orders/' . urlencode($token) . '/capture', (object)[]);
+      if (is_wp_error($res)) {
+        error_log('[KGH] capture-on-success PHP error '.$token.' => '.print_r($res,true));
+      } else {
+        set_transient($flag, 1, 6 * HOUR_IN_SECONDS);
+        error_log('[KGH] capture-on-success PHP OK '.$token.' => '. substr(json_encode($res),0,400));
+      }
+    }
+  }
+
   ob_start(); ?>
   <div class="kgh-checkout kgh-success" style="max-width:700px;margin:40px auto;font-family:'Noto Sans',system-ui;">
     <h2 style="color:#661E11;margin:0 0 12px;">🎉 Thank you! Your payment was approved.</h2>
     <p>You’ll receive a confirmation email shortly.</p>
     <?php if ($token): ?><p style="opacity:.7">Ref: <?php echo esc_html($token); ?></p><?php endif; ?>
     <p><a href="<?php echo esc_url( home_url('/') ); ?>" style="color:#661E11;text-decoration:underline;">Back to Home</a></p>
+    <div style="margin-top:8px;color:#373737;opacity:.8;">
+      <?php echo $token ? 'Finalizing your payment…' : 'Awaiting confirmation…'; ?>
+    </div>
   </div>
   <?php return ob_get_clean();
 });
 
+
+
+// Shortcodes: [kgh_checkout_cancel]
 add_shortcode('kgh_checkout_cancel', function () {
   ob_start(); ?>
   <div class="kgh-checkout kgh-cancel" style="max-width:700px;margin:40px auto;font-family:'Noto Sans',system-ui;">
@@ -101,4 +119,12 @@ add_shortcode('kgh_checkout_cancel', function () {
     <p><a href="<?php echo esc_url( home_url('/') ); ?>" style="color:#661E11;text-decoration:underline;">Back to Home</a></p>
   </div>
   <?php return ob_get_clean();
+});
+
+
+add_action('init', function() {
+  if (isset($_GET['kghlog']) && $_GET['kghlog']==='ping') {
+    error_log('[KGH] ping');
+    wp_die('ping logged');
+  }
 });

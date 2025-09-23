@@ -40,6 +40,7 @@ function kghp_paypal_get_access_token() {
   $code = wp_remote_retrieve_response_code($res);
   $body = json_decode(wp_remote_retrieve_body($res), true);
   if ($code < 200 || $code >= 300 || empty($body['access_token'])) {
+    error_log('[KGH] OAuth token FAIL code='.$code.' body='.print_r($body, true));
     return new WP_Error('paypal_oauth_failed', 'OAuth2 token error', ['status'=>$code, 'response'=>$body]);
   }
 
@@ -74,6 +75,7 @@ function kghp_paypal_request($method, $path, $json_body = null) {
   $body = json_decode(wp_remote_retrieve_body($res), true);
 
   if ($code < 200 || $code >= 300) {
+    error_log('[KGH] PayPal HTTP FAIL method='.$method.' path='.$path.' code='.$code.' body='.print_r($body, true));
     return new WP_Error('paypal_http_error', 'PayPal API error', ['status'=>$code, 'response'=>$body]);
   }
   return $body;

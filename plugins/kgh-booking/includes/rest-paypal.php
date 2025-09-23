@@ -70,6 +70,8 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $custom_id = sprintf('tour:%d;date:%d;qty:%d;email:%s',
     $tour_id, $tour_date_id, $qty, $customer_email
   );
+  $success_url = function_exists('home_url') ? home_url('/checkout/success/') : '/checkout/success/';
+  $cancel_url  = function_exists('home_url') ? home_url('/checkout/cancel/')  : '/checkout/cancel/';
 
   $body = [
     'intent' => 'CAPTURE',
@@ -77,7 +79,7 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
       'reference_id' => (string)$tour_date_id,
       'custom_id'    => substr($custom_id, 0, 127),
       'amount'       => [
-        'currency_code' => $currency,
+        'currency_code' => $currency, // USD
         'value'         => (string)$amount_value,
       ],
       'description'  => $product_name,
@@ -86,15 +88,17 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
       'brand_name'   => get_bloginfo('name'),
       'landing_page' => 'NO_PREFERENCE',
       'user_action'  => 'PAY_NOW',
-      'return_url'   => KGH_CHECKOUT_SUCCESS_URL,
-      'cancel_url'   => KGH_CHECKOUT_CANCEL_URL,
+      'return_url'   => $success_url,
+      'cancel_url'   => $cancel_url,
     ],
   ];
 
   // Requête PayPal (via helper)
   $order = kghp_paypal_request('POST', '/v2/checkout/orders', $body);
-  if (is_wp_error($order)) return $order;
-
+  if (is_wp_error($order)) {
+    error_log('[KGH] PayPal order error: '. print_r($order, true));
+    return $order;
+  }
   // Cherche le lien d’approbation
   $approve = '';
   foreach (($order['links'] ?? []) as $l) {
@@ -110,4 +114,38 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
     'id'          => $order['id'],
     'approve_url' => $approve,
   ], 201);
+}
+
+
+add_action('rest_api_init', function() {
+  register_rest_route('kgh/v1', '/paypal/capture', [
+    'methods'  => 'POST',
+    'callback' => 'kghp_capture_paypal_order',
+    'permission_callback' => '__return_true', // côté success page publique
+  ]);
+});
+
+function kghp_capture_paypal_order( WP_REST_Request $req ) {
+  $order_id = sanitize_text_field( $req->get_param('order_id') ?: $req->get_param('token') );
+  if (!$order_id) {
+    return new WP_Error('bad_request','order_id (token) required', ['status'=>400]);
+  }
+
+  // Appelle l’API PayPal pour CAPTURE
+  $res = kghp_paypal_request('POST', '/v2/checkout/orders/' . urlencode($order_id) . '/capture', (object)[]);
+
+  if (is_wp_error($res)) {
+    error_log('[KGH] PayPal capture error for order '.$order_id.' => '. print_r($res, true));
+    return $res;
+  }
+
+  // Log pour debug
+  error_log('[KGH] PayPal order captured '.$order_id.' => '. substr(json_encode($res), 0, 500));
+
+  // Renvoie un petit résumé utile au front
+  return new WP_REST_Response([
+    'ok'       => true,
+    'order_id' => $order_id,
+    'status'   => $res['status'] ?? 'COMPLETED',
+  ], 200);
 }

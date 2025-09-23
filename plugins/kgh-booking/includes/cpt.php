@@ -38,6 +38,26 @@ function kgh_register_cpt_tour() {
 }
 add_action('init', 'kgh_register_cpt_tour');
 
+// CPT: Booking (minimal pour V1)
+function kgh_register_cpt_booking() {
+  $labels = [
+    'name'          => 'Bookings',
+    'singular_name' => 'Booking',
+    'menu_name'     => 'Bookings',
+    'add_new_item'  => 'Add New Booking',
+    'edit_item'     => 'Edit Booking',
+  ];
+  $args = [
+    'labels'       => $labels,
+    'public'       => false,
+    'show_ui'      => true,
+    'show_in_menu' => 'edit.php?post_type=tour', // sous "Tours"
+    'supports'     => ['title'],
+  ];
+  register_post_type('booking', $args);
+}
+add_action('init', 'kgh_register_cpt_booking');
+
 // CPT: Tour Date
 function kgh_register_cpt_tour_date() {
   $labels = [
