@@ -102,15 +102,16 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       ]);
       if (!empty($existing)) {
         error_log('[KGH webhook] Duplicate capture '.$capture_id.' ignored');
+        if (function_exists('kgh_capacity_invalidate')) {
+          kgh_capacity_invalidate((int)$tour_date_id);
+        } elseif (function_exists('kgh_capacity_invalidate_cache')) {
+          kgh_capacity_invalidate_cache((int)$tour_date_id);
+        }
         return new WP_REST_Response(['ok'=>true,'duplicate'=>true], 200);
       }
     }
 
-    // 5) Met à jour la capacité (booked)
-    $booked = (int) get_post_meta($tour_date_id, '_kgh_capacity_left', true);
-    update_post_meta($tour_date_id, '_kgh_capacity_left', $booked + $qty);
-
-    // 6) Crée le booking
+    // 5) Crée le booking
     if (function_exists('kgh_create_booking')) {
       $booking_id = kgh_create_booking([
         'tour_id'          => $tour_id,
@@ -122,6 +123,11 @@ function kghp_webhook_handle(WP_REST_Request $req) {
         'paypal_capture_id'=> $capture_id,
         'payment_status'   => 'paid',
       ]);
+      if (function_exists('kgh_capacity_invalidate')) {
+        kgh_capacity_invalidate((int)$tour_date_id);
+      } elseif (function_exists('kgh_capacity_invalidate_cache')) {
+        kgh_capacity_invalidate_cache((int)$tour_date_id);
+      }
       if (function_exists('kgh_send_emails_after_payment')) {
         kgh_send_emails_after_payment($tour_id, $tour_date_id, $qty, $email);
       }
@@ -153,11 +159,7 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       }
     }
 
-    // 1) Incrémenter la capacité (booked)
-    $booked = intval(get_post_meta($tour_date_id, '_kgh_capacity_left', true));
-    update_post_meta($tour_date_id, '_kgh_capacity_left', $booked + $qty);
-
-    // 2) Créer un booking
+    // 1) Créer un booking
     // PayPal envoie amount.value en décimal (USD ici), ex: "170.00"
     $amount_value = (string)($res['amount']['value'] ?? '0.00');
     $currency     = strtolower($res['amount']['currency_code'] ?? 'USD');
@@ -175,6 +177,11 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       ]);
       if (!empty($existing)) {
         error_log('[KGH] Duplicate capture '.$capture_id.' ignored');
+        if (function_exists('kgh_capacity_invalidate')) {
+          kgh_capacity_invalidate((int)$tour_date_id);
+        } elseif (function_exists('kgh_capacity_invalidate_cache')) {
+          kgh_capacity_invalidate_cache((int)$tour_date_id);
+        }
         return new WP_REST_Response(['ok'=>true,'duplicate'=>true], 200);
       }
     }
@@ -190,6 +197,11 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       'paypal_capture_id'=> $capture_id,
       'payment_status'   => 'paid',
     ]);
+    if (function_exists('kgh_capacity_invalidate')) {
+      kgh_capacity_invalidate((int)$tour_date_id);
+    } elseif (function_exists('kgh_capacity_invalidate_cache')) {
+      kgh_capacity_invalidate_cache((int)$tour_date_id);
+    }
 
     error_log('[KGH] Booking created id='. (is_wp_error($booking_id)? 'ERR' : $booking_id) .' for tour_date='.$tour_date_id.' qty='.$qty.' amount='.$amount_value.' '.$currency);
 

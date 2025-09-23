@@ -15,13 +15,13 @@ define('KGH_BOOKING_URL', plugin_dir_url(__FILE__));
 
 // Charger fichiers inclus
 require_once KGH_BOOKING_PATH . 'includes/cpt.php';
-require_once KGH_BOOKING_PATH . 'includes/metaboxes.php';
+require_once KGH_BOOKING_PATH . 'includes/bookings.php'; // helpers booking + emails stub
+require_once KGH_BOOKING_PATH . 'includes/utils.php';
 
+require_once KGH_BOOKING_PATH . 'includes/metaboxes.php';
 require_once KGH_BOOKING_PATH . 'includes/paypal-http.php';
-// require_once KGH_BOOKING_PATH . 'includes/paypal.php';        // << NOUVEAU
 require_once KGH_BOOKING_PATH . 'includes/rest-paypal.php';   // << NOUVEAU (create order)
 require_once KGH_BOOKING_PATH . 'includes/webhook-paypal.php';// << NOUVEAU (webhook)
 
-require_once KGH_BOOKING_PATH . 'includes/bookings.php'; // helpers booking + emails stub
 
 

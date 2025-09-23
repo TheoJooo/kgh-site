@@ -33,7 +33,11 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $price_usd   = get_post_meta($tour_date_id, '_kgh_price_usd', true); // NEW
   $price_krw   = intval(get_post_meta($tour_date_id, '_kgh_price_krw', true));
   $cap_total   = intval(get_post_meta($tour_date_id, '_kgh_capacity_total', true));
-  $cap_booked  = intval(get_post_meta($tour_date_id, '_kgh_capacity_left', true));
+  // Modèle calculé: site + externes (plus de _kgh_capacity_left)
+  $site_booked = function_exists('kgh_capacity_booked_site_qty') ? kgh_capacity_booked_site_qty($tour_date_id) : 0;
+  $ext_booked  = (int) get_post_meta($tour_date_id, '_kgh_capacity_ext', true);
+  if (!$ext_booked) $ext_booked = (int) get_post_meta($tour_date_id, '_kgh_booked_manual', true); // fallback legacy
+  $cap_booked  = max(0, $site_booked + $ext_booked);
   $date_start  = get_post_meta($tour_date_id, '_kgh_date_start', true);
 
   if ($tour_id <= 0) {

@@ -33,6 +33,7 @@ add_action('init', function() {
     '_kgh_price_krw'      => 'integer', // KRW entiers
     '_kgh_price_usd'      => 'number',  // USD décimal (2 décimales)
     '_kgh_capacity_total' => 'integer',
+    '_kgh_capacity_ext'   => 'integer',
     '_kgh_capacity_left'  => 'integer', // = booked
     '_kgh_date_start'     => 'string',
     '_kgh_date_end'       => 'string',
@@ -126,9 +127,29 @@ function kgh_render_tour_date_details_metabox($post) {
     <input type="number" name="kgh_capacity_total" min="1" step="1"
            value="<?php echo esc_attr($cap_total); ?>" placeholder="16" style="width:120px"></p>
 
-  <p><label><strong><?php _e('Capacity booked','kgh-booking'); ?></strong></label><br>
-    <input type="number" name="kgh_capacity_left" min="0" step="1"
-           value="<?php echo esc_attr($cap_left); ?>" placeholder="0 = none booked yet" style="width:160px"></p>
+  <p><label><strong><?php _e('External bookings (manual)','kgh-booking'); ?></strong></label><br>
+    <input type="number" name="kgh_capacity_ext" min="0" step="1"
+           value="<?php echo esc_attr( get_post_meta($post->ID, '_kgh_capacity_ext', true) ); ?>"
+           placeholder="TripAdvisor / WhatsApp / phone, etc." style="width:160px">
+  </p>
+
+  <?php
+  $cap_total = (int) get_post_meta($post->ID, '_kgh_capacity_total', true);
+  $cap_ext   = (int) get_post_meta($post->ID, '_kgh_capacity_ext', true); // nouveau champ “External bookings”
+  // UI ne lit plus jamais _kgh_capacity_left — fallback site=0 si helper absent
+  $cap_site  = function_exists('kgh_capacity_booked_site_qty') ? kgh_capacity_booked_site_qty($post->ID) : 0;
+  $cap_booked= max(0, $cap_site + $cap_ext);
+  $cap_left  = max(0, $cap_total - $cap_booked);
+  ?>
+  <p style="margin-top:10px; padding:10px 12px; background:#f6f7f7; border:1px solid #ddd; border-radius:8px;">
+    <strong><?php _e('Live capacity (read-only):','kgh-booking'); ?></strong><br>
+    <?php printf(
+      __('Site %1$d / Ext %2$d · Booked %3$d · Left %4$d · Total %5$d','kgh-booking'),
+      (int)$cap_site, (int)$cap_ext, (int)$cap_booked, (int)$cap_left, (int)$cap_total
+    ); ?>
+  </p>
+
+  
 
   <p><label><strong><?php _e('Start datetime','kgh-booking'); ?></strong></label><br>
     <input type="datetime-local" name="kgh_date_start" value="<?php echo esc_attr($date_start); ?>"></p>
@@ -180,14 +201,12 @@ add_action('save_post', function($post_id) {
   $cap_total = isset($_POST['kgh_capacity_total']) ? max(1,intval($_POST['kgh_capacity_total'])) : 1;
   update_post_meta($post_id,'_kgh_capacity_total',$cap_total);
 
-  $cap_left  = ($_POST['kgh_capacity_left']!=='') ? max(0,intval($_POST['kgh_capacity_left'])) : null;
-  if ($cap_left===null) {
-    // si vide et jamais rempli → initialise à 0 (aucune résa)
-    $existing = get_post_meta($post_id,'_kgh_capacity_left',true);
-    if ($existing==='') update_post_meta($post_id,'_kgh_capacity_left', 0);
-  } else {
-    update_post_meta($post_id,'_kgh_capacity_left',$cap_left);
-  }
+  // External manual bookings (nouveau champ)
+  $cap_ext = isset($_POST['kgh_capacity_ext']) ? max(0, intval($_POST['kgh_capacity_ext'])) : 0;
+  update_post_meta($post_id, '_kgh_capacity_ext', $cap_ext);
+
+  // Nettoyage hérité: on supprime l'ancien compteur pour éviter toute réapparition
+  delete_post_meta($post_id, '_kgh_capacity_left');
 
   $date_start= isset($_POST['kgh_date_start']) ? kghb_sanitize_datetime_local($_POST['kgh_date_start']) : '';
   $date_end  = isset($_POST['kgh_date_end']) ? kghb_sanitize_datetime_local($_POST['kgh_date_end']) : '';
@@ -234,9 +253,14 @@ add_action('manage_tour_date_posts_custom_column', function($col,$id){
       break;
 
     case 'kgh_cap':
-      $booked = (int) get_post_meta($id,'_kgh_capacity_left',true);
-      $total  = (int) get_post_meta($id,'_kgh_capacity_total',true);
-      echo $booked . ' / ' . $total;
+      // Toujours basé sur le modèle calculé; aucun fallback sur _kgh_capacity_left
+      $site  = function_exists('kgh_capacity_booked_site_qty') ? kgh_capacity_booked_site_qty($id) : 0;
+      $ext   = (int) get_post_meta($id, '_kgh_capacity_ext', true);
+      if (!$ext) $ext = (int) get_post_meta($id, '_kgh_booked_manual', true); // fallback legacy
+      $total = (int) get_post_meta($id, '_kgh_capacity_total', true);
+      $booked= $site + $ext;
+      $left  = max(0, $total - $booked);
+      echo esc_html("Booked {$booked} (site {$site} / ext {$ext}) · Left {$left} · Total {$total}");
       break;
 
     case 'kgh_lang':

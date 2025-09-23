@@ -65,11 +65,24 @@ function kgh_fmt_dt($mysql){
             $price_krw  = (int) get_post_meta($sid, '_kgh_price_krw', true);
             $price_usd  = get_post_meta($sid, '_kgh_price_usd', true); // peut être string
             $cap_total  = (int) get_post_meta($sid, '_kgh_capacity_total', true);
-            $booked     = (int) get_post_meta($sid, '_kgh_capacity_left', true); // "booked"
             $start      = get_post_meta($sid, '_kgh_date_start', true);
             $lang       = get_post_meta($sid, '_kgh_language', true) ?: 'EN';
-            $available  = max(0, $cap_total - $booked);
-            $is_full    = ($available === 0);
+
+            // Capacity (site + externes) via helpers si dispo
+            if (function_exists('kgh_capacity_booked_site_qty')) {
+              $site   = kgh_capacity_booked_site_qty($sid);
+              $ext    = (int) get_post_meta($sid, '_kgh_capacity_ext', true);
+              if (!$ext) $ext = (int) get_post_meta($sid, '_kgh_booked_manual', true); // fallback legacy
+              $total  = (int) get_post_meta($sid, '_kgh_capacity_total', true);
+              $booked = $site + $ext;
+              $available = max(0, $total - $booked);
+            } else {
+              $total  = (int) get_post_meta($sid, '_kgh_capacity_total', true);
+              $booked = (int) get_post_meta($sid, '_kgh_capacity_left', true);
+              $available = max(0, $total - $booked);
+              $site = $booked; $ext = 0;
+            }
+            $is_full = ($available === 0);
 
             // Libellé prix: USD maître si présent, sinon fallback KRW. (Affiche les deux si disponibles)
             if ($price_usd !== '' && (float)$price_usd > 0) {
@@ -90,8 +103,11 @@ function kgh_fmt_dt($mysql){
 
                 <div style="margin-top:6px;font-family:'Noto Sans',system-ui;color:#373737;">
                   Price: <strong><?php echo esc_html($price_label); ?></strong>
-                  <span style="margin-left:12px;">Booked / Total: <strong><?php echo (int)$booked . ' / ' . (int)$cap_total; ?></strong></span>
-                  <span style="margin-left:12px;">Available: <strong><?php echo (int)$available; ?></strong></span>
+                  <span style="margin-left:12px;">Booked: <strong><?php echo (int)$booked; ?></strong>
+                    <span style="opacity:.7">(site <?php echo (int)$site; ?> / ext <?php echo (int)$ext; ?>)</span>
+                  </span>
+                  <span style="margin-left:12px;">Left: <strong><?php echo (int)$available; ?></strong></span>
+                  <span style="margin-left:12px;">Total: <strong><?php echo (int)$total; ?></strong></span>
                 </div>
               </div>
 
