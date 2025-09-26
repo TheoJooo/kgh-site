@@ -28,7 +28,8 @@ function kgh_register_cpt_tour() {
     'labels'               => $labels,
     'public'               => true,
     'show_in_rest'         => true, // Gutenberg + REST
-    'supports'             => ['title','editor','thumbnail','excerpt'],
+    // No content editor; keep title/thumbnail/excerpt as meta-boxes
+    'supports'             => ['title','thumbnail','excerpt'],
     'menu_icon'            => 'dashicons-palmtree',
     'has_archive'          => true,
     'rewrite'              => ['slug' => 'tours'],
@@ -37,6 +38,12 @@ function kgh_register_cpt_tour() {
   register_post_type('tour', $args);
 }
 add_action('init', 'kgh_register_cpt_tour');
+
+// Disable block editor (Gutenberg) for Tour → classic editor with meta-boxes
+add_filter('use_block_editor_for_post_type', function($use, $post_type){
+  if ($post_type === 'tour') return false;
+  return $use;
+}, 10, 2);
 
 // CPT: Booking (minimal pour V1)
 function kgh_register_cpt_booking() {

@@ -1,0 +1,80 @@
+.kgh-availability-admin .kgh-avail-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+.kgh-availability-admin .kgh-avail-filters label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+.kgh-availability-admin #kgh-availability-status {
+  margin-bottom: 12px;
+}
+.kgh-availability-admin table.kgh-avail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.kgh-availability-admin table.kgh-avail-table th,
+.kgh-availability-admin table.kgh-avail-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  vertical-align: top;
+}
+.kgh-availability-admin table.kgh-avail-table th {
+  background:#f6f7f7;
+  text-align: center;
+}
+.kgh-availability-admin .kgh-cell-status {
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+.kgh-availability-admin .kgh-badge {
+  display:inline-flex;
+  align-items:center;
+  padding:2px 6px;
+  border-radius:999px;
+  font-size:11px;
+  text-transform:uppercase;
+}
+.kgh-availability-admin .kgh-badge.open { background:#e6f4ea; color:#1e6b34; }
+.kgh-availability-admin .kgh-badge.closed { background:#fdecea; color:#a41c15; }
+.kgh-availability-admin .kgh-badge.cutoff { background:#fff4e5; color:#a4630b; }
+.kgh-availability-admin .kgh-badge.sold_out { background:#f0f0f0; color:#555; }
+.kgh-availability-admin .kgh-cell-controls label {
+  display:block;
+  margin-bottom:6px;
+  font-weight:500;
+}
+.kgh-availability-admin .kgh-cell-controls input,
+.kgh-availability-admin .kgh-cell-controls select {
+  width:100%;
+  box-sizing:border-box;
+}
+.kgh-availability-admin .kgh-cell-actions {
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.kgh-availability-admin .kgh-note {
+  margin-top:6px;
+  font-size:11px;
+  color:#786;
+}
+.kgh-availability-admin .kgh-legend {
+  margin-top:16px;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  background:#fafafa;
+}
+.kgh-availability-admin .kgh-pagination {
+  margin-top:16px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}

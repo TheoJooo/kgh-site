@@ -1,0 +1,201 @@
+.kgh-booking-container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 16px;
+  font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.kgh-booking-header {
+  margin-bottom: 24px;
+}
+.kgh-booking-title {
+  font-family: 'Merriweather', serif;
+  color: #661E11;
+  margin: 0 0 12px;
+}
+.kgh-booking-excerpt {
+  color: #373737;
+  opacity: 0.9;
+}
+.kgh-reserve-block {
+  margin: 24px 0;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 18px;
+  background: #fdfafa;
+}
+.kgh-reserve-title {
+  margin: 0 0 12px;
+  font-family: 'Merriweather', serif;
+  font-size: 1.3rem;
+}
+.kgh-reserve-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+.kgh-reserve-grid label {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.kgh-reserve-grid select,
+.kgh-reserve-grid input {
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+.kgh-reserve-button {
+  margin-top: 6px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #661E11;
+  color: #fdfafa;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.kgh-reserve-button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.kgh-reserve-button:not([disabled]):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+.kgh-reserve-alert {
+  display: none;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fce8e6;
+  color: #7a271a;
+}
+.kgh-reserve-message {
+  display: none;
+  margin-top: 8px;
+  color: #7a271a;
+}
+.kgh-tour-content {
+  margin-top: 36px;
+  color: #373737;
+}
+
+/* Checkout */
+.kgh-checkout {
+  max-width: 920px;
+  margin: 40px auto;
+  padding: 0 16px;
+  font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.kgh-checkout-grid {
+  display: grid;
+  gap: 20px;
+}
+.kgh-checkout-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+.kgh-field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.kgh-checkout-form input {
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+.kgh-checkout-form small {
+  margin-top: 4px;
+  color: #b00020;
+  display: none;
+}
+.kgh-checkout-summary {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fdfafa;
+}
+.kgh-checkout-summary h3 {
+  margin-top: 0;
+}
+.kgh-button-primary {
+  margin-top: 12px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: #661E11;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.kgh-button-primary[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.kgh-inline-link {
+  color: #661E11;
+  text-decoration: underline;
+}
+.kgh-status {
+  margin-bottom: 16px;
+}
+.kgh-status .notice {
+  margin: 0;
+}
+
+/* Success / Cancel */
+.kgh-outcome {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 16px;
+  font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-align: center;
+}
+.kgh-outcome h2 {
+  color: #661E11;
+}
+.kgh-outcome .kgh-success-card {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fdfafa;
+}
+
+/* Admin availability status */
+.kgh-availability-admin .notice {
+  margin: 0 0 12px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .kgh-reserve-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .kgh-reserve-grid label {
+    min-width: 0;
+  }
+  .kgh-checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .kgh-booking-container,
+  .kgh-checkout,
+  .kgh-outcome {
+    margin: 24px auto;
+  }
+}
