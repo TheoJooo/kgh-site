@@ -52,13 +52,29 @@ add_action('init', function() {
 /* ---------------------------------------------
  * 2) Metabox: Linked Tour
  * -------------------------------------------*/
-add_action('add_meta_boxes', function() {
+add_action('add_meta_boxes_tour_date', function () {
+  static $ran = false;
+  if ($ran) {
+    error_log('KGH metabox REG CALLED TWICE: ' . __FILE__ . '::tour_date');
+    return;
+  }
+  $ran = true;
+
   add_meta_box(
     'kgh_tour_date_link',
     __('Linked Tour', 'kgh-booking'),
     'kgh_render_tour_link_metabox',
     'tour_date',
     'side',
+    'high'
+  );
+
+  add_meta_box(
+    'kgh_tour_date_details',
+    __('Session details', 'kgh-booking'),
+    'kgh_render_tour_date_details_metabox',
+    'tour_date',
+    'normal',
     'high'
   );
 });
@@ -90,16 +106,6 @@ function kgh_render_tour_link_metabox($post) {
 /* ---------------------------------------------
  * 3) Metabox: Session details
  * -------------------------------------------*/
-add_action('add_meta_boxes', function() {
-  add_meta_box(
-    'kgh_tour_date_details',
-    __('Session details', 'kgh-booking'),
-    'kgh_render_tour_date_details_metabox',
-    'tour_date',
-    'normal',
-    'high'
-  );
-});
 function kgh_render_tour_date_details_metabox($post) {
   wp_nonce_field('kgh_save_tour_date_details', 'kgh_tour_date_details_nonce');
 

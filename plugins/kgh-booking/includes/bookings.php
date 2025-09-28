@@ -15,6 +15,9 @@ function kgh_create_booking(array $args) {
   $currency     = strtolower($args['currency'] ?? 'usd');
   $email        = sanitize_email($args['customer_email'] ?? '');
   $slot_iso     = sanitize_text_field($args['slot_start_iso'] ?? '');
+  $customer_first = sanitize_text_field($args['customer_first_name'] ?? '');
+  $customer_last  = sanitize_text_field($args['customer_last_name'] ?? '');
+  $customer_phone = sanitize_text_field($args['customer_phone'] ?? '');
   $pp_capture   = sanitize_text_field($args['paypal_capture_id'] ?? '');
   $pp_order     = sanitize_text_field($args['paypal_order_id'] ?? '');
   $status       = sanitize_text_field($args['payment_status'] ?? 'paid');
@@ -48,6 +51,15 @@ function kgh_create_booking(array $args) {
   update_post_meta($post_id, '_kgh_amount_usd',     $amount_usd_cents);
   update_post_meta($post_id, '_kgh_currency',       $currency);
   update_post_meta($post_id, '_kgh_customer_email', $email);
+  if ($customer_first !== '') {
+    update_post_meta($post_id, '_kgh_customer_first', $customer_first);
+  }
+  if ($customer_last !== '') {
+    update_post_meta($post_id, '_kgh_customer_last', $customer_last);
+  }
+  if ($customer_phone !== '') {
+    update_post_meta($post_id, '_kgh_customer_phone', $customer_phone);
+  }
   if ($slot_iso) update_post_meta($post_id, '_kgh_slot_start_iso', $slot_iso);
   update_post_meta($post_id, '_kgh_paypal_capture', $pp_capture);
   if ($pp_order) update_post_meta($post_id, '_kgh_paypal_order_id', $pp_order);

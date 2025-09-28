@@ -74,6 +74,11 @@ function kghp_webhook_handle(WP_REST_Request $req) {
     $capture_id   = $cap0['id'] ?? '';
     $amount_value = (string)($cap0['amount']['value'] ?? '0.00');
     $currency     = strtoupper($cap0['amount']['currency_code'] ?? 'USD');
+    // Infos client pour enrichir le booking
+    $payer            = $cap['payer'] ?? [];
+    $payer_given_name = trim((string)($payer['name']['given_name'] ?? ''));
+    $payer_surname    = trim((string)($payer['name']['surname'] ?? ''));
+    $payer_phone      = trim((string)($payer['phone']['phone_number']['national_number'] ?? ''));
 
     // 3) Retrouver notre custom_id posé à la création d'order
     $custom = $pu['custom_id'] ?? ($res['purchase_units'][0]['custom_id'] ?? '');
@@ -123,6 +128,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
         'amount_usd_cents' => $amount_cents,
         'currency'         => strtolower($currency),
         'customer_email'   => $email,
+        'customer_first_name' => $payer_given_name,
+        'customer_last_name'  => $payer_surname,
+        'customer_phone'      => $payer_phone,
         'slot_start_iso'   => $slot_iso,
         'paypal_capture_id'=> $capture_id,
         'paypal_order_id'  => $order_id,
@@ -182,6 +190,11 @@ function kghp_webhook_handle(WP_REST_Request $req) {
     $amount_value = (string)($res['amount']['value'] ?? '0.00');
     $currency     = strtolower($res['amount']['currency_code'] ?? 'USD');
     $amount_cents = (int) round(floatval($amount_value) * 100);
+    // Infos client pour enrichir le booking
+    $payer            = $res['payer'] ?? [];
+    $payer_given_name = trim((string)($payer['name']['given_name'] ?? ''));
+    $payer_surname    = trim((string)($payer['name']['surname'] ?? ''));
+    $payer_phone      = trim((string)($payer['phone']['phone_number']['national_number'] ?? ''));
 
     // Évite de traiter deux fois la même capture
     $capture_id = sanitize_text_field($res['id'] ?? '');
@@ -214,6 +227,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       'amount_usd_cents' => $amount_cents,
       'currency'         => $currency,
       'customer_email'   => $email,
+      'customer_first_name' => $payer_given_name,
+      'customer_last_name'  => $payer_surname,
+      'customer_phone'      => $payer_phone,
       'slot_start_iso'   => $slot_iso,
       'paypal_capture_id'=> $capture_id,
       'payment_status'   => 'paid',

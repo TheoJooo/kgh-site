@@ -116,7 +116,14 @@ add_action('init', function() {
 });
 
 // Admin metabox
-add_action('add_meta_boxes', function(){
+add_action('add_meta_boxes_tour', function () {
+  static $ran = false;
+  if ($ran) {
+    error_log('KGH metabox REG CALLED TWICE: ' . __FILE__);
+    return;
+  }
+  $ran = true;
+
   add_meta_box(
     'kgh_tour_schedule',
     __('KGH · Schedule', 'kgh-booking'),

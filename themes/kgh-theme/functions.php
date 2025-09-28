@@ -19,6 +19,10 @@ if (!defined('KGH_URI')) {
  * Enqueue styles & scripts
  */
 function kgh_enqueue_assets() {
+  if (is_admin()) {
+    // Admin clickability guard for Tours editor: do not load front assets in dashboard
+    return;
+  }
   // Google Fonts
   wp_enqueue_style(
     'kgh-google-fonts',
@@ -256,6 +260,26 @@ function kgh_checkout_noindex() {
   }
 }
 add_action('wp_head', 'kgh_checkout_noindex', 1);
+
+// Private tour block helper / shortcode
+function kgh_private_tour_block() {
+  ob_start(); ?>
+  <section class="kgh-private-tour" aria-label="<?php esc_attr_e('Private tour', 'kgh-booking'); ?>">
+    <div class="kgh-private-tour__inner">
+      <h2 class="kgh-private-tour__title"><?php esc_html_e('Private Tour', 'kgh-booking'); ?></h2>
+      <p class="kgh-private-tour__subtitle"><?php esc_html_e('Looking for a tailor-made experience for your group?', 'kgh-booking'); ?></p>
+      <ul class="kgh-private-tour__points">
+        <li><?php esc_html_e('Flexible schedules and custom menus', 'kgh-booking'); ?></li>
+        <li><?php esc_html_e('Dedicated guide and concierge support', 'kgh-booking'); ?></li>
+        <li><?php esc_html_e('Perfect for families, teams, and special occasions', 'kgh-booking'); ?></li>
+      </ul>
+      <a class="kgh-button-primary" href="<?php echo esc_url( home_url('/contact/') ); ?>"><?php esc_html_e('Contact us for private tours', 'kgh-booking'); ?></a>
+    </div>
+  </section>
+  <?php
+  return ob_get_clean();
+}
+add_shortcode('kgh_private_tour', 'kgh_private_tour_block');
 
 // === Checkout page shortcode: [kgh_checkout] ===
 add_shortcode('kgh_checkout', function(){

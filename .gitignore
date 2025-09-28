@@ -7,11 +7,14 @@
 !/plugins/
 !/themes/
 
-# In plugins: keep only kgh-booking
+# In plugins: keep kgh-booking and kgh-components
 /plugins/*
 !/plugins/kgh-booking/
 /plugins/kgh-booking/*
 !/plugins/kgh-booking/**
+!/plugins/kgh-components/
+/plugins/kgh-components/*
+!/plugins/kgh-components/**
 
 # In themes: keep only kgh-theme
 /themes/*
