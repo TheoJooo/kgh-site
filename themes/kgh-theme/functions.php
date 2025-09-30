@@ -59,6 +59,14 @@ function kgh_enqueue_assets() {
     true
   );
 
+  // assets/css/app.css (généré par Tailwind)
+  wp_enqueue_style(
+    'kgh-app',
+    KGH_URI . '/assets/css/app.css',
+    ['kgh-style'],
+    KGH_VERSION
+  );
+
   wp_localize_script('kgh-main-js', 'KGHBooking', [
     'restNonce' => wp_create_nonce('wp_rest'),
   ]);
@@ -393,3 +401,128 @@ add_shortcode('kgh_checkout', function(){
   </script>
   <?php return ob_get_clean();
 });
+
+
+// === Disable Gutenberg editors (classic editing) ===
+add_filter('use_block_editor_for_post', '__return_false', 10); // posts + pages
+add_filter('use_widgets_block_editor', '__return_false');      // widget editor
+
+// === CPT "tour" (fallback quand les plugins sont désactivés) ===
+add_action('init', function () {
+  // Si un plugin (ex: kgh-booking) a déjà enregistré "tour", on ne fait rien.
+  if ( post_type_exists('tour') ) return;
+
+  register_post_type('tour', [
+    'label'         => 'Tours',
+    'labels'        => [
+      'name'               => 'Tours',
+      'singular_name'      => 'Tour',
+      'add_new'            => 'Add New',
+      'add_new_item'       => 'Add New Tour',
+      'edit_item'          => 'Edit Tour',
+      'new_item'           => 'New Tour',
+      'view_item'          => 'View Tour',
+      'search_items'       => 'Search Tours',
+      'not_found'          => 'No tours found',
+      'not_found_in_trash' => 'No tours found in Trash',
+    ],
+    'public'        => true,
+    'has_archive'   => 'tours',          // archive à /tours/
+    'rewrite'       => ['slug' => 'tours'],
+    'menu_position' => 5,
+    'menu_icon'     => 'dashicons-location-alt',
+    'supports'      => ['title','editor','excerpt','thumbnail'],
+    'show_in_rest'  => false,            // Classic editor (on a désactivé Gutenberg)
+    'supports' => ['title','excerpt','thumbnail'], // pas 'editor'
+  ]);
+});
+
+
+// Inline un SVG depuis /assets/icons/*.svg
+function kgh_icon($name){
+  $path = get_theme_file_path('assets/icons/' . $name . '.svg');
+  if (!file_exists($path)) return '';
+  $svg = file_get_contents($path);
+  // (optionnel) mini-sécurité : enlève les scripts éventuels
+  $svg = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $svg);
+  return $svg;
+};
+
+// Désactiver l'éditeur (zone Add Media / Visual / Text) UNIQUEMENT pour la page avec le template "page-home.php"
+add_action('load-post.php', 'kgh_disable_home_editor');
+add_action('load-post-new.php', 'kgh_disable_home_editor');
+
+function kgh_disable_home_editor() {
+  $screen = get_current_screen();
+  if (!$screen || $screen->post_type !== 'page') return;
+
+  // ID de la page en édition
+  $post_id = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+  if (!$post_id) return;
+
+  // Si la page utilise bien le template Home → on retire l'éditeur
+  if (get_page_template_slug($post_id) === 'page-home.php') {
+    // 1) Retire le support "editor" pour le type "page" sur CET écran
+    remove_post_type_support('page', 'editor');
+
+    // 2) Par sécurité, retire la metabox classic editor si déjà ajoutée
+    add_action('admin_menu', function () {
+      remove_meta_box('postdivrich', 'page', 'normal');
+    }, 999);
+  }
+}
+
+
+/**
+ * Resolve an SCF image (ID | array | URL) into url + srcset.
+ */
+function kgh_resolve_image($value, $size_url = 'large', $size_set = 'full') {
+  $id = 0; $url = ''; $set = '';
+
+  if (is_numeric($value)) {
+    $id  = (int) $value;
+  } elseif (is_array($value)) {
+    // SCF can return an array; try common keys or first element
+    if (isset($value['id']))        $id = (int) $value['id'];
+    elseif (isset($value[0]))       $id = (int) $value[0];
+    elseif (isset($value['url']))   $url = (string) $value['url'];
+  } elseif (is_string($value) && preg_match('~^https?://~', $value)) {
+    $url = $value;
+  }
+
+  if ($id) {
+    $url = wp_get_attachment_image_url($id, $size_url) ?: $url;
+    $set = wp_get_attachment_image_srcset($id, $size_set) ?: '';
+  }
+
+  return ['id'=>$id, 'url'=>$url, 'srcset'=>$set];
+}
+
+/**
+ * Return desktop & mobile hero sources for the given page.
+ * Fields: home_hero_desktop, home_hero_mobile (SCF). Fallback: featured image, then theme sample.
+ */
+function kgh_get_home_hero_sources($post_id) {
+  $desk_val = function_exists('SCF') ? SCF::get('home_hero_desktop', $post_id) : 0;
+  $mob_val  = function_exists('SCF') ? SCF::get('home_hero_mobile',  $post_id) : 0;
+
+  // fallbacks
+  $feat_id = get_post_thumbnail_id($post_id);
+  if (!$desk_val) $desk_val = $feat_id ?: 0;
+  if (!$mob_val)  $mob_val  = $feat_id ?: 0;
+
+  $desk = kgh_resolve_image($desk_val);
+  $mob  = kgh_resolve_image($mob_val);
+  return [$desk, $mob];
+}
+
+
+// Badges sur l'image des cartes
+function kgh_badge_icon($slug) {
+  switch ($slug) {
+    case 'spicy':        return kgh_icon('icon-zap');        // ⚡️ à remplacer par ton SVG
+    case 'traditional':  return kgh_icon('icon-trad');       // remplace par ton SVG
+    case 'night':        return kgh_icon('icon-moon');       // remplace par ton SVG
+    default:             return '';                          // aucun icône
+  }
+}

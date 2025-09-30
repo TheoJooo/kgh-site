@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Text styles */
+  .kgh-overline { @apply font-kr tracking-wide text-kgh-grey text-sm md:text-base; }
+  .kgh-h1      { @apply font-serif text-kgh-red font-bold leading-tight text-2xl md:text-3xl lg:text-4xl; }
+  .kgh-subtle  { @apply font-sans text-gray-700 text-base md:text-lg; }
+
+  /* Buttons */
+  .kgh-btn     { @apply inline-block px-5 py-3 rounded-sm transition; }
+  .kgh-btn--primary { @apply kgh-btn bg-kgh-red text-white hover:brightness-90 hover:no-underline; }
+  .kgh-btn--ghost   { @apply kgh-btn border-2 border-current text-kgh-red hover:bg-kgh-red/5 hover:no-underline; }
+  .kgh-btn--tertiary { @apply kgh-btn px-5 py-3 border-2 border-current bg-[#292929] text-sm text-white hover:bg-[#1A1A1A] hover:no-underline}
+
+  /* Container */
+  .kgh-container { @apply max-w-kgh mx-auto px-12; }
+
+  /* Google review stars */
+  .kgh-google-review { @apply mt-6 flex items-center gap-2 text-sm text-gray-700; }
+  .kgh-google-stars { @apply text-yellow-500 text-lg leading-none; }
+
+  /* Card Tour */
+  .kgh-card       { @apply w-[320px] sm:w-[340px] lg:w-[360px] shrink-0 snap-start rounded-sm overflow-hidden border-2 border-[#131313] shadow-[4px_2px_4px_rgba(0,0,0,0.25)] bg-white flex flex-col; }
+  .kgh-card-media { @apply relative aspect-[16/9] bg-gray-100 overflow-hidden; }
+
+  /* Badges overlay */
+  .kgh-badge      { @apply inline-flex items-center gap-1 p-1.5 rounded-md text-xs leading-none shadow; }
+  .kgh-badge--light { @apply bg-white/90 text-gray-900 }
+  .kgh-badge--dark  { @apply bg-black/55 text-white backdrop-blur-sm px-2;}
+
+  .kgh-badge-ico  { @apply inline-block w-[14px] h-[14px] shrink-0; }
+  .kgh-badge-ico svg { @apply w-full h-full; }
+
+  .kgh-label-tl   { @apply absolute left-3 top-3; }
+  .kgh-label-bl { @apply absolute left-3 bottom-3 flex flex-wrap items-center gap-2; }
+
+  /* Zone texte figée : on borne la hauteur et on coupe l'excédent */
+  .kgh-card-body  { @apply px-7 pt-7 grow min-h-[142px] max-h-[172px] overflow-hidden; } /* ajuste 164–188px selon ton rendu */
+
+  /* Titres clampés pour éviter d'étirer la carte */
+  .kgh-card-title { @apply font-serif text-2xl text-black leading-tight line-clamp-2 mb-4; }
+  .kgh-card-title a{ @apply no-underline hover:no-underline }
+  /* Excerpt inline (pas de clamp, même typo que kgh-card-ex) */
+  .kgh-card-ex-inline { @apply text-gray-700 text-sm leading-relaxed; }
+  /* style du lien "View more" aligné dans le flux */
+  .kgh-card-more { @apply font-semibold underline underline-offset-2 whitespace-nowrap; }
+
+  /* Row de méta (icône + texte) */
+  .kgh-meta      { @apply px-7 py-5; }
+  .kgh-meta-row  { @apply flex items-center gap-2; }
+
+  /* Label avec contour/remplissage gris */
+  .kgh-meta-item { @apply inline-flex items-center gap-1 p-2 rounded-md
+                          bg-gray-100 text-xs text-gray-800; }
+
+  /* Emplacement icône (16px) – tu inséreras ton SVG dedans */
+  .kgh-ico       { @apply inline-block w-4 h-4 shrink-0; }
+  .kgh-ico svg   { @apply w-full h-full; }
+
+  /* Footer : prix + bouton sur une même ligne */
+  .kgh-footer    { @apply px-7 pb-7 flex items-center justify-between gap-4; }
+  .kgh-price     { @apply text-sm font-semibold text-gray-900; }
+
+
+  /* Footer/CTA restent stables */
+  .kgh-card-cta   { @apply inline-flex items-center gap-1.5; }
+
+  /* Carousel controls (bottom-right) */
+  .kgh-carousel-btn { @apply grid place-items-center h-10 w-10 rounded-sm border-2 border-[#131313] bg-white shadow-sm hover:bg-black/5 transition disabled:opacity-40 disabled:pointer-events-none; }
+
+  .kgh-fade { @apply pointer-events-none hidden transition-opacity duration-200; }
+  @screen md { .kgh-fade { display:block; } } /* visible seulement ≥ md, comme avant */
+
+
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}

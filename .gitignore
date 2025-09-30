@@ -1,23 +1,47 @@
-# Ignore everything by default
+# Tout ignorer par défaut
 *
 !/.gitignore
 !/README.md
-
-# Allow only these roots
 !/plugins/
 !/themes/
 
-# In plugins: keep only kgh-booking
+# Garder uniquement ton plugin custom
 /plugins/*
 !/plugins/kgh-booking/
 /plugins/kgh-booking/*
 !/plugins/kgh-booking/**
 
-# In themes: keep only kgh-theme
+# Garder uniquement ton thème custom
 /themes/*
 !/themes/kgh-theme/
 /themes/kgh-theme/*
 !/themes/kgh-theme/**
+
+# Ignorer ce qui ne doit pas être versionné dans le thème
+/themes/kgh-theme/node_modules/
+/themes/kgh-theme/.vscode/
+/themes/kgh-theme/*.log
+
+# Garder les fichiers nécessaires au build + CSS compilé
+!/themes/kgh-theme/package.json
+!/themes/kgh-theme/package-lock.json
+!/themes/kgh-theme/postcss.config.js
+!/themes/kgh-theme/tailwind.config.js
+!/themes/kgh-theme/assets/css/tailwind.css
+!/themes/kgh-theme/assets/css/app.css
+
+# Ignorer uploads et langues (contenu / dépendances)
+uploads/
+languages/
+
+# Ignorer plugins tiers (à réinstaller en prod)
+plugins/polylang/
+plugins/smart-custom-fields/
+
+# Bruit WordPress
+index.php
+plugins/index.php
+themes/index.php
 
 # OS/editor noise
 .DS_Store
