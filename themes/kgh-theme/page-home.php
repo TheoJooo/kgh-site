@@ -97,7 +97,7 @@ get_header(); ?>
   </section>
 
   <!-- Logos row -->
-  <section class="bg-white py-8">
+  <!-- <section class="bg-white py-8">
     <div class="kgh-container">
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 items-center justify-items-center">
         <div class="opacity-70">Logo 1</div>
@@ -107,7 +107,7 @@ get_header(); ?>
         <div class="opacity-70">Logo 5</div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Our Tours (home section) -->
   <section class="bg-white py-12 md:py-20">
@@ -276,15 +276,15 @@ get_header(); ?>
           </div>
 
           <div class="mt-8 flex items-center justify-between">
-            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--ghost hover:no-underline">
+            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--quaternary hover:no-underline">
               View all tours
             </a>
 
-            <div class="flex items-center gap-3">
-              <button type="button" id="home-tours-prev" aria-label="Previous" class="kgh-carousel-btn">
+            <div class="flex items-center gap-4">
+              <button type="button" id="home-tours-prev" aria-label="Previous" class="kgh-btn--quaternary">
                 ‹
               </button>
-              <button type="button" id="home-tours-next" aria-label="Next" class="kgh-carousel-btn">
+              <button type="button" id="home-tours-next" aria-label="Next" class="kgh-btn--quaternary">
                 ›
               </button>
             </div>
@@ -298,24 +298,278 @@ get_header(); ?>
     </div>
   </section>
 
-  <!-- 3 PILLARS (cards) -->
-   
-  <section class="home-pillars" aria-label="Why choose us">
-    <div class="home-pillars__grid">
-      <article class="pillar">
-        <h3 class="pillar__title">Hidden gems</h3>
-        <p class="pillar__text">Curated spots off the beaten path.</p>
-      </article>
-      <article class="pillar">
-        <h3 class="pillar__title">Small groups</h3>
-        <p class="pillar__text">Intimate, friendly, and flexible.</p>
-      </article>
-      <article class="pillar">
-        <h3 class="pillar__title">Local stories</h3>
-        <p class="pillar__text">Culture, context, and tasty history.</p>
-      </article>
+  <!-- Home • Value props row -->
+  <section class="bg-white pt-20 pb-32">
+    <div class="kgh-container">
+      <!-- Headline centered -->
+      <p class="text-center text-lg max-w-3xl mx-auto mb-8 md:mb-12">
+        Authentic Korean food tours in Seoul:</br>hidden gems, small groups, and the stories behind every bite.
+      </p>
+
+      <!-- Pills: 1x4 desktop, stacked mobile -->
+      <ul class="flex flex-wrap justify-center gap-4 md:gap-6">
+        <!-- 1 -->
+        <li class="w-full max-w-[300px] md:max-w-[225px]">
+          <div class="flex items-center gap-3 md:justify-center md:text-center rounded-2xl bg-[#FFF7F5] px-5 py-4">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+            </span>
+            <span class="text-black text-sm">Free 48h Cancellation</span>
+          </div>
+        </li>
+
+        <!-- 2 -->
+        <li class="w-full max-w-[300px] md:max-w-[225px]">
+          <div class="flex items-center gap-3 md:justify-center md:text-center rounded-2xl bg-[#FFF7F5] px-5 py-4">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+            </span>
+            <span class="text-black text-sm">All Diets Available</span>
+          </div>
+        </li>
+
+        <!-- 3 -->
+        <li class="w-full max-w-[300px] md:max-w-[225px]">
+          <div class="flex items-center gap-3 md:justify-center md:text-center rounded-2xl bg-[#FFF7F5] px-5 py-4">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+            </span>
+            <span class="text-black text-sm">No Tourist Traps</span>
+          </div>
+        </li>
+
+        <!-- 4 -->
+        <li class="w-full max-w-[300px] md:max-w-[225px]">
+          <div class="flex items-center gap-3 md:justify-center md:text-center rounded-2xl bg-[#FFF7F5] px-5 py-4">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+            </span>
+            <span class="text-black text-sm">All Tastings Included</span>
+          </div>
+        </li>
+      </ul>
+
     </div>
   </section>
+
+  <!-- Private Tour CTA -->
+  <section class="bg-kgh-bg pt-44 pb-40">
+    <div class="kgh-container">
+      <div class="relative mx-auto max-w-3xl">
+        <?php $blob = get_theme_file_uri('assets/img/blob-map-korea.png'); ?>
+
+        <!-- Tache en fond -->
+        <img
+          src="<?php echo esc_url($blob); ?>"
+          alt=""
+          aria-hidden="true"
+          class="pointer-events-none select-none absolute left-1/2 top-1/2 z-0 w-[520px] max-w-sm -translate-x-1/2 -translate-y-1/2 opacity-90 md:w-[680px]">
+
+        <!-- Contenu au-dessus -->
+        <div class="relative z-10 text-center">
+          <p class="kgh-subtle text-black mb-6">Can’t find what you’re looking for?</p>
+          <h2 class="kgh-h1 text-black mb-5">Private tour</h2>
+          <p class="kgh-subtle mb-10">We can create a fully customized experience just for you!</p>
+
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
+              class="kgh-btn--quaternary hover:no-underline">Contact Us</a>
+            <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
+              class="kgh-btn--primary hover:no-underline">Request Custom Tour</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Home • Stats (4 cards) -->
+  <section class="bg-white py-10 md:py-20">
+    <div class="kgh-container">
+      <ul class="flex flex-wrap justify-center gap-4 md:gap-6">
+        <!-- 1 -->
+        <li class="w-full max-w-[300px] md:max-w-[260px]">
+          <div class="flex items-center gap-4 rounded-2xl bg-gray-100 px-3 py-4">
+            <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
+              <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-smiley') : ''; ?>
+              </span>
+            </span>
+            <div class="min-w-0">
+              <div class="text-2xl font-semibold text-black leading-tight">3000+</div>
+              <div class="text-gray-700 text-sm">Happy Gourmet Hunters</div>
+            </div>
+          </div>
+        </li>
+
+        <!-- 2 -->
+        <li class="w-full max-w-[300px] md:max-w-[260px]">
+          <div class="flex items-center gap-4 rounded-2xl bg-gray-100 px-3 py-4">
+            <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
+              <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-compass') : ''; ?>
+              </span>
+            </span>
+            <div class="min-w-0">
+              <div class="text-2xl font-semibold text-black leading-tight">2000+</div>
+              <div class="text-gray-700 text-sm">Tours since 2010</div>
+            </div>
+          </div>
+        </li>
+
+        <!-- 3 -->
+        <li class="w-full max-w-[300px] md:max-w-[260px]">
+          <div class="flex items-center gap-4 rounded-2xl bg-gray-100 px-3 py-4">
+            <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
+              <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-home') : ''; ?>
+              </span>
+            </span>
+            <div class="min-w-0">
+              <div class="text-2xl font-semibold text-black leading-tight">1.8K+</div>
+              <div class="text-gray-700 text-sm">Addresses and Gems</div>
+            </div>
+          </div>
+        </li>
+
+        <!-- 4 -->
+        <li class="w-full max-w-[300px] md:max-w-[260px]">
+          <div class="flex items-center gap-4 rounded-2xl bg-gray-100 px-3 py-4">
+            <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
+              <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-smiley') : ''; ?>
+              </span>
+            </span>
+            <div class="min-w-0">
+              <div class="text-2xl font-semibold text-black leading-tight">6</div>
+              <div class="text-gray-700 text-sm">Amazing Guides</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Home • FAQ -->
+  <section class="bg-white py-12 md:py-16">
+    <div class="kgh-container">
+      <div class="grid md:grid-cols-[auto_1fr_auto] items-start gap-6 md:gap-16">
+        <!-- Title -->
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14">FAQ:</h2>
+
+        <!-- Accordion -->
+        <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">
+          <!-- Item -->
+          <div class="border-t border-black/40">
+            <button type="button" data-faq-toggle
+              class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
+              aria-expanded="false">
+              <span class="pr-7">Can the weather cancel a tour?</span>
+              <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
+              </span>
+            </button>
+            <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
+              Tours run rain or shine; severe weather may reschedule. We'll contact you early with options or refunds.
+            </div>
+          </div>
+
+          <!-- Item -->
+          <div class="border-t border-black/40">
+            <button type="button" data-faq-toggle
+              class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
+              aria-expanded="false">
+              <span class="pr-7">Can we customize or book a private tour?</span>
+              <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
+              </span>
+            </button>
+            <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
+              Yes—private or custom routes available. Tell us interests, budget, and timing; we'll craft a tailored itinerary.
+            </div>
+          </div>
+
+          <!-- Item -->
+          <div class="border-t border-black/40">
+            <button type="button" data-faq-toggle
+              class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
+              aria-expanded="false">
+              <span class="pr-7">Is it suitable for dietary restrictions or allergies?</span>
+              <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
+              </span>
+            </button>
+            <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
+              Absolutely. We accommodate vegetarians, vegans, halal, gluten-free, and allergies. Just inform us early when booking.
+            </div>
+          </div>
+
+          <!-- Item -->
+          <div class="border-t border-b border-black/40">
+            <button type="button" data-faq-toggle
+              class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
+              aria-expanded="false">
+              <span class="pr-7">What kind of places and food will we visit?</span>
+              <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
+              </span>
+            </button>
+            <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
+              Hidden local markets, family-run eateries, street stalls; regional specialties, seasonal dishes, and classic Korean favorites.
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="md:sticky md:top-20">
+          <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
+            class="kgh-btn--quaternary hover:no-underline whitespace-nowrap">
+            Personal Request
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function(){
+    const root = document.getElementById('kgh-faq');
+    if (!root) return;
+    const items = Array.from(root.querySelectorAll('[data-faq-toggle]'));
+
+    function closeAll(exceptBtn){
+      items.forEach(btn => {
+        if (btn === exceptBtn) return;
+        btn.setAttribute('aria-expanded', 'false');
+        const ico = btn.querySelector('.kgh-ico');
+        if (ico) ico.style.transform = 'rotate(0deg)';
+        const panel = btn.nextElementSibling;
+        if (panel) panel.classList.add('hidden');
+      });
+    }
+
+    items.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+          btn.setAttribute('aria-expanded', 'false');
+          const ico = btn.querySelector('.kgh-ico'); if (ico) ico.style.transform = 'rotate(0deg)';
+          const panel = btn.nextElementSibling; if (panel) panel.classList.add('hidden');
+        } else {
+          closeAll(btn);
+          btn.setAttribute('aria-expanded', 'true');
+          const ico = btn.querySelector('.kgh-ico'); if (ico) ico.style.transform = 'rotate(180deg)';
+          const panel = btn.nextElementSibling; if (panel) panel.classList.remove('hidden');
+        }
+      });
+    });
+  })();
+  </script>
+
+
+
+
+
+
 </main>
 
 <script>

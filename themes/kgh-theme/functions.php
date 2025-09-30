@@ -526,3 +526,38 @@ function kgh_badge_icon($slug) {
     default:             return '';                          // aucun icône
   }
 }
+
+
+// === CPT "guide" ===
+add_action('init', function () {
+  if ( post_type_exists('guide') ) return;
+
+  register_post_type('guide', [
+    'label'         => 'Guides',
+    'labels'        => [
+      'name'          => 'Guides',
+      'singular_name' => 'Guide',
+      'add_new_item'  => 'Add New Guide',
+      'edit_item'     => 'Edit Guide',
+      'view_item'     => 'View Guide',
+      'search_items'  => 'Search Guides',
+    ],
+    'public'        => true,
+    'has_archive'   => 'guides',    // archive à /guides/
+    'rewrite'       => ['slug' => 'guides'],
+    'menu_position' => 6,
+    'menu_icon'     => 'dashicons-book-alt',
+    'supports'      => ['title','editor','excerpt','thumbnail'],
+    'show_in_rest'  => false, // tu peux mettre true si tu veux Gutenberg
+    'supports' => ['title','excerpt','thumbnail'],
+  ]);
+});
+
+
+
+// Register Footer menu
+add_action('after_setup_theme', function () {
+  register_nav_menus([
+    'footer' => __('Footer Menu', 'kgh'),
+  ]);
+});

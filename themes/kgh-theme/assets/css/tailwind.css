@@ -10,12 +10,13 @@
 
   /* Buttons */
   .kgh-btn     { @apply inline-block px-5 py-3 rounded-sm transition; }
-  .kgh-btn--primary { @apply kgh-btn bg-kgh-red text-white hover:brightness-90 hover:no-underline; }
-  .kgh-btn--ghost   { @apply kgh-btn border-2 border-current text-kgh-red hover:bg-kgh-red/5 hover:no-underline; }
+  .kgh-btn--primary { @apply kgh-btn bg-kgh-red border-2 border-kgh-red text-white hover:brightness-90 hover:no-underline; }
+  .kgh-btn--ghost   { @apply kgh-btn border-2 border-current text-center text-kgh-red hover:bg-kgh-red/5 hover:no-underline; }
   .kgh-btn--tertiary { @apply kgh-btn px-5 py-3 border-2 border-current bg-[#292929] text-sm text-white hover:bg-[#1A1A1A] hover:no-underline}
+  .kgh-btn--quaternary { @apply kgh-btn grid place-items-center px-5 py-3 border-2 border-current border-[#292929] shadow-sm hover:bg-black/5 transition }
 
   /* Container */
-  .kgh-container { @apply max-w-kgh mx-auto px-12; }
+  .kgh-container { @apply max-w-[1200px] mx-auto px-6 sm:px-8; }
 
   /* Google review stars */
   .kgh-google-review { @apply mt-6 flex items-center gap-2 text-sm text-gray-700; }
@@ -26,7 +27,7 @@
   .kgh-card-media { @apply relative aspect-[16/9] bg-gray-100 overflow-hidden; }
 
   /* Badges overlay */
-  .kgh-badge      { @apply inline-flex items-center gap-1 p-1.5 rounded-md text-xs leading-none shadow; }
+  .kgh-badge      { @apply inline-flex items-center gap-1 p-1.5 rounded-md text-xs leading-none; }
   .kgh-badge--light { @apply bg-white/90 text-gray-900 }
   .kgh-badge--dark  { @apply bg-black/55 text-white backdrop-blur-sm px-2;}
 
@@ -48,7 +49,7 @@
   .kgh-card-more { @apply font-semibold underline underline-offset-2 whitespace-nowrap; }
 
   /* Row de méta (icône + texte) */
-  .kgh-meta      { @apply px-7 py-5; }
+  .kgh-meta      { @apply px-5 md:px-7 py-5; }
   .kgh-meta-row  { @apply flex items-center gap-2; }
 
   /* Label avec contour/remplissage gris */
