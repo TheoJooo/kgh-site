@@ -4,7 +4,7 @@
  */
 
 if (!defined('KGH_VERSION')) {
-  define('KGH_VERSION', '0.1.0');
+  define('KGH_VERSION', '0.1.1');
 }
 
 if (!defined('KGH_DIR')) {
