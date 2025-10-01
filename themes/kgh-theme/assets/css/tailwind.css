@@ -74,10 +74,37 @@
   .kgh-fade { @apply pointer-events-none hidden transition-opacity duration-200; }
   @screen md { .kgh-fade { display:block; } } /* visible seulement ≥ md, comme avant */
 
+  /* Contact form */
+  .kgh-label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:600;
+  }
+
+  .kgh-field{
+    width:100%;
+    padding:12px 14px;
+    border:2px solid #1f1a17;      /* contour net comme sur la maquette */
+    border-radius:2px;
+    background:#fff;
+    line-height:1.2;
+  }
+  .kgh-field:focus{
+    outline:0;
+    box-shadow:0 0 0 2px rgba(31,26,23,.06);
+  }
+
+  .kgh-contact-form textarea.kgh-field{
+    min-height:180px;               /* hauteur confortable */
+    resize:vertical; 
+  }
 
 }
+
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+html { scroll-behavior: smooth; }

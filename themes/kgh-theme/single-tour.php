@@ -169,6 +169,16 @@ if (!function_exists('kgh_fmt_duration')) {
     </div>
   </section>
 
+  <!-- CTA: Contact us to book -->
+  <div class="flex flex-col mt-6 max-w-[400px]">
+    <div class="flex flex-row items-center">
+      <span class="mr-4">to book this tour :</span>
+      <a href="#kgh-contact" class="kgh-btn--primary text-center">
+        Contact us
+      </a>
+    </div>
+  </div>
+
   <!-- Advantages / Guarantees -->
   <section class="mt-8 md:mt-10">
     <div class="rounded-lg bg-white px-6 py-6 md:py-8">
@@ -479,6 +489,22 @@ if (!function_exists('kgh_fmt_duration')) {
       </div>
     </div>
   </section>
+  <!-- Contact section -->
+  <section id="kgh-contact" class="mt-12 md:mt-16 scroll-mt-24">
+    <?php
+      // On passe un titre + une liste simple de services dont le nom du tour pour aider le staff
+      get_template_part('template-parts/section', 'contact', [
+        'title'    => 'Contact us to book this tour',
+        'services' => [
+          'Private tour inquiry',
+          'Group booking',
+          'Question about: ' . get_the_title($tour_id),
+        ],
+        // 'portrait_id' => 0, // (optionnel) force un portrait spécifique si besoin
+      ]);
+    ?>
+  </section>
+
 </main>
 
 

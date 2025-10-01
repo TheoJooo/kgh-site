@@ -554,6 +554,27 @@ add_action('init', function () {
 });
 
 
+// [kgh_contact title="Contact us" portrait_id="123" services="Private tour,Cooking class"]
+add_shortcode('kgh_contact', function($atts){
+  $atts = shortcode_atts([
+    'title'       => 'Contact us',
+    'portrait_id' => '',
+    'services'    => '', // CSV
+  ], $atts, 'kgh_contact');
+
+  $args = [
+    'title'       => $atts['title'],
+    'portrait_id' => $atts['portrait_id'] ? (int) $atts['portrait_id'] : 0,
+  ];
+  if ($atts['services'] !== '') {
+    $args['services'] = array_map('trim', explode(',', $atts['services']));
+  }
+
+  ob_start();
+  get_template_part('template-parts/section', 'contact', $args);
+  return ob_get_clean();
+});
+
 
 // Register Footer menu
 add_action('after_setup_theme', function () {
@@ -561,3 +582,66 @@ add_action('after_setup_theme', function () {
     'footer' => __('Footer Menu', 'kgh'),
   ]);
 });
+
+
+// Handle contact form (logged-in + visitors)
+add_action('admin_post_kgh_contact_send',    'kgh_handle_contact_form');
+add_action('admin_post_nopriv_kgh_contact_send', 'kgh_handle_contact_form');
+
+function kgh_handle_contact_form(){
+  // CSRF
+  if ( ! isset($_POST['kgh_contact_nonce']) || ! wp_verify_nonce($_POST['kgh_contact_nonce'], 'kgh_contact_send') ) {
+    return kgh_contact_redirect(0);
+  }
+  
+  $bcc = 'yunamisogo@gmail.com';
+
+  // Anti-bot: le champ doit rester vide
+  if ( ! empty($_POST['website']) ) {
+    return kgh_contact_redirect(0);
+  }
+
+  // Collecte + nettoyage
+  $name    = isset($_POST['name'])    ? trim( wp_strip_all_tags($_POST['name']) )   : '';
+  $email   = isset($_POST['email'])   ? sanitize_email($_POST['email'])             : '';
+  $service = isset($_POST['service']) ? sanitize_text_field($_POST['service'])      : '';
+  $message = isset($_POST['message']) ? trim( wp_kses_post($_POST['message']) )     : '';
+
+  if ($name==='' || !is_email($email) || $message==='') {
+    return kgh_contact_redirect(0);
+  }
+
+  // Destinataire principal
+  $to = 'info@koreangourmethunters.com';
+
+  // Sujet + contenu
+  $site   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+  $subj   = "[{$site}] New contact request";
+  $serv_l = $service ? "Service: {$service}\n" : '';
+
+  $body_text = "New message from {$site}\n\n"
+             . "Name: {$name}\n"
+             . "Email: {$email}\n"
+             . $serv_l
+             . "Message:\n{$message}\n";
+
+  // Headers (plain text) + Reply-To = l’expéditeur
+  $headers = [];
+  $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+  $headers[] = 'Reply-To: '. $name .' <'. $email .'>';
+  $headers[] = 'Bcc: ' . $bcc;
+
+
+  $sent = wp_mail($to, $subj, $body_text, $headers);
+
+  return kgh_contact_redirect( $sent ? 1 : 0 );
+}
+
+function kgh_contact_redirect($ok){
+  $redirect = isset($_POST['redirect_to']) ? esc_url_raw($_POST['redirect_to']) : home_url('/');
+  // Nettoie l’URL et ajoute le flag
+  $redirect = remove_query_arg(['sent'], $redirect);
+  $redirect = add_query_arg(['sent' => $ok ? '1' : '0'], $redirect);
+  wp_safe_redirect($redirect);
+  exit;
+}
