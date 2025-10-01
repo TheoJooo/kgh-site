@@ -108,7 +108,7 @@
       <!-- Top bar overlay -->
       <div class="kgh-container py-4 flex items-center justify-between">
         <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center">
-          <img src="<?php echo esc_url( get_theme_file_uri('assets/img/logo-kgh-white.svg') ); ?>"
+          <img src="<?php echo esc_url( get_theme_file_uri('assets/img/logo-white.png') ); ?>"
                alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="h-7 w-auto">
         </a>
         <button class="inline-flex h-10 w-10 items-center justify-center rounded hover:bg-white/10"

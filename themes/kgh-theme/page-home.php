@@ -8,7 +8,7 @@ get_header(); ?>
     <div class="kgh-container py-10 md:py-24">
       <div class="grid md:grid-cols-10 md:items-center gap-8 md:gap-12">
         <div class="text-center md:text-left md:col-span-4">
-          <p class="kgh-overline mb-3">Your Ultimate Guide to Seoul’s</br>Culinary and Cultural Adventures</p>
+          <p class="kgh-overline mb-3">Discover Korea’s Culinary</br>Essence and Timeless Wellness</p>
           <h1 class="kgh-h1 my-8">Chasing the Korea’s</br>Authentic Flavors!</h1>
           <p class="kgh-subtle mb-8 max-w-[36ch] md:max-w-none mx-auto md:mx-0">Your journey into Korean food and</br>gastronomic culture starts here!</p>
           <div class="flex flex-wrap items-center gap-3 justify-center md:justify-start">
@@ -69,9 +69,6 @@ get_header(); ?>
             $fallback = get_theme_file_uri('assets/img/hero-sample.jpg');
             $alt = get_the_title().' hero';
 
-            // DEBUG TEMP (retire après test)
-            // echo "\n<!-- home_id=$home_id; desk_raw=".htmlspecialchars(print_r($desk_raw,true))." -->\n";
-            // echo "<!-- mob_raw=".htmlspecialchars(print_r($mob_raw,true))." -->\n";
             ?>
             <picture>
               <?php if (!empty($desk['srcset'])): ?>
@@ -119,13 +116,55 @@ get_header(); ?>
 
       <?php if ( post_type_exists('tour') ) : ?>
         <?php
-        $q = new WP_Query([
-          'post_type'      => 'tour',
-          'posts_per_page' => 6,
-          'post_status'    => 'publish',
-          'orderby'        => 'date',
-          'order'          => 'DESC',
-        ]);
+          // 1) Récupère les tours sélectionnés sur la page d'accueil
+          $home_id = get_the_ID(); // safe: au cas où la variable d'en haut ne serait plus dispo
+
+          $raw = function_exists('SCF')
+            ? SCF::get('home_featured_tours', $home_id)
+            : get_post_meta($home_id, 'home_featured_tours', false);
+
+          // 2) Normalisation -> [int,int,...]
+          $sel_ids = [];
+          if (is_array($raw)) {
+            foreach ($raw as $it) {
+              if (is_numeric($it)) {
+                $sel_ids[] = (int)$it;
+              } elseif ($it instanceof WP_Post) {
+                $sel_ids[] = (int)$it->ID;
+              } elseif (is_array($it) && isset($it['id'])) {
+                $sel_ids[] = (int)$it['id'];
+              }
+            }
+          } elseif (is_numeric($raw)) {
+            $sel_ids[] = (int)$raw;
+          }
+
+          // Garde uniquement les publiés et uniques
+          $sel_ids = array_values(array_unique(array_filter($sel_ids, function($id){
+            return $id && get_post_status($id) === 'publish';
+          })));
+
+          // 3) Construis la requête
+          if (!empty($sel_ids)) {
+            // Utilise l'ordre défini dans SCF (drag & drop)
+            $q = new WP_Query([
+              'post_type'      => 'tour',
+              'post__in'       => $sel_ids,
+              'orderby'        => 'post__in',
+              'posts_per_page' => count($sel_ids),
+              'no_found_rows'  => true,
+            ]);
+          } else {
+            // Fallback : derniers tours
+            $q = new WP_Query([
+              'post_type'      => 'tour',
+              'posts_per_page' => 6,
+              'post_status'    => 'publish',
+              'orderby'        => 'date',
+              'order'          => 'DESC',
+              'no_found_rows'  => true,
+            ]);
+          }
         ?>
 
         <?php if ( $q->have_posts() ) : ?>
@@ -363,7 +402,7 @@ get_header(); ?>
           src="<?php echo esc_url($blob); ?>"
           alt=""
           aria-hidden="true"
-          class="pointer-events-none select-none absolute left-1/2 top-1/2 z-0 w-[520px] max-w-sm -translate-x-1/2 -translate-y-1/2 opacity-90 md:w-[680px]">
+          class="pointer-events-none select-none absolute left-1/2 top-1/2 z-0 w-[520px] max-w-sm -translate-x-1/2 -translate-y-1/2 opacity-90 md:w-[576px] md:max-w-xl">
 
         <!-- Contenu au-dessus -->
         <div class="relative z-10 text-center">
@@ -383,7 +422,7 @@ get_header(); ?>
   </section>
 
   <!-- Home • Stats (4 cards) -->
-  <section class="bg-white py-10 md:py-20">
+  <section class="bg-white py-20 md:py-32">
     <div class="kgh-container">
       <ul class="flex flex-wrap justify-center gap-4 md:gap-6">
         <!-- 1 -->
@@ -450,7 +489,7 @@ get_header(); ?>
   </section>
 
   <!-- Home • FAQ -->
-  <section class="bg-white py-12 md:py-16">
+  <section class="bg-white py-20 md:py-36">
     <div class="kgh-container">
       <div class="grid md:grid-cols-[auto_1fr_auto] items-start gap-6 md:gap-16">
         <!-- Title -->
