@@ -543,15 +543,145 @@ add_action('init', function () {
       'search_items'  => 'Search Guides',
     ],
     'public'        => true,
-    'has_archive'   => 'guides',    // archive à /guides/
+    'has_archive'   => 'guides',
     'rewrite'       => ['slug' => 'guides'],
     'menu_position' => 6,
     'menu_icon'     => 'dashicons-book-alt',
-    'supports'      => ['title','editor','excerpt','thumbnail'],
-    'show_in_rest'  => false, // tu peux mettre true si tu veux Gutenberg
-    'supports' => ['title','excerpt','thumbnail'],
+    'show_in_rest'  => false, // laisse false si tu restes en Classic Editor
+    'supports'      => ['title','excerpt','thumbnail','page-attributes'],
   ]);
 });
+
+
+// === CPT "testimonial" ===
+add_action('init', function () {
+  if ( post_type_exists('testimonial') ) return;
+
+  register_post_type('testimonial', [
+    'label'         => 'Testimonials',
+    'labels'        => [
+      'name'          => 'Testimonials',
+      'singular_name' => 'Testimonial',
+      'add_new_item'  => 'Add New Testimonial',
+      'edit_item'     => 'Edit Testimonial',
+      'view_item'     => 'View Testimonial',
+      'search_items'  => 'Search Testimonials',
+    ],
+    'public'        => true,
+    'has_archive'   => false,
+    'rewrite'       => ['slug' => 'testimonials'],
+    'menu_position' => 7,
+    'menu_icon'     => 'dashicons-format-quote',
+    'show_in_rest'  => false, // classic editor
+    'supports'      => ['title','editor','thumbnail','page-attributes','excerpt'],
+  ]);
+});
+
+
+// [kgh_testimonials count="6"]
+add_shortcode('kgh_testimonials', function($atts){
+  $atts = shortcode_atts([
+    'count' => 6,        // nombre max à afficher
+  ], $atts, 'kgh_testimonials');
+
+  $q = new WP_Query([
+    'post_type'      => 'testimonial',
+    'post_status'    => 'publish',
+    'posts_per_page' => intval($atts['count']),
+    'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
+    'order'          => 'ASC',
+  ]);
+
+  ob_start(); ?>
+
+  <section class="kgh-container my-10 md:my-16">
+    <h2 class="font-serif text-3xl md:text-4xl text-black mb-6">Testimonials</h2>
+
+    <?php if ($q->have_posts()): ?>
+      <div class="relative">
+        <!-- Flèche gauche -->
+        <button type="button"
+                class="hidden md:flex absolute -left-14 top-1/2 -translate-y-1/2 h-14 w-14 items-center justify-center border-2 border-kgh-grey rounded-sm hover:bg-kgh-redclayLight"
+                data-kgh-ts-prev aria-label="Previous">
+          <span class="text-2xl">‹</span>
+        </button>
+
+        <!-- Piste scrollable -->
+        <div class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pr-2"
+             data-kgh-ts-track>
+          <?php while ($q->have_posts()): $q->the_post();
+            $country = function_exists('SCF') ? trim((string) SCF::get('t_author_country')) : '';
+            $tour    = function_exists('SCF') ? trim((string) SCF::get('t_tour_name'))    : '';
+            $name    = get_the_title();
+            $text    = get_the_excerpt();
+            if (!$text) $text = wp_trim_words( wp_strip_all_tags( get_the_content() ), 55 );
+
+            // avatar: image à la une si dispo
+            $avatar = has_post_thumbnail()
+              ? get_the_post_thumbnail(null, 'thumbnail', ['class'=>'h-9 w-9 rounded-full object-cover'])
+              : '';
+          ?>
+            <article class="min-w-[320px] md:min-w-[420px] grow snap-start rounded-sm border-2 border-[#CAC8C8] bg-white p-6">
+              <p class="text-[15px] leading-relaxed text-gray-800 mb-6"><?php echo esc_html($text); ?></p>
+
+              <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-full overflow-hidden bg-kgh-porcelain grid place-items-center border border-kgh-red">
+                  <?php
+                    if ($avatar) {
+                      echo $avatar;
+                    } else {
+                      echo function_exists('kgh_icon') ? kgh_icon('user') : '👤';
+                    }
+                  ?>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-black"><?php echo esc_html($name); ?></div>
+                  <div class="text-sm text-gray-600">
+                    <?php
+                      $bits = [];
+                      if ($country !== '') $bits[] = esc_html($country);
+                      if ($tour !== '')    $bits[] = esc_html($tour);
+                      echo implode(' · ', $bits);
+                    ?>
+                  </div>
+                </div>
+              </div>
+            </article>
+          <?php endwhile; wp_reset_postdata(); ?>
+        </div>
+
+        <!-- Flèche droite -->
+        <button type="button"
+                class="hidden md:flex absolute -right-14 top-1/2 -translate-y-1/2 h-14 w-14 items-center justify-center border-2 border-kgh-grey rounded-sm hover:bg-kgh-redclayLight"
+                data-kgh-ts-next aria-label="Next">
+          <span class="text-2xl">›</span>
+        </button>
+      </div>
+    <?php else: ?>
+      <p class="kgh-subtle">No testimonials yet.</p>
+    <?php endif; ?>
+  </section>
+
+  <script>
+  // mini carrousel au scroll horizontal
+  document.addEventListener('DOMContentLoaded', () => {
+    const track = document.querySelector('[data-kgh-ts-track]');
+    if (!track) return;
+    const prev = document.querySelector('[data-kgh-ts-prev]');
+    const next = document.querySelector('[data-kgh-ts-next]');
+    const card = track.querySelector('article');
+    const step = card ? (card.getBoundingClientRect().width + 24) : 380; // 24 ≈ gap
+
+    function scrollBy(dx){ track.scrollBy({left: dx, behavior:'smooth'}); }
+    prev && prev.addEventListener('click', () => scrollBy(-step));
+    next && next.addEventListener('click', () => scrollBy(step));
+  });
+  </script>
+
+  <?php return ob_get_clean();
+});
+
+
 
 
 // [kgh_contact title="Contact us" portrait_id="123" services="Private tour,Cooking class"]
@@ -576,12 +706,64 @@ add_shortcode('kgh_contact', function($atts){
 });
 
 
-// Register Footer menu
+// Register Footer & Header menu
 add_action('after_setup_theme', function () {
   register_nav_menus([
-    'footer' => __('Footer Menu', 'kgh'),
+    'primary' => __('Header Menu', 'kgh'),
+    'footer'  => __('Footer Menu', 'kgh'),
   ]);
 });
+
+// 2) Classes <li> générées par WP (pour hooker Tailwind plus facilement)
+add_filter('nav_menu_css_class', function($classes, $item, $args) {
+  if (isset($args->theme_location) && $args->theme_location === 'primary') {
+    // on garde les classes WP (current-menu-item, current-menu-ancestor, etc.)
+    $classes[] = 'kgh-nav-item';
+  }
+  return $classes;
+}, 10, 3);
+
+// 3) Classes <a> : base + hover + bordure, et état actif via .current-menu-*
+add_filter('nav_menu_link_attributes', function($atts, $item, $args) {
+  if (isset($args->theme_location) && $args->theme_location === 'primary') {
+    // classes communes desktop et mobile; desktop aura un conteneur différent
+    $base = 'inline-flex items-center font-semibold hover:no-underline';
+    // on laisse la couleur/underline gérées par CSS utilitaire ci-dessous
+    $atts['class'] = isset($atts['class']) ? $atts['class'] . ' ' . $base : $base;
+  }
+  return $atts;
+}, 10, 3);
+
+
+// 16:9 net pour vignettes/articles blog
+add_action('after_setup_theme', function () {
+  add_image_size('kgh-post', 1200, 675, true); 
+});
+
+// 120×120 dur recadré pour la liste
+add_action('after_setup_theme', function () {
+  add_image_size('kgh-post-thumb', 120, 120, true);
+});
+
+// Helper vignettes pour la liste d’articles
+function kgh_post_list_thumb($post_id = 0){
+  $post_id = $post_id ?: get_the_ID();
+
+  if (has_post_thumbnail($post_id)) {
+    return get_the_post_thumbnail(
+      $post_id,
+      'kgh-post-thumb',
+      ['class'=>'w-full h-full object-cover','loading'=>'lazy','alt'=>esc_attr(get_the_title($post_id))]
+    );
+  }
+  $html = get_post_field('post_content', $post_id);
+  if ($html && preg_match('/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i', $html, $m)) {
+    $src = esc_url($m[1]);
+    return '<img src="'.$src.'" alt="'.esc_attr(get_the_title($post_id)).'" class="w-full h-full object-cover" loading="lazy">';
+  }
+  return '<div class="w-full h-full bg-gray-100 grid place-items-center text-xs text-gray-500">No image</div>';
+}
+
 
 
 // Handle contact form (logged-in + visitors)

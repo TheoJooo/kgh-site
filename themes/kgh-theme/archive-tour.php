@@ -31,7 +31,7 @@ get_header();
     [
       'key'       => 'seasonal',
       'title'     => 'Seasonal Tours',
-      'subtitle'  => 'These tours are only available during their seansons!',
+      'subtitle'  => 'These tours are only available during their seasons!',
       'seasonal'  => true,
       'limit'     => 12,
     ],
@@ -103,6 +103,7 @@ get_header();
     <article class="kgh-card">
       <a href="<?php echo esc_url(get_permalink($post_id)); ?>" class="block">
         <div class="kgh-card-media">
+
           <?php if (has_post_thumbnail($post_id)) {
             echo get_the_post_thumbnail($post_id, 'large', ['class'=>'absolute inset-0 h-full w-full object-cover']);
           } ?>
@@ -151,6 +152,16 @@ get_header();
           <?php endif; ?>
         </div>
       </a>
+      <?php
+        $tag = function_exists('SCF') ? SCF::get('tag', $post_id) : get_post_meta($post_id, 'tag', true);
+        $tag = is_string($tag) ? trim($tag) : '';
+        ?>
+
+        <?php if ($tag !== ''): ?>
+        <div class="kgh-tagbar w-full text-center py-1 absolute top-[172px] sm:top-[184px] lg:top-48">
+            <?php echo esc_html($tag); ?>
+        </div>
+      <?php endif; ?>
 
       <div class="kgh-card-body">
         <h3 class="kgh-card-title"><a href="<?php echo esc_url(get_permalink($post_id)); ?>"><?php echo esc_html(get_the_title($post_id)); ?></a></h3>
@@ -173,7 +184,15 @@ get_header();
       ?>
       <div class="kgh-meta kgh-meta-row">
         <?php if ($duration): ?>
-          <span class="kgh-meta-item"><span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon_or('icon-clock'); ?></span><span><?php echo esc_html($duration); ?></span></span>
+            <span class="kgh-meta-item flex items-center gap-1 whitespace-normal h-auto">
+                <span class="kgh-ico mt-[2px]" aria-hidden="true"><?php echo kgh_icon_or('icon-clock'); ?></span>
+                <span class="leading-tight">
+                <?php
+                    // autorise seulement <br>
+                    echo wp_kses( wp_specialchars_decode((string)$duration, ENT_QUOTES), ['br'=>[]] );
+                ?>
+                </span>
+            </span>
         <?php endif; ?>
         <?php if ($capacity): ?>
           <span class="kgh-meta-item"><span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon_or('icon-users'); ?></span><span><?php echo esc_html($capacity); ?></span></span>
@@ -236,7 +255,7 @@ get_header();
             <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
               <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true"><?php echo kgh_icon_or('icon-smiley'); ?></span>
             </span>
-            <div><div class="text-2xl font-semibold text-black leading-tight">4</div><div class="text-gray-700 text-xs">Amazing Guides</div></div>
+            <div><div class="text-2xl font-semibold text-black leading-tight">6</div><div class="text-gray-700 text-xs">Amazing Guides</div></div>
           </div>
         </li>
       </ul>
@@ -370,9 +389,9 @@ get_header();
   <!-- Home • FAQ -->
   <section class="bg-white py-20 md:py-36">
     <div class="kgh-container">
-      <div class="grid md:grid-cols-[auto_1fr_auto] items-start gap-6 md:gap-16">
+      <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-6 md:gap-16">
         <!-- Title -->
-        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14">FAQ:</h2>
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center">FAQ:</h2>
 
         <!-- Accordion -->
         <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">

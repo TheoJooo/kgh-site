@@ -44,9 +44,6 @@ $languages = trim((string) get_post_meta($tour_id, 'languages', true));
 $badges = get_the_terms($tour_id, 'kgh_badge');
 if (is_wp_error($badges)) $badges = [];
 
-// ruban “Most Popular Choice” (bool SCF)
-$is_popular = (bool) get_post_meta($tour_id, 'is_most_popular', true);
-
 // helper durée (minutes => h/m)
 if (!function_exists('kgh_fmt_duration')) {
   function kgh_fmt_duration($raw){
@@ -57,7 +54,7 @@ if (!function_exists('kgh_fmt_duration')) {
 }
 ?>
 
-<main class="kgh-container py-10 md:py-16">
+<main class="kgh-container md:px-44 py-10 md:py-16">
   <!-- Back to Our Tours -->
   <nav class="mb-5 md:mb-6">
     <a href="<?php echo esc_url($archive_url); ?>" class="inline-flex items-center gap-2 text-sm hover:opacity-80">
@@ -66,7 +63,7 @@ if (!function_exists('kgh_fmt_duration')) {
   </nav>
 
   <!-- Image 16:9 -->
-  <figure class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] shadow-[4px_2px_4px_rgba(0,0,0,0.25)] bg-white">
+  <figure class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] bg-white">
     <?php if (has_post_thumbnail()): ?>
       <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
     <?php else: ?>
@@ -74,13 +71,14 @@ if (!function_exists('kgh_fmt_duration')) {
     <?php endif; ?>
   </figure>
 
-  <!-- Titre + ruban -->
+  <?php
+  $tag = function_exists('SCF') ? SCF::get('tag', $tour_id) : get_post_meta($tour_id, 'tag', true);
+  $tag = is_string($tag) ? trim($tag) : '';
+  ?>
   <header class="mt-8 md:mt-10 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
     <h1 class="kgh-h1"><?php the_title(); ?></h1>
-    <?php if ($is_popular): ?>
-      <div class="inline-block px-3 py-1 text-sm font-semibold rounded-sm border-2 border-dashed border-[#131313] bg-white">
-        Most Popular Choice
-      </div>
+    <?php if ($tag !== ''): ?>
+      <div class="kgh-stamp"><?php echo esc_html($tag); ?></div>
     <?php endif; ?>
   </header>
 
@@ -117,7 +115,7 @@ if (!function_exists('kgh_fmt_duration')) {
   <!-- ROW: area + badges (exact same look as cards) -->
   <div class="mt-3 flex flex-wrap items-center gap-2">
     <?php if (!empty($area)) : ?>
-      <span class="kgh-badge kgh-badge--light">
+      <span class="kgh-badge kgh-badge--light border border-kgh-grey">
         <span class="kgh-badge-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
         <span><?php echo esc_html($area); ?></span>
       </span>
@@ -125,7 +123,7 @@ if (!function_exists('kgh_fmt_duration')) {
 
     <?php if (!empty($badges)) : ?>
       <?php foreach ($badges as $it): ?>
-        <span class="kgh-badge kgh-badge--dark">
+        <span class="kgh-badge kgh-badge--dark !bg-kgh-grey border-2 border-kgh-grey ">
           <?php $ico = function_exists('kgh_badge_icon') ? kgh_badge_icon($it['slug']) : ''; ?>
           <?php if ($ico): ?>
             <span class="kgh-badge-ico" aria-hidden="true"><?php echo $ico; ?></span>
@@ -146,7 +144,8 @@ if (!function_exists('kgh_fmt_duration')) {
   <!-- Méta (icônes via kgh_icon(), pas d’emoji) -->
   <section class="mt-6">
     <div class="flex flex-wrap gap-2">
-      <?php if (!empty($duration)): ?>
+      
+      <?php if (!empty($duration)): ?> 
         <span class="kgh-meta-item" title="<?php echo esc_attr($duration); ?>">
           <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
           <span><?php echo esc_html(kgh_fmt_duration($duration)); ?></span>
@@ -214,6 +213,98 @@ if (!function_exists('kgh_fmt_duration')) {
       </ul>
     </div>
   </section>
+
+
+<?php
+// --- DEBUG : à retirer après
+echo "\n<!-- POST id=" . get_the_ID() . " title=" . get_the_title() . " -->\n";
+
+if (function_exists('SCF')) {
+  $all = SCF::gets($tour_id);                // toutes les metas SCF du post
+  echo "\n<!-- SCF keys: " . implode(',', array_keys((array)$all)) . " -->\n";
+  echo "\n<!-- SCF discover_items raw: " . print_r(SCF::get('discover_items', $tour_id), true) . " -->\n";
+}
+echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'discover_items', true), true) . " -->\n";
+?>
+
+
+   <?php
+    // What you'll discover – DATA (version metas séparées)
+    $discover_items = [];
+    $post_id = $tour_id;
+
+    // 1) lecture préférée : nos 3 clés step_*
+    $titles = (array) get_post_meta($post_id, 'step_title', false);     // false => toutes les valeurs
+    $texts  = (array) get_post_meta($post_id, 'step_text', false);
+    $locs   = (array) get_post_meta($post_id, 'step_location', false);
+
+    // 2) fallback si tu reviens aux anciens noms
+    if (!$titles && !$texts && !$locs) {
+      $titles = (array) get_post_meta($post_id, 'title', false);
+      $texts  = (array) get_post_meta($post_id, 'text', false);
+      $locs   = (array) get_post_meta($post_id, 'location', false);
+    }
+    // 3) autre fallback (au cas où)
+    if (!$titles && !$texts && !$locs) {
+      $titles = (array) get_post_meta($post_id, 'discover_title', false);
+      $texts  = (array) get_post_meta($post_id, 'discover_text', false);
+      $locs   = (array) get_post_meta($post_id, 'discover_location', false);
+    }
+
+    // 4) recomposition par index
+    $max = max(count($titles), count($texts), count($locs));
+    for ($i = 0; $i < $max; $i++) {
+      $title = trim((string) ($titles[$i] ?? ''));
+      $text  = trim((string) ($texts[$i]  ?? ''));
+      $loc   = trim((string) ($locs[$i]   ?? ''));
+      if ($title !== '' || $text !== '' || $loc !== '') {
+        $discover_items[] = ['title'=>$title, 'text'=>$text, 'loc'=>$loc];
+      }
+    }
+    ?>
+
+
+    <?php if (!empty($discover_items)): ?>
+  <section class="mt-8 md:mt-12">
+    <div class="rounded-lg bg-white p-6 md:p-8">
+      <h3 class="text-lg font-semibold text-black mb-6">What you’ll discover in this tour</h3>
+      <ul class="space-y-8">
+        <?php foreach ($discover_items as $it): ?>
+          <li>
+            <div class="pl-4 border-l-2 border-black/90">
+              <?php if ($it['title'] !== ''): ?>
+                <p class="font-semibold text-black mb-1"><?php echo esc_html($it['title']); ?></p>
+              <?php endif; ?>
+              <?php if ($it['text'] !== ''): ?>
+                <p class="text-gray-800"><?php echo esc_html($it['text']); ?></p>
+              <?php endif; ?>
+              <?php if ($it['loc'] !== ''): ?>
+                <p class="mt-3 flex items-center gap-2 text-gray-800">
+                  <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
+                  <span><?php echo esc_html($it['loc']); ?></span>
+                </p>
+              <?php endif; ?>
+            </div>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+
+      <div class="mt-8 rounded-md bg-gray-100 p-4 md:p-5">
+        <div class="flex items-center gap-5">
+          <span class="kgh-ico w-5 h-5 text-kgh-grey" aria-hidden="true"><?php echo kgh_icon('icon-alert-octagon'); ?></span>
+          <div class="min-w-0">
+            <div class="text-xs font-semibold text-black">Dietary Requirements</div>
+            <p class="text-xs text-gray-700">Please inform us of any allergies or dietary restrictions when booking.</p>
+            <p class="text-xs text-gray-700">We can accommodate vegetarian, halal, and gluten-free needs.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <?php endif; ?>
+
+
+
 
   <!-- Meeting / Ending Points -->
   <section class="mt-8 md:mt-12">
@@ -367,7 +458,7 @@ if (!function_exists('kgh_fmt_duration')) {
           ?>
 
           <!-- Carte guide -->
-          <article class="grid grid-cols-[auto_1fr] gap-4">
+          <article class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0">
             <!-- avatar -->
             <div class="w-11 h-11 rounded-full bg-[#F2EDEA] grid place-items-center overflow-hidden">
               <?php if ($g_pic_url): ?>
@@ -391,16 +482,15 @@ if (!function_exists('kgh_fmt_duration')) {
                   <span class="kgh-badge !bg-gray-100"><?php echo esc_html('Languages: ' . $g_lang); ?></span>
                 <?php endif; ?>
                 <?php foreach ($labels as $lab): ?>
-                  <span class="kgh-badge kgh-badge--light !bg-gray-100"><?php echo esc_html($lab); ?></span>
+                  <span class="kgh-badge !bg-gray-100"><?php echo esc_html($lab); ?></span>
                 <?php endforeach; ?>
-              </div>
-
-              <?php if (!empty($g_desc)): ?>
-                <div class="kgh-subtle text-[15px] md:text-base leading-relaxed">
+              </div> 
+            </div>
+            <?php if (!empty($g_desc)): ?>
+                <div class="col-span-2 kgh-subtle text-[15px] md:text-base leading-relaxed">
                   <?php echo esc_html($g_desc); ?>
                 </div>
               <?php endif; ?>
-            </div>
           </article>
 
         <?php endforeach; ?>
@@ -457,32 +547,33 @@ if (!function_exists('kgh_fmt_duration')) {
       </div>
 
       <!-- 3 guarantee blocks -->
-      <div class="rounded-2xl border border-gray-300 bg-white px-5 py-6 md:px-8 md:py-7">
+      <div class="rounded-2xl border border-gray-300 bg-white px-3 py-6 md:py-7">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-y-0 md:divide-x md:divide-gray-200">
-          <!-- Hygiene -->
-          <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-7 h-7 text-[#3B7D3B] mb-2" aria-hidden="true">
-              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
-            </span>
-            <div class="font-semibold text-black">Hygienes Standards</div>
-            <div class="text-sm text-gray-700">All venues inspected</div>
-          </div>
-
           <!-- Photo service -->
           <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-7 h-7 text-[#3B7D3B] mb-2" aria-hidden="true">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <div class="font-semibold text-black">Photo Service</div>
+            <div class="text-sm font-semibold text-black">Photo Service</div>
             <div class="text-sm text-gray-700">Ask your guide to take pictures</div>
           </div>
 
-          <!-- All tastes included -->
+          <!-- Hygiene -->
           <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-7 h-7 text-[#3B7D3B] mb-2" aria-hidden="true">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <div class="font-semibold text-black">All tastes included</div>
+            <div class="text-sm font-semibold text-black">Hygienes Standards</div>
+            <div class="text-sm text-gray-700">All venues inspected</div>
+          </div>
+
+
+          <!-- All tastes included -->
+          <div class="flex flex-col items-center text-center px-2">
+            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
+              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+            </span>
+            <div class="text-sm font-semibold text-black">All tastes included</div>
             <div class="text-sm text-gray-700">Choose what you want to eat</div>
           </div>
         </div>

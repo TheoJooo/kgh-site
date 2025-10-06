@@ -17,10 +17,9 @@
 <?php
   // URLs utiles
   $tours_url = get_post_type_archive_link('tour') ?: home_url('/tours/');
-  // états actifs simples
-  $is_home  = is_front_page();
-  $is_tours = is_post_type_archive('tour') || get_post_type() === 'tour';
+  $blog_url  = get_permalink( get_option('page_for_posts') );
 ?>
+
 
 <!-- Skip link pour accessibilité -->
 <!-- <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-black text-white px-3 py-2 rounded">
@@ -44,25 +43,14 @@
 
       <!-- Desktop nav -->
       <nav class="hidden md:flex items-center gap-10">
-        <a href="<?php echo esc_url( home_url('/') ); ?>"
-          class="inline-flex items-center text-[15px] font-semibold border-b-2
-                  <?php echo $is_home
-                    ? 'text-kgh-red border-kgh-red'
-                    : 'text-gray-900 border-transparent hover:border-kgh-red hover:no-underline'; ?>">
-          Home
-        </a>
-
-        <a href="<?php echo esc_url( $tours_url ); ?>"
-          class="inline-flex items-center text-[15px] font-semibold border-b-2
-                  <?php echo $is_tours
-                    ? 'text-kgh-red border-kgh-red'
-                    : 'text-gray-900 border-transparent hover:border-kgh-red hover:no-underline'; ?>">
-          Our Tours
-        </a>
-
-        <!-- Désactivés (gris, non cliquables) -->
-        <span class="text-[15px] font-semibold text-gray-400 cursor-not-allowed select-none" aria-disabled="true">About Us</span>
-        <span class="text-[15px] font-semibold text-gray-400 cursor-not-allowed select-none" aria-disabled="true">Blog</span>
+        <?php
+        wp_nav_menu([
+          'theme_location' => 'primary',
+          'container'      => false,
+          'menu_class'     => 'menu--desktop flex items-center gap-10',
+          'fallback_cb'    => '__return_empty_string', // rien si non assigné
+        ]);
+        ?>
       </nav>
 
       <!-- CTA + burger -->
@@ -120,17 +108,17 @@
 
       <!-- Links -->
       <nav class="kgh-container">
-        <ul class="flex flex-col items-center gap-8 py-6 text-lg font-semibold">
-          <li><a class="hover:opacity-90" href="<?php echo esc_url(home_url('/')); ?>">Home</a></li>
-          <li><a class="hover:opacity-90" href="<?php echo esc_url($tours_url); ?>">Our Tours</a></li>
-          <li><span class="text-white/50 cursor-not-allowed" aria-disabled="true">About Us</span></li>
-          <li><span class="text-white/50 cursor-not-allowed" aria-disabled="true">Blog</span></li>
-          <li><a class="hover:opacity-90" href="<?php echo esc_url( home_url('/contact/') ); ?>">Contact Us</a></li>
-        </ul>
-
+        <?php
+        wp_nav_menu([
+          'theme_location' => 'primary',
+          'container'      => false,
+          'menu_class'     => 'menu--mobile flex flex-col items-center gap-8 py-6 font-semibold',
+          'fallback_cb'    => '__return_empty_string',
+        ]);
+        ?>
         <div class="px-4 pb-8">
           <a href="<?php echo esc_url($tours_url); ?>"
-             class="block w-full text-center kgh-btn--primary bg-white text-kgh-red hover:brightness-95">
+            class="block w-full text-center kgh-btn--primary bg-white text-kgh-red hover:brightness-95">
             Book a tour
           </a>
         </div>

@@ -177,44 +177,34 @@ get_header(); ?>
                 class="flex gap-6 md:gap-8 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth px-1">
               <?php while ( $q->have_posts() ) : $q->the_post(); ?>
                 <article class="kgh-card">
+
                   <!-- image -->
                   <a href="<?php the_permalink(); ?>" class="block">
-                    <div class="kgh-card-media">
+                    <div class="kgh-card-media relative">
                       <?php if ( has_post_thumbnail() ) {
                         the_post_thumbnail('large', ['class'=>'absolute inset-0 h-full w-full object-cover']);
                       } ?>
 
                       <?php
-                      $area = function_exists('SCF')
-                        ? SCF::get('area_label', get_the_ID())
-                        : get_post_meta(get_the_ID(), 'area_label', true);
+                        $area = function_exists('SCF')
+                          ? SCF::get('area_label', get_the_ID())
+                          : get_post_meta(get_the_ID(), 'area_label', true);
 
-                      /** Always get badges as an array */
-                      if (function_exists('SCF')) {
-                        $badge_raw = (array) SCF::get('badge_tags', get_the_ID());
-                      } else {
-                        // IMPORTANT: third arg = false => return all meta values as array
-                        $badge_raw = (array) get_post_meta(get_the_ID(), 'badge_tags', false);
-                      }
+                        if (function_exists('SCF')) {
+                          $badge_raw = (array) SCF::get('badge_tags', get_the_ID());
+                        } else {
+                          $badge_raw = (array) get_post_meta(get_the_ID(), 'badge_tags', false);
+                        }
 
-                      /** Normalise to [{slug,label}, ...] */
-                      $badges = [];
-                      if (!empty($badge_raw)) {
-                        foreach ($badge_raw as $k => $v) {
-                          if (is_int($k)) {                // ['spicy','traditional']
-                            $slug  = trim((string) $v);
-                            $label = ucwords(str_replace('-', ' ', $slug));
-                          } else {                         // ['spicy' => 'Spicy'] or ['spicy' => 1]
-                            $slug  = trim((string) $k);
-                            $label = (is_string($v) && $v !== '') ? $v : ucwords(str_replace('-', ' ', $slug));
-                          }
-                          if ($slug !== '') {
-                            $badges[] = ['slug' => $slug, 'label' => $label];
+                        $badges = [];
+                        if (!empty($badge_raw)) {
+                          foreach ($badge_raw as $k => $v) {
+                            if (is_int($k)) { $slug = trim((string)$v); $label = ucwords(str_replace('-', ' ', $slug)); }
+                            else { $slug = trim((string)$k); $label = (is_string($v) && $v!=='') ? $v : ucwords(str_replace('-', ' ', $slug)); }
+                            if ($slug !== '') $badges[] = ['slug'=>$slug,'label'=>$label];
                           }
                         }
-                      }
-                      // limit to 3 if you want
-                      $badges = array_slice($badges, 0, 3);
+                        $badges = array_slice($badges, 0, 3);
                       ?>
 
                       <?php if (!empty($area)) : ?>
@@ -240,6 +230,19 @@ get_header(); ?>
                       <?php endif; ?>
                     </div>
                   </a>
+               <?php
+                  // en haut de la boucle, AVANT <article> si tu veux, sinon ici
+                  $tag = function_exists('SCF') ? SCF::get('tag', get_the_ID()) : get_post_meta(get_the_ID(), 'tag', true);
+                  $tag = is_string($tag) ? trim($tag) : '';
+                ?>
+
+
+                  <?php if ($tag !== ''): ?>
+                    <div class="bg-kgh-red w-full text-white text-center font-semibold text-xs flex items-center justify-center py-0.5 absolute top-[172px] sm:top-[184px] lg:top-48">
+                      <?php echo esc_html($tag); ?>
+                    </div>
+                  <?php endif; ?>
+
 
                   <!-- body -->
                   <div class="kgh-card-body">
@@ -247,14 +250,12 @@ get_header(); ?>
                       <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
                     </h3>
                     <?php
-                      // Extrait court contrôlé côté PHP pour que le lien soit toujours visible
                       $raw = get_the_excerpt();
-                      // 22 mots → ajuste à 20–26 selon ta hauteur de carte
-                      $short = wp_trim_words( wp_strip_all_tags( $raw ), 22, '' );
+                      $short = wp_trim_words( wp_strip_all_tags($raw), 22, '' );
                     ?>
                     <p class="kgh-card-ex-inline">
-                      <?php echo esc_html( $short ); ?>&nbsp;
-                      <a href="<?php the_permalink(); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr( get_the_title() . ' – View more' ); ?>">
+                      <?php echo esc_html($short); ?>&nbsp;
+                      <a href="<?php the_permalink(); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr(get_the_title() . ' – View more'); ?>">
                         View more
                       </a>
                     </p>
@@ -262,50 +263,56 @@ get_header(); ?>
 
                   <!-- footer (price + chips) -->
                   <?php
-                  $price_cents   = get_post_meta(get_the_ID(), 'price_usd_cents', true);
-                  $price_cents   = is_numeric($price_cents) ? (int)$price_cents : 0;
-                  $price_dollars = $price_cents > 0 ? number_format($price_cents / 100, 0) : null;
-                  $duration  = function_exists('SCF') ? SCF::get('duration',  get_the_ID()) : get_post_meta(get_the_ID(), 'duration', true);
-                  $capacity  = function_exists('SCF') ? SCF::get('capacity',  get_the_ID()) : get_post_meta(get_the_ID(), 'capacity', true);
-                  $languages = function_exists('SCF') ? SCF::get('languages', get_the_ID()) : get_post_meta(get_the_ID(), 'languages', true);
+                    $price_cents   = get_post_meta(get_the_ID(), 'price_usd_cents', true);
+                    $price_cents   = is_numeric($price_cents) ? (int)$price_cents : 0;
+                    $price_dollars = $price_cents > 0 ? number_format($price_cents / 100, 0) : null;
+                    $duration  = function_exists('SCF') ? SCF::get('duration',  get_the_ID()) : get_post_meta(get_the_ID(), 'duration', true);
+                    $capacity  = function_exists('SCF') ? SCF::get('capacity',  get_the_ID()) : get_post_meta(get_the_ID(), 'capacity', true);
+                    $languages = function_exists('SCF') ? SCF::get('languages', get_the_ID()) : get_post_meta(get_the_ID(), 'languages', true);
                   ?>
                   <div class="kgh-meta kgh-meta-row">
-                    <?php if ($duration): ?>
-                      <span class="kgh-meta-item" title="<?php echo esc_attr($duration); ?>">
-                        <span class="kgh-ico" aria-hidden="true">
-                          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
+                    <?php if (!empty($duration)): ?>
+                      <span class="kgh-meta-item flex items-center gap-1 whitespace-normal h-auto">
+                        <span class="kgh-ico mt-[2px]" aria-hidden="true">
+                          <?php echo kgh_icon('icon-clock'); ?>
                         </span>
-                        <span><?php echo esc_html($duration); ?></span>
+                        <span class="leading-tight">
+                          <?php
+                            // même logique que sur “Our tours” : on autorise juste <br> saisi côté admin
+                            echo wp_kses( wp_specialchars_decode((string)$duration, ENT_QUOTES), ['br'=>[]] );
+                          ?>
+                        </span>
                       </span>
                     <?php endif; ?>
-                    <?php if ($capacity): ?>
-                      <span class="kgh-meta-item" title="<?php echo esc_attr($capacity); ?>">
-                        <span class="kgh-ico" aria-hidden="true">
-                          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-                        </span>
+
+                    <?php if (!empty($capacity)): ?>
+                      <span class="kgh-meta-item">
+                        <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
                         <span><?php echo esc_html($capacity); ?></span>
                       </span>
                     <?php endif; ?>
-                    <?php if ($languages): ?>
+
+                    <?php if (!empty($languages)): ?>
                       <span class="kgh-meta-item" title="<?php echo esc_attr($languages); ?>">
-                        <span class="kgh-ico" aria-hidden="true">
-                          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-globe'); ?></span>
-                        </span>
+                        <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-globe'); ?></span>
                         <span class="truncate max-w-[9rem] sm:max-w-[12rem]"><?php echo esc_html($languages); ?></span>
                       </span>
                     <?php endif; ?>
                   </div>
 
+
                   <div class="kgh-footer">
                     <span class="kgh-price">
-                      <?php echo $price_dollars ? esc_html__('from', 'kgh') . ' $' . esc_html($price_dollars) : esc_html__('Price on request', 'kgh'); ?>
+                      <?php echo $price_dollars ? esc_html__('from','kgh') . ' $' . esc_html($price_dollars) : esc_html__('Price on request','kgh'); ?>
                     </span>
-                    <a href="<?php the_permalink(); ?>" class="kgh-card-cta kgh-btn--tertiary">View Details
-                        <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-right'); ?></span>
+                    <a href="<?php the_permalink(); ?>" class="kgh-card-cta kgh-btn--tertiary">
+                      View Details
+                      <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-right'); ?></span>
                     </a>
                   </div>
 
                 </article>
+
               <?php endwhile; wp_reset_postdata(); ?>
             </div>
 
@@ -488,12 +495,188 @@ get_header(); ?>
     </div>
   </section>
 
+  <!-- TESTIMONIALS -->
+  <section class="bg-white py-12 md:py-20">
+    <div class="kgh-container">
+        <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10">Testimonials</h2>
+
+        <?php
+        // Témoignages (CPT "testimonial")
+        $tq = new WP_Query([
+        'post_type'      => 'testimonial',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
+        'order'          => 'ASC',
+        ]);
+        ?>
+
+        <?php if ($tq->have_posts()): ?>
+        <div class="kgh-testi" data-kgh-testi>
+            <div class="kgh-testi-viewport">
+                <div class="kgh-testi-track">
+                <?php while ($tq->have_posts()): $tq->the_post();
+                    $tid     = get_the_ID();
+                    $author  = get_the_title() ?: 'Anonymous';
+                    $quote   = get_the_content(null, false) ?: '';
+                ?>
+                <?php
+                    $country = function_exists('SCF') ? trim((string) SCF::get('t_author_country', $tid))
+                                                    : trim((string) get_post_meta($tid, 't_author_country', true));
+                    $tour    = function_exists('SCF') ? trim((string) SCF::get('t_tour_name', $tid))
+                                                    : trim((string) get_post_meta($tid, 't_tour_name', true));
+                    $metaInline = trim(implode(' · ', array_filter([$country ? "From $country" : '', $tour])));
+                ?>
+
+                <article class="kgh-testi-card">
+                <div class="kgh-testi-body">
+                    <?php if ($quote): ?>
+                    <p class="kgh-subtle text-sm leading-relaxed"><?php echo esc_html($quote); ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <footer class="kgh-testi-footer">
+                    <div class="min-w-0">
+                        <div class="font-semibold text-sm leading-tight">
+                            <?php echo esc_html($author); ?>
+                            <?php if ($metaInline): ?>
+                                <span class="text-sm font-normal text-gray-700"> · <?php echo esc_html($metaInline); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </footer>
+                </article>
+
+                <?php endwhile; wp_reset_postdata(); ?>
+                </div>
+            </div>
+        </div>
+
+        <?php else: ?>
+        <p class="kgh-subtle">Reviews coming soon.</p>
+        <?php endif; ?>
+    </div>
+  </section>
+
+
+    <!-- WHY KOREAN GOURMET HUNTERS -->
+  <section class="bg-white py-14 md:py-24">
+    <div class="kgh-container">
+      <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10">Why Korean Gourmet Hunters ?</h2>
+
+
+      <?php
+      $home_id = get_the_ID();
+
+      // petit resolver d’image (ID | array | URL)
+      $resolve = function($val){
+        $id=0; $url='';
+        if (is_numeric($val)) { $id=(int)$val; }
+        elseif (is_array($val)) {
+          if (isset($val['id'])) $id=(int)$val['id'];
+          elseif (isset($val[0])) $id=(int)$val[0];
+          elseif (!empty($val['url'])) $url=(string)$val['url'];
+        } elseif (is_string($val) && preg_match('~^https?://~',$val)) {
+          $url=$val;
+        }
+        if ($id)  $url = wp_get_attachment_image_url($id, 'large') ?: $url;
+        return $url;
+      };
+
+      // récupère 4 images éditables
+      $imgs = [];
+      for ($i=1; $i<=4; $i++){
+        $raw = function_exists('SCF')
+          ? SCF::get("image_bloc_$i", $home_id)
+          : get_post_meta($home_id, "image_bloc_$i", true);
+        $imgs[$i] = $resolve($raw);
+      }
+      ?>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <!-- 1 -->
+        <article class="rounded-xl border-2 border-[#F0E9E7] bg-[#F7F2EF] p-5 md:p-7">
+          <div class="grid grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] gap-6 items-start">
+            <div class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-md bg-[#EBE7E4] overflow-hidden">
+              <?php if ($imgs[1]): ?>
+                <img src="<?php echo esc_url($imgs[1]); ?>" alt="" class="w-full h-full object-cover">
+              <?php endif; ?>
+            </div>
+            <div>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2">Korean Wellness</h3>
+              <p class="kgh-subtle text-sm md:text-base">
+                More than only Food: explore Korean medicine, local plants, and ancestral
+                wisdom from our forefathers. Experience the essence of Korean Wellness!
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2 -->
+        <article class="rounded-xl border-2 border-[#F0E9E7] bg-[#F7F2EF] p-5 md:p-7">
+          <div class="grid grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] gap-6 items-start">
+            <div class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-md bg-[#EBE7E4] overflow-hidden">
+              <?php if ($imgs[2]): ?>
+                <img src="<?php echo esc_url($imgs[2]); ?>" alt="" class="w-full h-full object-cover">
+              <?php endif; ?>
+            </div>
+            <div>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2">Working with the best Masters</h3>
+              <p class="kgh-subtle text-sm md:text-base">
+                We work with the best Food Masters of Korea, who kept ancient traditions from our
+                ancestors. Our cooking classes are designed in order to show your the Korean
+                Authentic Crafts.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3 -->
+        <article class="rounded-xl border-2 border-[#F0E9E7] bg-[#F7F2EF] p-5 md:p-7">
+          <div class="grid grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] gap-6 items-start">
+            <div class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-md bg-[#EBE7E4] overflow-hidden">
+              <?php if ($imgs[3]): ?>
+                <img src="<?php echo esc_url($imgs[3]); ?>" alt="" class="w-full h-full object-cover">
+              <?php endif; ?>
+            </div>
+            <div>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2">Traditional Cuisine</h3>
+              <p class="kgh-subtle text-sm md:text-base">
+                See the journey from farm to table. Learn about fermentation processes and become
+                familiar with the heart of Korea’s signature cuisine.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4 -->
+        <article class="rounded-xl border-2 border-[#F0E9E7] bg-[#F7F2EF] p-5 md:p-7">
+          <div class="grid grid-cols-[120px_1fr] md:grid-cols-[140px_1fr] gap-6 items-start">
+            <div class="w-[120px] h-[120px] md:w-[140px] md:h-[140px] rounded-md bg-[#EBE7E4] overflow-hidden">
+              <?php if ($imgs[4]): ?>
+                <img src="<?php echo esc_url($imgs[4]); ?>" alt="" class="w-full h-full object-cover">
+              <?php endif; ?>
+            </div>
+            <div>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2">Our articles</h3>
+              <p class="kgh-subtle text-sm md:text-base">
+                We have decades of expertise in Korean gastronomy. With us, discover stories and
+                insights on traditional and modern Korean food culture!
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+
   <!-- Home • FAQ -->
   <section class="bg-white py-20 md:py-36">
     <div class="kgh-container">
-      <div class="grid md:grid-cols-[auto_1fr_auto] items-start gap-6 md:gap-16">
+      <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-6 md:gap-16">
         <!-- Title -->
-        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14">FAQ:</h2>
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center">FAQ:</h2>
 
         <!-- Accordion -->
         <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">
@@ -567,6 +750,21 @@ get_header(); ?>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- Contact (Home) -->
+  <section id="kgh-contact" class="mt-12 md:mt-16 scroll-mt-24">
+    <?php
+      get_template_part('template-parts/section', 'contact', [
+        'title'    => 'Contact us',
+        'services' => [
+          'Private tour inquiry',
+          'Group booking',
+          'Custom request',
+        ],
+        // 'portrait_id' => 0, // optionnel : fixe un portrait spécifique
+      ]);
+    ?>
   </section>
 
   <script>

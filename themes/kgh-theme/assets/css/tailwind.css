@@ -12,8 +12,8 @@
   .kgh-btn     { @apply inline-block px-5 py-3 rounded-sm transition; }
   .kgh-btn--primary { @apply kgh-btn bg-kgh-red border-2 border-kgh-red text-white hover:brightness-90 hover:no-underline; }
   .kgh-btn--ghost   { @apply kgh-btn border-2 border-current text-center text-kgh-red hover:bg-kgh-red/5 hover:no-underline; }
-  .kgh-btn--tertiary { @apply kgh-btn px-5 py-3 border-2 border-current bg-[#292929] text-sm text-white hover:bg-[#1A1A1A] hover:no-underline}
-  .kgh-btn--quaternary { @apply kgh-btn grid place-items-center px-5 py-3 border-2 border-current border-[#292929] shadow-sm hover:bg-black/5 transition }
+  .kgh-btn--tertiary { @apply kgh-btn px-5 py-3 bg-kgh-sesameDark text-sm text-white hover:bg-[#1A1A1A] hover:no-underline}
+  .kgh-btn--quaternary { @apply kgh-btn grid place-items-center px-5 py-3 border-2 border-current border-kgh-sesameDark shadow-sm hover:bg-black/5 transition }
 
   /* Container */
   .kgh-container { @apply max-w-[1200px] mx-auto px-6 sm:px-8; }
@@ -23,19 +23,28 @@
   .kgh-google-stars { @apply text-yellow-500 text-lg leading-none; }
 
   /* Card Tour */
-  .kgh-card       { @apply w-[320px] sm:w-[340px] lg:w-[360px] shrink-0 snap-start rounded-sm overflow-hidden border-2 border-[#131313] shadow-[4px_2px_4px_rgba(0,0,0,0.25)] bg-white flex flex-col; }
+  .kgh-card       { @apply w-[324px] sm:w-[340px] lg:w-[360px] shrink-0 snap-start rounded-sm overflow-hidden border-2 border-[#131313] shadow-[4px_2px_4px_rgba(0,0,0,0.25)] bg-white flex flex-col; }
   .kgh-card-media { @apply relative aspect-[16/9] bg-gray-100 overflow-hidden; }
 
   /* Badges overlay */
-  .kgh-badge      { @apply inline-flex items-center gap-1 p-1.5 rounded-md text-xs leading-none; }
-  .kgh-badge--light { @apply bg-white/90 text-gray-900 }
-  .kgh-badge--dark  { @apply bg-black/55 text-white backdrop-blur-sm px-2;}
+  .kgh-badge      { @apply inline-flex items-center gap-1 p-1.5 rounded-[3px] text-xs leading-none; }
+  .kgh-badge--light { @apply bg-white/90 text-kgh-grey }
+  .kgh-badge--dark  { @apply bg-kgh-grey/55 text-white backdrop-blur-sm px-2;}
 
   .kgh-badge-ico  { @apply inline-block w-[14px] h-[14px] shrink-0; }
   .kgh-badge-ico svg { @apply w-full h-full; }
 
   .kgh-label-tl   { @apply absolute left-3 top-3; }
   .kgh-label-bl { @apply absolute left-3 bottom-3 flex flex-wrap items-center gap-2; }
+
+  /* Tampon (single) */
+  .kgh-stamp {
+    @apply inline-block px-3 py-1 text-sm font-semibold rounded-sm
+          border-2 border-dashed bg-white text-kgh-red border-kgh-red;
+  }
+
+  .kgh-tagbar { @apply bg-kgh-red text-white font-semibold text-xs md:text-sm leading-none py-2;}
+
 
   /* Zone texte figée : on borne la hauteur et on coupe l'excédent */
   .kgh-card-body  { @apply px-7 pt-7 grow min-h-[142px] max-h-[172px] overflow-hidden; } /* ajuste 164–188px selon ton rendu */
@@ -54,7 +63,7 @@
 
   /* Label avec contour/remplissage gris */
   .kgh-meta-item { @apply inline-flex items-center gap-1 p-2 rounded-md
-                          bg-gray-100 text-xs text-gray-800; }
+                          min-w-[72px] bg-gray-100 text-xs text-gray-800; }
 
   /* Emplacement icône (16px) – tu inséreras ton SVG dedans */
   .kgh-ico       { @apply inline-block w-4 h-4 shrink-0; }
@@ -97,6 +106,24 @@
   .kgh-contact-form textarea.kgh-field{
     min-height:180px;               /* hauteur confortable */
     resize:vertical; 
+  }
+
+  .kgh-pagination ul.page-numbers { @apply flex items-center gap-2; }
+  .kgh-pagination li { @apply list-none; }
+  .kgh-pagination a.page-numbers,
+  .kgh-pagination span.page-numbers {
+    @apply inline-block px-3 py-1 border border-[#CAC8C8] rounded-sm hover:bg-black/5;
+  }
+  .kgh-pagination .current { @apply bg-black/5 border-kgh-sesameDark; }
+
+
+/* Desktop menu look */
+  .menu--desktop .kgh-nav-item > a {
+    @apply text-gray-900 text-[15px] font-semibold border-b-2 border-transparent hover:border-kgh-red hover:no-underline;
+  }
+  .menu--desktop .current-menu-item > a,
+  .menu--desktop .current-menu-ancestor > a {
+    @apply text-kgh-red border-kgh-red;
   }
 
 }

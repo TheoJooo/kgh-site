@@ -23,3 +23,74 @@ body {
   box-shadow: 0 10px 24px rgba(102,30,17,0.22);
   opacity: .96;
 }
+
+/* ===== Testimonials (carousel) ===== */
+.kgh-testi { position: relative; }
+
+.kgh-testi-viewport{
+  position: relative;
+  overflow-x: auto;                 /* scroll horizontal natif */
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  --per: 3;                         /* 3 cartes desktop */
+  --gap: 32px;
+
+  /* masquer la barre mais garder le scroll */
+  scrollbar-width: none;            /* Firefox */
+  -ms-overflow-style: none;         /* IE/Edge */
+}
+.kgh-testi-viewport::-webkit-scrollbar{ display:none; } /* WebKit */
+
+.kgh-testi-track{
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+}
+
+/* Carte = colonne, footer collé en bas */
+.kgh-testi-card{
+  flex: 0 0 calc((100% - (var(--gap) * (var(--per) - 1))) / var(--per));
+  scroll-snap-align: start;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;                /* ajuste si besoin */
+  max-width: 480px;
+  background: #fff;
+  border: 2px solid #F0E9E7;
+  border-radius: 8px;
+  box-shadow: 4px 2px 4px rgba(0,0,0,.05);
+}
+
+/* Corps : prend toute la hauteur dispo → le footer descend */
+.kgh-testi-body{
+  flex: 1 1 auto;
+  padding: 18px 20px 6px;
+}
+.kgh-testi-body p{ margin: 0; }     /* commence en haut, pas d’espace avant */
+
+.kgh-testi-footer{
+  margin-top: auto;                 /* colle le footer en bas */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 20px;
+  border-top: 1px solid #F3EEEC;    /* léger séparateur, optionnel */
+}
+
+/* Tablet: 2 cartes */
+@media (max-width:1024px){
+  .kgh-testi-viewport{ --per: 2; --gap: 28px; }
+}
+
+/* Mobile: 1 carte */
+@media (max-width:640px){
+  .kgh-testi-viewport{ --per: 1; --gap: 20px; }
+}
+
+
+
+/* assets/css/main.css */
+[data-kgh-ts-track] > article { min-height: 260px; }

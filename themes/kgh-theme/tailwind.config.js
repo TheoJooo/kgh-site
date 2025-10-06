@@ -6,8 +6,16 @@ module.exports = {
       colors: {
         kgh: {
           red:  "#7A2E1A",   // Red Clay
-          grey: "#5C5C5C",   // Sesame Grey
-          bg:   "#F5F3F0",   // Porcelain White
+          redclayLight: "#F0E9E7",
+          grey: "#373737",   // Sesame Grey
+          sesameDark: "#292929", 
+          sesameDarker: "#131313",
+          sesameLight: "#EBEBEB",
+          sesameLightActive: "#C1C1C1",
+          sesameLight: "#F7F4F3",
+          bg: "#F5F3F0",   // Porcelain White
+          porcelainWhite: "#FDFAFA",
+          porecelainDark: "#BEBCBC",
           blue: "#284B63",   // (ton Blue si tu l’utilises)
         },
       },
