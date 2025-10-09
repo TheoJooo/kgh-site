@@ -1,22 +1,30 @@
-# Tout ignorer par défaut
+# --- Ignorer tout par défaut ---
 *
 !/.gitignore
 !/README.md
+
+# --- Conserver les dossiers plugins et themes ---
 !/plugins/
 !/themes/
 
-# Garder uniquement ton plugin custom
-/plugins/*
+# =====================
+# =  PLUGIN BOOKING  =
+# =====================
+# Garder uniquement ton plugin custom (booking)
+# (forcer le suivi de tout son contenu)
 !/plugins/kgh-booking/
-/plugins/kgh-booking/*
 !/plugins/kgh-booking/**
+# Ignorer fichiers sensibles éventuels dans le plugin
+/plugins/kgh-booking/**/*.env
+/plugins/kgh-booking/**/*secrets*.json
+/plugins/kgh-booking/**/*.log
 
+# =====================
+# =   THEME PRINCIPAL  =
+# =====================
 # Garder uniquement ton thème custom
-/themes/*
 !/themes/kgh-theme/
-/themes/kgh-theme/*
 !/themes/kgh-theme/**
-
 # Ignorer ce qui ne doit pas être versionné dans le thème
 /themes/kgh-theme/node_modules/
 /themes/kgh-theme/.vscode/
@@ -30,6 +38,9 @@
 !/themes/kgh-theme/assets/css/tailwind.css
 !/themes/kgh-theme/assets/css/app.css
 
+# =====================
+# =   IGNORER AUTRES  =
+# =====================
 # Ignorer uploads et langues (contenu / dépendances)
 uploads/
 languages/
@@ -37,12 +48,14 @@ languages/
 # Ignorer plugins tiers (à réinstaller en prod)
 plugins/polylang/
 plugins/smart-custom-fields/
+plugins/wp-mail-smtp/
+plugins/wpforms-lite/
 
 # Bruit WordPress
 index.php
 plugins/index.php
 themes/index.php
 
-# OS/editor noise
+# OS / Editor noise
 .DS_Store
 *.log
