@@ -83,6 +83,16 @@
   .kgh-fade { @apply pointer-events-none hidden transition-opacity duration-200; }
   @screen md { .kgh-fade { display:block; } } /* visible seulement ≥ md, comme avant */
 
+  .kgh-testi-viewport { @apply overflow-x-visible; }
+
+  /* Grille responsive : 1→N colonnes, jamais trop étroit */
+  .kgh-testi-track { display:flex; gap:24px; }
+  .kgh-testi-card  { flex:0 0 360px; } /* largeur fixe de chaque carte */
+
+  .kgh-testi-card   { @apply h-full rounded-sm border-2 border-[#CAC8C8] bg-white; }
+  .kgh-testi-body   { @apply p-5; }
+  .kgh-testi-footer { @apply border-t border-[#E7E2DE] px-5 py-3; }
+
   /* Contact form */
   .kgh-label{
     display:block;
@@ -116,8 +126,26 @@
   }
   .kgh-pagination .current { @apply bg-black/5 border-kgh-sesameDark; }
 
+  /* Alignements WP (classic + Gutenberg) dans le contenu */
+  .prose .alignleft   { float:left;  margin: .5rem 1rem .5rem 0; }
+  .prose .alignright  { float:right; margin: .5rem 0 .5rem 1rem; }
+  .prose .aligncenter { display:block; margin-left:auto; margin-right:auto; clear:both; }
 
-/* Desktop menu look */
+  /* Alignements de texte Gutenberg */
+  .prose .has-text-align-center { text-align:center; }
+  .prose .has-text-align-right  { text-align:right;  }
+  .prose .has-text-align-left   { text-align:left;   }
+
+  /* Optionnel : les images centrées ne doivent pas dépasser */
+  .prose img { max-width:100%; height:auto; }
+
+  /* Petit confort mobile : annuler les floats sous md si tu veux */
+  @media (max-width: 767px) {
+    .prose .alignleft,
+    .prose .alignright { float:none; margin: .5rem auto; display:block; }
+  }
+
+  /* Desktop menu look */
   .menu--desktop .kgh-nav-item > a {
     @apply text-gray-900 text-[15px] font-semibold border-b-2 border-transparent hover:border-kgh-red hover:no-underline;
   }

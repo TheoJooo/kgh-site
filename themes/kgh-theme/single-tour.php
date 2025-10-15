@@ -55,6 +55,9 @@ if (!function_exists('kgh_fmt_duration')) {
 ?>
 
 <main class="kgh-container md:px-44 py-10 md:py-16">
+  <div id="kgh-booking-root"
+      data-tour-id="<?php echo (int) $tour_id; ?>"
+      hidden></div>
   <!-- Back to Our Tours -->
   <nav class="mb-5 md:mb-6">
     <a href="<?php echo esc_url($archive_url); ?>" class="inline-flex items-center gap-2 text-sm hover:opacity-80">

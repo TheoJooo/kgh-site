@@ -227,7 +227,9 @@ get_header();
                 <article class="kgh-testi-card">
                 <div class="kgh-testi-body">
                     <?php if ($quote): ?>
-                    <p class="kgh-subtle text-sm leading-relaxed"><?php echo esc_html($quote); ?></p>
+                    <div class="prose max-w-none prose-p:my-2 text-sm">
+                      <?php echo wpautop( wp_kses_post( $quote ) ); ?>
+                    </div>
                     <?php endif; ?>
                 </div>
 

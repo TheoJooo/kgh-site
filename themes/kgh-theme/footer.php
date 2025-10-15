@@ -56,7 +56,7 @@
           <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
             <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($privacy_url); ?>">Privacy Policy</a></li>
             <li class="text-kgh-grey">Terms &amp; Conditions</li>
-            <li class="text-kgh-grey">Cookie Policy</li>
+            <!-- <li class="text-kgh-grey">Cookie Policy</li> -->
             <!-- <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($terms_url); ?>">Terms &amp; Conditions</a></li>
             <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($cookies_url); ?>">Cookie Policy</a></li> -->
             <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($contact_url); ?>">Contact</a></li>

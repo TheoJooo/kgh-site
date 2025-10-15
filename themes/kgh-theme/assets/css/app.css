@@ -1104,6 +1104,47 @@ video {
 
 /* visible seulement ≥ md, comme avant */
 
+.kgh-testi-viewport {
+  overflow-x: visible;
+}
+
+/* Grille responsive : 1→N colonnes, jamais trop étroit */
+
+.kgh-testi-track {
+  display:flex;
+  gap:24px;
+}
+
+.kgh-testi-card  {
+  flex:0 0 360px;
+}
+
+/* largeur fixe de chaque carte */
+
+.kgh-testi-card {
+  height: 100%;
+  border-radius: 0.125rem;
+  border-width: 2px;
+  --tw-border-opacity: 1;
+  border-color: rgb(202 200 200 / var(--tw-border-opacity, 1));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+
+.kgh-testi-body {
+  padding: 1.25rem;
+}
+
+.kgh-testi-footer {
+  border-top-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(231 226 222 / var(--tw-border-opacity, 1));
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
 /* Contact form */
 
 .kgh-label{
@@ -1165,6 +1206,57 @@ video {
   --tw-border-opacity: 1;
   border-color: rgb(41 41 41 / var(--tw-border-opacity, 1));
   background-color: rgb(0 0 0 / 0.05);
+}
+
+/* Alignements WP (classic + Gutenberg) dans le contenu */
+
+.prose .alignleft   {
+  float:left;
+  margin: .5rem 1rem .5rem 0;
+}
+
+.prose .alignright  {
+  float:right;
+  margin: .5rem 0 .5rem 1rem;
+}
+
+.prose .aligncenter {
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+  clear:both;
+}
+
+/* Alignements de texte Gutenberg */
+
+.prose .has-text-align-center {
+  text-align:center;
+}
+
+.prose .has-text-align-right  {
+  text-align:right;
+}
+
+.prose .has-text-align-left   {
+  text-align:left;
+}
+
+/* Optionnel : les images centrées ne doivent pas dépasser */
+
+.prose img {
+  max-width:100%;
+  height:auto;
+}
+
+/* Petit confort mobile : annuler les floats sous md si tu veux */
+
+@media (max-width: 767px) {
+  .prose .alignleft,
+    .prose .alignright {
+    float:none;
+    margin: .5rem auto;
+    display:block;
+  }
 }
 
 /* Desktop menu look */
@@ -1236,11 +1328,6 @@ video {
   inset: 0px;
 }
 
-.inset-x-0 {
-  left: 0px;
-  right: 0px;
-}
-
 .inset-y-0 {
   top: 0px;
   bottom: 0px;
@@ -1252,10 +1339,6 @@ video {
 
 .-right-14 {
   right: -3.5rem;
-}
-
-.bottom-0 {
-  bottom: 0px;
 }
 
 .left-0 {
@@ -1405,10 +1488,6 @@ video {
 
 .mt-\[2px\] {
   margin-top: 2px;
-}
-
-.-mt-\[2px\] {
-  margin-top: -2px;
 }
 
 .line-clamp-3 {
@@ -2132,6 +2211,11 @@ video {
   padding-right: 1.5rem;
 }
 
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+}
+
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
@@ -2192,11 +2276,6 @@ video {
   padding-bottom: 2rem;
 }
 
-.py-0\.5 {
-  padding-top: 0.125rem;
-  padding-bottom: 0.125rem;
-}
-
 .pb-32 {
   padding-bottom: 8rem;
 }
@@ -2223,10 +2302,6 @@ video {
 
 .pr-2 {
   padding-right: 0.5rem;
-}
-
-.pr-3 {
-  padding-right: 0.75rem;
 }
 
 .pr-7 {
