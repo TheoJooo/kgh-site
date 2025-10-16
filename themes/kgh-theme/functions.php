@@ -4,7 +4,7 @@
  */
 
 if (!defined('KGH_VERSION')) {
-  define('KGH_VERSION', '0.1.0');
+  define('KGH_VERSION', '0.1.1');
 }
 
 if (!defined('KGH_DIR')) {
@@ -19,10 +19,6 @@ if (!defined('KGH_URI')) {
  * Enqueue styles & scripts
  */
 function kgh_enqueue_assets() {
-  if (is_admin()) {
-    // Admin clickability guard for Tours editor: do not load front assets in dashboard
-    return;
-  }
   // Google Fonts
   wp_enqueue_style(
     'kgh-google-fonts',
@@ -61,6 +57,14 @@ function kgh_enqueue_assets() {
     [],
     KGH_VERSION,
     true
+  );
+
+  // assets/css/app.css (généré par Tailwind)
+  wp_enqueue_style(
+    'kgh-app',
+    KGH_URI . '/assets/css/app.css',
+    ['kgh-style'],
+    KGH_VERSION
   );
 
   wp_localize_script('kgh-main-js', 'KGHBooking', [
@@ -261,26 +265,6 @@ function kgh_checkout_noindex() {
 }
 add_action('wp_head', 'kgh_checkout_noindex', 1);
 
-// Private tour block helper / shortcode
-function kgh_private_tour_block() {
-  ob_start(); ?>
-  <section class="kgh-private-tour" aria-label="<?php esc_attr_e('Private tour', 'kgh-booking'); ?>">
-    <div class="kgh-private-tour__inner">
-      <h2 class="kgh-private-tour__title"><?php esc_html_e('Private Tour', 'kgh-booking'); ?></h2>
-      <p class="kgh-private-tour__subtitle"><?php esc_html_e('Looking for a tailor-made experience for your group?', 'kgh-booking'); ?></p>
-      <ul class="kgh-private-tour__points">
-        <li><?php esc_html_e('Flexible schedules and custom menus', 'kgh-booking'); ?></li>
-        <li><?php esc_html_e('Dedicated guide and concierge support', 'kgh-booking'); ?></li>
-        <li><?php esc_html_e('Perfect for families, teams, and special occasions', 'kgh-booking'); ?></li>
-      </ul>
-      <a class="kgh-button-primary" href="<?php echo esc_url( home_url('/contact/') ); ?>"><?php esc_html_e('Contact us for private tours', 'kgh-booking'); ?></a>
-    </div>
-  </section>
-  <?php
-  return ob_get_clean();
-}
-add_shortcode('kgh_private_tour', 'kgh_private_tour_block');
-
 // === Checkout page shortcode: [kgh_checkout] ===
 add_shortcode('kgh_checkout', function(){
   $tour  = isset($_GET['kgh_tour']) ? intval($_GET['kgh_tour']) : ( isset($_GET['tour']) ? intval($_GET['tour']) : 0 );
@@ -417,3 +401,429 @@ add_shortcode('kgh_checkout', function(){
   </script>
   <?php return ob_get_clean();
 });
+
+
+// === Disable Gutenberg editors (classic editing) ===
+add_filter('use_block_editor_for_post', '__return_false', 10); // posts + pages
+add_filter('use_widgets_block_editor', '__return_false');      // widget editor
+
+// === CPT "tour" (fallback quand les plugins sont désactivés) ===
+add_action('init', function () {
+  // Si un plugin (ex: kgh-booking) a déjà enregistré "tour", on ne fait rien.
+  if ( post_type_exists('tour') ) return;
+
+  register_post_type('tour', [
+    'label'         => 'Tours',
+    'labels'        => [
+      'name'               => 'Tours',
+      'singular_name'      => 'Tour',
+      'add_new'            => 'Add New',
+      'add_new_item'       => 'Add New Tour',
+      'edit_item'          => 'Edit Tour',
+      'new_item'           => 'New Tour',
+      'view_item'          => 'View Tour',
+      'search_items'       => 'Search Tours',
+      'not_found'          => 'No tours found',
+      'not_found_in_trash' => 'No tours found in Trash',
+    ],
+    'public'        => true,
+    'has_archive'   => 'tours',          // archive à /tours/
+    'rewrite'       => ['slug' => 'tours'],
+    'menu_position' => 5,
+    'menu_icon'     => 'dashicons-location-alt',
+    'supports'      => ['title','editor','excerpt','thumbnail'],
+    'show_in_rest'  => false,            // Classic editor (on a désactivé Gutenberg)
+    'supports' => ['title','excerpt','thumbnail'], // pas 'editor'
+  ]);
+});
+
+
+// Inline un SVG depuis /assets/icons/*.svg
+function kgh_icon($name){
+  $path = get_theme_file_path('assets/icons/' . $name . '.svg');
+  if (!file_exists($path)) return '';
+  $svg = file_get_contents($path);
+  // (optionnel) mini-sécurité : enlève les scripts éventuels
+  $svg = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $svg);
+  return $svg;
+};
+
+// Désactiver l'éditeur (zone Add Media / Visual / Text) UNIQUEMENT pour la page avec le template "page-home.php"
+add_action('load-post.php', 'kgh_disable_home_editor');
+add_action('load-post-new.php', 'kgh_disable_home_editor');
+
+function kgh_disable_home_editor() {
+  $screen = get_current_screen();
+  if (!$screen || $screen->post_type !== 'page') return;
+
+  // ID de la page en édition
+  $post_id = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+  if (!$post_id) return;
+
+  // Si la page utilise bien le template Home → on retire l'éditeur
+  if (get_page_template_slug($post_id) === 'page-home.php') {
+    // 1) Retire le support "editor" pour le type "page" sur CET écran
+    remove_post_type_support('page', 'editor');
+
+    // 2) Par sécurité, retire la metabox classic editor si déjà ajoutée
+    add_action('admin_menu', function () {
+      remove_meta_box('postdivrich', 'page', 'normal');
+    }, 999);
+  }
+}
+
+
+/**
+ * Resolve an SCF image (ID | array | URL) into url + srcset.
+ */
+function kgh_resolve_image($value, $size_url = 'large', $size_set = 'full') {
+  $id = 0; $url = ''; $set = '';
+
+  if (is_numeric($value)) {
+    $id  = (int) $value;
+  } elseif (is_array($value)) {
+    // SCF can return an array; try common keys or first element
+    if (isset($value['id']))        $id = (int) $value['id'];
+    elseif (isset($value[0]))       $id = (int) $value[0];
+    elseif (isset($value['url']))   $url = (string) $value['url'];
+  } elseif (is_string($value) && preg_match('~^https?://~', $value)) {
+    $url = $value;
+  }
+
+  if ($id) {
+    $url = wp_get_attachment_image_url($id, $size_url) ?: $url;
+    $set = wp_get_attachment_image_srcset($id, $size_set) ?: '';
+  }
+
+  return ['id'=>$id, 'url'=>$url, 'srcset'=>$set];
+}
+
+/**
+ * Return desktop & mobile hero sources for the given page.
+ * Fields: home_hero_desktop, home_hero_mobile (SCF). Fallback: featured image, then theme sample.
+ */
+function kgh_get_home_hero_sources($post_id) {
+  $desk_val = function_exists('SCF') ? SCF::get('home_hero_desktop', $post_id) : 0;
+  $mob_val  = function_exists('SCF') ? SCF::get('home_hero_mobile',  $post_id) : 0;
+
+  // fallbacks
+  $feat_id = get_post_thumbnail_id($post_id);
+  if (!$desk_val) $desk_val = $feat_id ?: 0;
+  if (!$mob_val)  $mob_val  = $feat_id ?: 0;
+
+  $desk = kgh_resolve_image($desk_val);
+  $mob  = kgh_resolve_image($mob_val);
+  return [$desk, $mob];
+}
+
+
+// Badges sur l'image des cartes
+function kgh_badge_icon($slug) {
+  switch ($slug) {
+    case 'spicy':        return kgh_icon('icon-zap');        // ⚡️ à remplacer par ton SVG
+    case 'traditional':  return kgh_icon('icon-trad');       // remplace par ton SVG
+    case 'night':        return kgh_icon('icon-moon');       // remplace par ton SVG
+    default:             return '';                          // aucun icône
+  }
+}
+
+
+// === CPT "guide" ===
+add_action('init', function () {
+  if ( post_type_exists('guide') ) return;
+
+  register_post_type('guide', [
+    'label'         => 'Guides',
+    'labels'        => [
+      'name'          => 'Guides',
+      'singular_name' => 'Guide',
+      'add_new_item'  => 'Add New Guide',
+      'edit_item'     => 'Edit Guide',
+      'view_item'     => 'View Guide',
+      'search_items'  => 'Search Guides',
+    ],
+    'public'        => true,
+    'has_archive'   => 'guides',
+    'rewrite'       => ['slug' => 'guides'],
+    'menu_position' => 6,
+    'menu_icon'     => 'dashicons-book-alt',
+    'show_in_rest'  => false, // laisse false si tu restes en Classic Editor
+    'supports'      => ['title','excerpt','thumbnail','page-attributes'],
+  ]);
+});
+
+
+// === CPT "testimonial" ===
+add_action('init', function () {
+  if ( post_type_exists('testimonial') ) return;
+
+  register_post_type('testimonial', [
+    'label'         => 'Testimonials',
+    'labels'        => [
+      'name'          => 'Testimonials',
+      'singular_name' => 'Testimonial',
+      'add_new_item'  => 'Add New Testimonial',
+      'edit_item'     => 'Edit Testimonial',
+      'view_item'     => 'View Testimonial',
+      'search_items'  => 'Search Testimonials',
+    ],
+    'public'        => true,
+    'has_archive'   => false,
+    'rewrite'       => ['slug' => 'testimonials'],
+    'menu_position' => 7,
+    'menu_icon'     => 'dashicons-format-quote',
+    'show_in_rest'  => false, // classic editor
+    'supports'      => ['title','editor','thumbnail','page-attributes','excerpt'],
+  ]);
+});
+
+
+// [kgh_testimonials count="6"]
+add_shortcode('kgh_testimonials', function($atts){
+  $atts = shortcode_atts([
+    'count' => 6,        // nombre max à afficher
+  ], $atts, 'kgh_testimonials');
+
+  $q = new WP_Query([
+    'post_type'      => 'testimonial',
+    'post_status'    => 'publish',
+    'posts_per_page' => intval($atts['count']),
+    'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
+    'order'          => 'ASC',
+  ]);
+
+  ob_start(); ?>
+
+  <section class="kgh-container my-10 md:my-16">
+    <h2 class="font-serif text-3xl md:text-4xl text-black mb-6">Testimonials</h2>
+
+    <?php if ($q->have_posts()): ?>
+      <div class="relative">
+        <!-- Flèche gauche -->
+        <button type="button"
+                class="hidden md:flex absolute -left-14 top-1/2 -translate-y-1/2 h-14 w-14 items-center justify-center border-2 border-kgh-grey rounded-sm hover:bg-kgh-redclayLight"
+                data-kgh-ts-prev aria-label="Previous">
+          <span class="text-2xl">‹</span>
+        </button>
+
+        <!-- Piste scrollable -->
+        <div class="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pr-2"
+             data-kgh-ts-track>
+          <?php while ($q->have_posts()): $q->the_post();
+            $country = function_exists('SCF') ? trim((string) SCF::get('t_author_country')) : '';
+            $tour    = function_exists('SCF') ? trim((string) SCF::get('t_tour_name'))    : '';
+            $name    = get_the_title();
+            $text    = get_the_excerpt();
+            if (!$text) $text = wp_trim_words( wp_strip_all_tags( get_the_content() ), 55 );
+
+            // avatar: image à la une si dispo
+            $avatar = has_post_thumbnail()
+              ? get_the_post_thumbnail(null, 'thumbnail', ['class'=>'h-9 w-9 rounded-full object-cover'])
+              : '';
+          ?>
+            <article class="min-w-[320px] md:min-w-[420px] grow snap-start rounded-sm border-2 border-[#CAC8C8] bg-white p-6">
+              <p class="text-[15px] leading-relaxed text-gray-800 mb-6"><?php echo esc_html($text); ?></p>
+
+              <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-full overflow-hidden bg-kgh-porcelain grid place-items-center border border-kgh-red">
+                  <?php
+                    if ($avatar) {
+                      echo $avatar;
+                    } else {
+                      echo function_exists('kgh_icon') ? kgh_icon('user') : '👤';
+                    }
+                  ?>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-black"><?php echo esc_html($name); ?></div>
+                  <div class="text-sm text-gray-600">
+                    <?php
+                      $bits = [];
+                      if ($country !== '') $bits[] = esc_html($country);
+                      if ($tour !== '')    $bits[] = esc_html($tour);
+                      echo implode(' · ', $bits);
+                    ?>
+                  </div>
+                </div>
+              </div>
+            </article>
+          <?php endwhile; wp_reset_postdata(); ?>
+        </div>
+
+        <!-- Flèche droite -->
+        <button type="button"
+                class="hidden md:flex absolute -right-14 top-1/2 -translate-y-1/2 h-14 w-14 items-center justify-center border-2 border-kgh-grey rounded-sm hover:bg-kgh-redclayLight"
+                data-kgh-ts-next aria-label="Next">
+          <span class="text-2xl">›</span>
+        </button>
+      </div>
+    <?php else: ?>
+      <p class="kgh-subtle">No testimonials yet.</p>
+    <?php endif; ?>
+  </section>
+
+  <script>
+  // mini carrousel au scroll horizontal
+  document.addEventListener('DOMContentLoaded', () => {
+    const track = document.querySelector('[data-kgh-ts-track]');
+    if (!track) return;
+    const prev = document.querySelector('[data-kgh-ts-prev]');
+    const next = document.querySelector('[data-kgh-ts-next]');
+    const card = track.querySelector('article');
+    const step = card ? (card.getBoundingClientRect().width + 24) : 380; // 24 ≈ gap
+
+    function scrollBy(dx){ track.scrollBy({left: dx, behavior:'smooth'}); }
+    prev && prev.addEventListener('click', () => scrollBy(-step));
+    next && next.addEventListener('click', () => scrollBy(step));
+  });
+  </script>
+
+  <?php return ob_get_clean();
+});
+
+
+
+
+// [kgh_contact title="Contact us" portrait_id="123" services="Private tour,Cooking class"]
+add_shortcode('kgh_contact', function($atts){
+  $atts = shortcode_atts([
+    'title'       => 'Contact us',
+    'portrait_id' => '',
+    'services'    => '', // CSV
+  ], $atts, 'kgh_contact');
+
+  $args = [
+    'title'       => $atts['title'],
+    'portrait_id' => $atts['portrait_id'] ? (int) $atts['portrait_id'] : 0,
+  ];
+  if ($atts['services'] !== '') {
+    $args['services'] = array_map('trim', explode(',', $atts['services']));
+  }
+
+  ob_start();
+  get_template_part('template-parts/section', 'contact', $args);
+  return ob_get_clean();
+});
+
+
+// Register Footer & Header menu
+add_action('after_setup_theme', function () {
+  register_nav_menus([
+    'primary' => __('Header Menu', 'kgh'),
+    'footer'  => __('Footer Menu', 'kgh'),
+  ]);
+});
+
+// 2) Classes <li> générées par WP (pour hooker Tailwind plus facilement)
+add_filter('nav_menu_css_class', function($classes, $item, $args) {
+  if (isset($args->theme_location) && $args->theme_location === 'primary') {
+    // on garde les classes WP (current-menu-item, current-menu-ancestor, etc.)
+    $classes[] = 'kgh-nav-item';
+  }
+  return $classes;
+}, 10, 3);
+
+// 3) Classes <a> : base + hover + bordure, et état actif via .current-menu-*
+add_filter('nav_menu_link_attributes', function($atts, $item, $args) {
+  if (isset($args->theme_location) && $args->theme_location === 'primary') {
+    // classes communes desktop et mobile; desktop aura un conteneur différent
+    $base = 'inline-flex items-center font-semibold hover:no-underline';
+    // on laisse la couleur/underline gérées par CSS utilitaire ci-dessous
+    $atts['class'] = isset($atts['class']) ? $atts['class'] . ' ' . $base : $base;
+  }
+  return $atts;
+}, 10, 3);
+
+
+// 16:9 net pour vignettes/articles blog
+add_action('after_setup_theme', function () {
+  add_image_size('kgh-post', 1200, 675, true); 
+});
+
+// 120×120 dur recadré pour la liste
+add_action('after_setup_theme', function () {
+  add_image_size('kgh-post-thumb', 120, 120, true);
+});
+
+// Helper vignettes pour la liste d’articles
+function kgh_post_list_thumb($post_id = 0){
+  $post_id = $post_id ?: get_the_ID();
+
+  if (has_post_thumbnail($post_id)) {
+    return get_the_post_thumbnail(
+      $post_id,
+      'kgh-post-thumb',
+      ['class'=>'w-full h-full object-cover','loading'=>'lazy','alt'=>esc_attr(get_the_title($post_id))]
+    );
+  }
+  $html = get_post_field('post_content', $post_id);
+  if ($html && preg_match('/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i', $html, $m)) {
+    $src = esc_url($m[1]);
+    return '<img src="'.$src.'" alt="'.esc_attr(get_the_title($post_id)).'" class="w-full h-full object-cover" loading="lazy">';
+  }
+  return '<div class="w-full h-full bg-gray-100 grid place-items-center text-xs text-gray-500">No image</div>';
+}
+
+
+
+// Handle contact form (logged-in + visitors)
+add_action('admin_post_kgh_contact_send',    'kgh_handle_contact_form');
+add_action('admin_post_nopriv_kgh_contact_send', 'kgh_handle_contact_form');
+
+function kgh_handle_contact_form(){
+  // CSRF
+  if ( ! isset($_POST['kgh_contact_nonce']) || ! wp_verify_nonce($_POST['kgh_contact_nonce'], 'kgh_contact_send') ) {
+    return kgh_contact_redirect(0);
+  }
+  
+  $bcc = 'yunamisogo@gmail.com';
+
+  // Anti-bot: le champ doit rester vide
+  if ( ! empty($_POST['website']) ) {
+    return kgh_contact_redirect(0);
+  }
+
+  // Collecte + nettoyage
+  $name    = isset($_POST['name'])    ? trim( wp_strip_all_tags($_POST['name']) )   : '';
+  $email   = isset($_POST['email'])   ? sanitize_email($_POST['email'])             : '';
+  $service = isset($_POST['service']) ? sanitize_text_field($_POST['service'])      : '';
+  $message = isset($_POST['message']) ? trim( wp_kses_post($_POST['message']) )     : '';
+
+  if ($name==='' || !is_email($email) || $message==='') {
+    return kgh_contact_redirect(0);
+  }
+
+  // Destinataire principal
+  $to = 'info@koreangourmethunters.com';
+
+  // Sujet + contenu
+  $site   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+  $subj   = "[{$site}] New contact request";
+  $serv_l = $service ? "Service: {$service}\n" : '';
+
+  $body_text = "New message from {$site}\n\n"
+             . "Name: {$name}\n"
+             . "Email: {$email}\n"
+             . $serv_l
+             . "Message:\n{$message}\n";
+
+  // Headers (plain text) + Reply-To = l’expéditeur
+  $headers = [];
+  $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+  $headers[] = 'Reply-To: '. $name .' <'. $email .'>';
+  $headers[] = 'Bcc: ' . $bcc;
+
+
+  $sent = wp_mail($to, $subj, $body_text, $headers);
+
+  return kgh_contact_redirect( $sent ? 1 : 0 );
+}
+
+function kgh_contact_redirect($ok){
+  $redirect = isset($_POST['redirect_to']) ? esc_url_raw($_POST['redirect_to']) : home_url('/');
+  // Nettoie l’URL et ajoute le flag
+  $redirect = remove_query_arg(['sent'], $redirect);
+  $redirect = add_query_arg(['sent' => $ok ? '1' : '0'], $redirect);
+  wp_safe_redirect($redirect);
+  exit;
+}
