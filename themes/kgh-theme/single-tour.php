@@ -10,7 +10,8 @@ $tour_id = get_the_ID();
 get_header();
 
 /** —————————————————— Feature flag réservation —————————————————— */
-$booking_enabled = (bool) apply_filters('kgh_booking_enabled', true);
+// $booking_enabled = (bool) apply_filters('kgh_booking_enabled', true);
+$booking_enabled = false; 
 
 /** —————————————————— Strings UI (réservation) —————————————————— */
 $ui_strings = [
@@ -29,7 +30,7 @@ $ui_strings = [
 
 <?php
 // archive URL
-$archive_url = get_post_type_archive_link('tours') ?: home_url('/tours/');
+$archive_url = get_post_type_archive_link('tour') ?: home_url('/tours/');
 
 // SCF metas (déjà utilisées ailleurs)
 $tour_id   = get_the_ID();

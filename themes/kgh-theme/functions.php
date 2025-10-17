@@ -59,12 +59,15 @@ function kgh_enqueue_assets() {
     KGH_VERSION
   );
 
-  wp_enqueue_style(
-    'kgh-booking-ui',
-    KGH_URI . '/assets/css/booking.css',
-    ['kgh-main', 'flatpickr'],
-    KGH_VERSION
-  );
+  // assets/css/booking.css (UNIQUEMENT si booking activé)
+  if (apply_filters('kgh_booking_enabled', false)) {
+    wp_enqueue_style(
+      'kgh-booking-ui',
+      KGH_URI . '/assets/css/booking.css',
+      ['kgh-main', 'flatpickr'],
+      KGH_VERSION
+    );
+  }
 
   // assets/js/main.js
   wp_enqueue_script(
@@ -476,6 +479,17 @@ add_action('init', function () {
   ]);
 });
 
+add_filter('register_post_type_args', function($args, $post_type){
+  if ($post_type === 'tour') {
+    $args['public']             = true;
+    $args['publicly_queryable'] = true;
+    $args['has_archive']        = 'tours'; // true marche aussi, mais autant figer le slug
+    $args['rewrite']            = ['slug' => 'tours', 'with_front' => false];
+    $args['query_var']          = true;
+  }
+  return $args;
+}, 20, 2);
+
 
 // Inline un SVG depuis /assets/icons/*.svg
 function kgh_icon($name){
@@ -869,9 +883,12 @@ function kgh_contact_redirect($ok){
 
 
 
-//KHG BOOKING ENABLED
-add_filter('kgh_booking_enabled', '__return_true');
-
+// --- Booking feature flag (ON en local, OFF en prod) ---
+add_filter('kgh_booking_enabled', function ($on) {
+  $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+  $is_local = (defined('WP_DEBUG') && WP_DEBUG) || str_contains($host, 'localhost') || str_contains($host, '.local');
+  return $is_local; // local => true, prod => false
+}, 10, 1);
 
 add_action('rest_api_init', function () {
   register_rest_route('kgh/v1', '/paypal/debug', [
