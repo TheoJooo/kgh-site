@@ -19,6 +19,7 @@ if (!defined('KGH_URI')) {
  * Enqueue styles & scripts
  */
 function kgh_enqueue_assets() {
+
   // Google Fonts
   wp_enqueue_style(
     'kgh-google-fonts',
@@ -35,6 +36,21 @@ function kgh_enqueue_assets() {
     KGH_VERSION
   );
 
+  // === Flatpickr (pour le calendrier) ===
+  wp_enqueue_style(
+    'flatpickr',
+    'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+    [],
+    '4.6.13'
+  );
+  wp_enqueue_script(
+    'flatpickr',
+    'https://cdn.jsdelivr.net/npm/flatpickr',
+    [],
+    '4.6.13',
+    true
+  );
+
   // assets/css/main.css
   wp_enqueue_style(
     'kgh-main',
@@ -46,7 +62,7 @@ function kgh_enqueue_assets() {
   wp_enqueue_style(
     'kgh-booking-ui',
     KGH_URI . '/assets/css/booking.css',
-    ['kgh-main'],
+    ['kgh-main', 'flatpickr'],
     KGH_VERSION
   );
 
@@ -123,56 +139,79 @@ add_shortcode('kgh_checkout_success', function () {
     </div>
   </div>
   <script>
-  (function(){
-    const orderId = <?php echo wp_json_encode( $order_id ); ?>;
-    const strings = <?php echo wp_json_encode( $strings ); ?>;
-    const alertBox = document.getElementById('kgh-succ-alert');
-    const recap = document.getElementById('kgh-succ-recap');
-    const titleEl = document.getElementById('kgh-succ-title');
-    const whenEl = document.getElementById('kgh-succ-when');
-    const guestsEl = document.getElementById('kgh-succ-guests');
-    const totalEl = document.getElementById('kgh-succ-total');
+    (function(){
+      const orderId = <?php echo wp_json_encode( $order_id ); ?>;
+      const strings = <?php echo wp_json_encode( $strings ); ?>;
+      const alertBox = document.getElementById('kgh-succ-alert');
+      const recap = document.getElementById('kgh-succ-recap');
+      const titleEl = document.getElementById('kgh-succ-title');
+      const whenEl = document.getElementById('kgh-succ-when');
+      const guestsEl = document.getElementById('kgh-succ-guests');
+      const totalEl = document.getElementById('kgh-succ-total');
 
-    function formatTime(iso){
-      const match = iso && iso.match(/T(\d{2}):(\d{2}):/);
-      if (!match) return iso || '';
-      let h = parseInt(match[1], 10);
-      const minutes = match[2];
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = ((h + 11) % 12) + 1;
-      return `${h}:${minutes} ${ampm} KST`;
-    }
-
-    function dollars(cents){
-      return '$' + ((cents || 0) / 100).toFixed(2);
-    }
-
-    async function poll(){
-      if(!orderId){
-        alertBox.innerHTML = `<div class="notice notice-error"><p>${strings.missingOrder}</p></div>`;
-        return;
-      }
-      for(let i=0;i<5;i++){
+      if (orderId) {
         try {
-          const resp = await fetch(`/wp-json/kgh/v1/paypal/status?order_id=${encodeURIComponent(orderId)}`);
-          const data = await resp.json().catch(()=>({status:'not_found'}));
-          if (data.status === 'paid') {
-            alertBox.style.display = 'none';
-            recap.style.display = 'block';
-            titleEl.textContent = data.tour_title || strings.bookingTitle;
-            whenEl.textContent = data.slot_start_iso ? `${data.slot_start_iso.substring(0,10)} · ${formatTime(data.slot_start_iso)}` : '';
-            guestsEl.textContent = `${strings.guests} ${data.qty || 1}`;
-            totalEl.textContent = `${strings.total} ${dollars(data.amount_usd)}`;
-            return;
-          }
+          await fetch('/wp-json/kgh/v1/paypal/capture', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ order_id: orderId })
+          });
         } catch(e){}
-        await new Promise(r => setTimeout(r, 2000));
       }
-      alertBox.innerHTML = `<div class="notice notice-warning"><p>${strings.stillProcessing}</p></div>`;
-    }
-    poll();
-  })();
+      function formatTime(iso){
+        const m = iso && iso.match(/T(\d{2}):(\d{2}):/);
+        if (!m) return iso || '';
+        let h = parseInt(m[1], 10);
+        const minutes = m[2];
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = ((h + 11) % 12) + 1;
+        return `${h}:${minutes} ${ampm} KST`;
+      }
+      function dollars(cents){ return '$' + ((cents || 0) / 100).toFixed(2); }
+
+      // Backoff exponentiel: 0s, 3s, 6s, 12s, 24s (5 requêtes max)
+      const waits = [0, 3000, 6000, 12000, 24000];
+
+      async function fetchStatus(){
+        const resp = await fetch(`/wp-json/kgh/v1/paypal/status?order_id=${encodeURIComponent(orderId)}`, { cache: 'no-store' });
+        return resp.json().catch(()=>({status:'not_found'}));
+      }
+
+      function showPaid(data, label='Paid'){
+        alertBox.style.display = 'none';
+        recap.style.display = 'block';
+        titleEl.textContent = data.tour_title || strings.bookingTitle;
+        if (data.slot_start_iso) whenEl.textContent = `${data.slot_start_iso.substring(0,10)} · ${formatTime(data.slot_start_iso)}`;
+        if (data.qty)  guestsEl.textContent = `${strings.guests} ${data.qty}`;
+        if (data.amount_usd != null) totalEl.textContent = `${strings.total} ${dollars(data.amount_usd)}`;
+        const sEl = document.getElementById('kgh-succ-status');
+        if (sEl) sEl.textContent = label;
+      }
+
+      async function run(){
+        if(!orderId){
+          alertBox.innerHTML = `<div class="notice notice-error"><p>${strings.missingOrder}</p></div>`;
+          return;
+        }
+
+        for (let i=0;i<waits.length;i++){
+          if (waits[i]) await new Promise(r=>setTimeout(r, waits[i]));
+          try {
+            const data = await fetchStatus();
+            const s = String(data.status || '').toLowerCase();
+            const isPaid = (s==='paid'||s==='completed'||s==='captured'||s==='succeeded'
+                            || data.paypal_status==='COMPLETED' || data.order_status==='COMPLETED');
+            if (isPaid) { showPaid(data, s==='approved' ? 'Approved' : 'Paid'); return; }
+          } catch(_) { /* retry */ }
+        }
+
+        alertBox.innerHTML = `<div class="notice notice-warning"><p>${strings.stillProcessing}</p></div>`;
+      }
+
+      run();
+    })();
   </script>
+
   <?php return ob_get_clean();
 });
 
@@ -794,7 +833,7 @@ function kgh_handle_contact_form(){
   }
 
   // Destinataire principal
-  $to = 'info@koreangourmethunters.com';
+  $to = 'yunamisogo@gmail.com';
 
   // Sujet + contenu
   $site   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
@@ -827,3 +866,47 @@ function kgh_contact_redirect($ok){
   wp_safe_redirect($redirect);
   exit;
 }
+
+
+
+//KHG BOOKING ENABLED
+add_filter('kgh_booking_enabled', '__return_true');
+
+
+add_action('rest_api_init', function () {
+  register_rest_route('kgh/v1', '/paypal/debug', [
+    'methods'  => 'GET',
+    'permission_callback' => '__return_true',
+    'callback' => function(WP_REST_Request $req){
+      $order = sanitize_text_field($req->get_param('order_id'));
+      if (!$order) return new WP_REST_Response(['error'=>'no order_id'], 400);
+
+      // Récupère tes creds (adapte à ton plugin: options, constants, etc.)
+      $cid = get_option('kgh_pp_client_id');     // à ajuster
+      $sec = get_option('kgh_pp_client_secret'); // à ajuster
+      $base = 'https://api-m.sandbox.paypal.com';
+
+      // 1) token OAuth
+      $ch = curl_init("$base/v1/oauth2/token");
+      curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => 'grant_type=client_credentials',
+        CURLOPT_USERPWD => $cid.':'.$sec,
+        CURLOPT_RETURNTRANSFER => true,
+      ]);
+      $tok = json_decode(curl_exec($ch), true);
+      curl_close($ch);
+      if (empty($tok['access_token'])) return new WP_REST_Response(['error'=>'oauth_failed','raw'=>$tok], 500);
+
+      $hdr = ['Authorization: Bearer '.$tok['access_token'],'Content-Type: application/json'];
+
+      // 2) GET order
+      $ch = curl_init("$base/v2/checkout/orders/$order");
+      curl_setopt_array($ch, [CURLOPT_HTTPHEADER=>$hdr, CURLOPT_RETURNTRANSFER=>true]);
+      $get = json_decode(curl_exec($ch), true);
+      curl_close($ch);
+
+      return new WP_REST_Response(['paypal_order'=>$get], 200);
+    }
+  ]);
+});

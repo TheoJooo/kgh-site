@@ -348,7 +348,7 @@ get_header();
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Tours run rain or shine; severe weather may reschedule. We'll contact you early with options or refunds.
+              Tours run rain or shine! Don't forget your umbrella and enjoy Korea's rainy mood!
             </div>
           </div>
 
@@ -363,7 +363,7 @@ get_header();
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Yes—private or custom routes available. Tell us interests, budget, and timing; we'll craft a tailored itinerary.
+              Yes—private or custom routes available. Tell us interests, budget, and timing, we'll craft a tailored itinerary.
             </div>
           </div>
 

@@ -10,7 +10,7 @@ $tour_id = get_the_ID();
 get_header();
 
 /** —————————————————— Feature flag réservation —————————————————— */
-$booking_enabled = (bool) apply_filters('kgh_booking_enabled', false);
+$booking_enabled = (bool) apply_filters('kgh_booking_enabled', true);
 
 /** —————————————————— Strings UI (réservation) —————————————————— */
 $ui_strings = [
@@ -583,6 +583,46 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
       </div>
     </div>
   </section>
+
+
+  <?php if ($booking_enabled): ?>
+  <section class="mt-8 md:mt-10 rounded-lg bg-white p-6 md:p-8">
+    <h3 class="text-lg font-semibold text-black mb-4">Check availability</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <!-- <label class="block">
+        <span class="block text-sm mb-1">Date</span>
+          <select id="kgh-date" class="kgh-input w-full"></select>
+          <input id="kgh-date" type="date" class="kgh-input w-full">
+      </label> -->
+      <label class="block">
+        <span class="block text-sm mb-1">Date</span>
+        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
+      </label>
+
+      <label class="block">
+        <span class="block text-sm mb-1">Time</span>
+        <select id="kgh-time" class="kgh-input w-full"></select>
+      </label>
+
+      <label class="block">
+        <span class="block text-sm mb-1">Guests</span>
+        <select id="kgh-guests" class="kgh-input w-full">
+          <option value="1">1</option>
+        </select>
+      </label>
+
+      <button id="kgh-cta" class="kgh-btn--primary">Reserve</button>
+    </div>
+
+    <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
+      No availability for this date
+    </p>
+    <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
+  </section>
+  <?php endif; ?>
+
+
   <!-- Contact section -->
   <section id="kgh-contact" class="mt-12 md:mt-16 scroll-mt-24">
     <?php
@@ -600,24 +640,6 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
   </section>
 
 </main>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -644,6 +666,8 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
 
   let slots = [];
   let selectedSlot = null;
+
+  let fpDate = null;
 
   function setDisabled(el, disabled) {
     if (!el) return;
@@ -693,48 +717,74 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
       const res = await fetch(`/wp-json/kgh/v1/availability?tour=${tourId}&days=90`, { headers: { Accept: 'application/json' } });
       if (!res.ok) throw new Error('http');
       const data = await res.json();
-      const apiDates = Array.isArray(data.dates) ? data.dates : [];
-      let dateOpts = apiDates.map(d => ({ value: d, label: d, disabled: false }));
 
+      const apiDates = Array.isArray(data.dates) ? data.dates : [];
+      let dateOpts = apiDates.map(d => ({ value: d, disabled: false }));
+
+      // On garde ta logique d’injection (cutoff aujourd’hui + preDate)
       dateOpts = await maybeInjectDate(todayKST(), dateOpts);
       dateOpts = await maybeInjectDate(preDate, dateOpts);
 
-      if (!dateOpts.length) {
-        elDate.innerHTML = `<option value="">${messages.noAvailability}</option>`;
-        setDisabled(elDate, true);
+      // Séparation des dates activées/désactivées
+      const enabled = dateOpts.filter(o => !o.disabled).map(o => o.value);
+      const disabled = dateOpts.filter(o =>  o.disabled).map(d => d.value);
+
+      if (!enabled.length && !disabled.length) {
+        document.getElementById('kgh-date').value = messages.noAvailability;
         setDisabled(elTime, true);
         setDisabled(elGuests, true);
+        setDisabled(elCTA, true);
         elNo.style.display = 'block';
         return;
       }
 
-      renderDateOptions(dateOpts);
-      let target = preDate && dateOpts.some(o => o.value === preDate) ? preDate : null;
-      if (!target) {
-        const firstOpen = dateOpts.find(o => !o.disabled);
-        target = firstOpen ? firstOpen.value : dateOpts[0].value;
+      // Date cible par défaut
+      let target = preDate && enabled.includes(preDate) ? preDate : (enabled[0] || null);
+
+      // (Ré)initialiser Flatpickr
+      if (fpDate) fpDate.destroy();
+      fpDate = flatpickr('#kgh-date', {
+        dateFormat: 'Y-m-d',
+        defaultDate: target || undefined,
+        enable: enabled.length ? enabled : undefined,
+        disable: disabled.map(d => ({ from: d, to: d })),
+        disableMobile: true,              // 👈 important pour garder le skin
+        onChange(selectedDates, dateStr) {
+          if (dateStr) loadSlotsForDate(dateStr);
+        }
+      });
+
+      // Charger les créneaux de la date par défaut
+      if (target) {
+        await loadSlotsForDate(target);
+      } else {
+        // tout est désactivé => bloquer
+        setDisabled(elTime, true);
+        setDisabled(elGuests, true);
+        setDisabled(elCTA, true);
+        elNo.style.display = 'block';
       }
-      elDate.value = target;
-      await loadSlotsForDate(target);
+
     } catch (e) {
-      elDate.innerHTML = `<option value="">${messages.networkError}</option>`;
+      document.getElementById('kgh-date').value = messages.networkError;
     }
   }
 
-  function renderDateOptions(opts) {
-    elDate.innerHTML = '';
-    opts.sort((a,b) => a.value.localeCompare(b.value));
-    opts.forEach(o => {
-      const opt = document.createElement('option');
-      opt.value = o.value;
-      opt.textContent = o.label;
-      if (o.disabled) {
-        opt.disabled = true;
-        opt.setAttribute('aria-disabled', 'true');
-      }
-      elDate.appendChild(opt);
-    });
-  }
+
+  // function renderDateOptions(opts) {
+  //   elDate.innerHTML = '';
+  //   opts.sort((a,b) => a.value.localeCompare(b.value));
+  //   opts.forEach(o => {
+  //     const opt = document.createElement('option');
+  //     opt.value = o.value;
+  //     opt.textContent = o.label;
+  //     if (o.disabled) {
+  //       opt.disabled = true;
+  //       opt.setAttribute('aria-disabled', 'true');
+  //     }
+  //     elDate.appendChild(opt);
+  //   });
+  // }
 
   async function maybeInjectDate(ymd, opts) {
     if (!ymd || opts.some(o => o.value === ymd)) return opts;
@@ -838,9 +888,9 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
     return `${y}-${m}-${d}`;
   }
 
-  elDate.addEventListener('change', () => {
-    if (elDate.value) { loadSlotsForDate(elDate.value); }
-  });
+  // elDate.addEventListener('change', () => {
+  //   if (elDate.value) { loadSlotsForDate(elDate.value); }
+  // });
   elTime.addEventListener('change', onTimeChange);
   elCTA.addEventListener('click', async () => {
     if (!selectedSlot) return;
