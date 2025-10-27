@@ -512,7 +512,8 @@ get_header(); ?>
         ?>
 
         <?php if ($tq->have_posts()): ?>
-        <div class="kgh-testi" data-kgh-testi>
+        <div class="kgh-testi-wrap">
+          <div class="kgh-testi" data-kgh-testi>
             <div class="kgh-testi-viewport">
                 <div class="kgh-testi-track">
                 <?php while ($tq->have_posts()): $tq->the_post();
@@ -552,6 +553,11 @@ get_header(); ?>
                 <?php endwhile; wp_reset_postdata(); ?>
                 </div>
             </div>
+          </div>
+          <div class="kgh-testi-controls">
+            <button type="button" class="kgh-carousel-btn kgh-ts-prev" data-kgh-ts-prev aria-label="Previous">‹</button>
+            <button type="button" class="kgh-carousel-btn kgh-ts-next" data-kgh-ts-next aria-label="Next">›</button>
+          </div>
         </div>
 
         <?php else: ?>

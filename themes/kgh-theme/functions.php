@@ -482,6 +482,31 @@ add_action('init', function () {
   ]);
 });
 
+// Init buttons for testimonial sliders (home/about)
+add_action('wp_footer', function(){ ?>
+<script>
+(function(){
+  const wraps = document.querySelectorAll('.kgh-testi-wrap');
+  wraps.forEach(wrap => {
+    const vp = wrap.querySelector('.kgh-testi-viewport');
+    const track = wrap.querySelector('.kgh-testi-track');
+    const prev = wrap.querySelector('[data-kgh-ts-prev]');
+    const next = wrap.querySelector('[data-kgh-ts-next]');
+    if (!vp || !track) return;
+    function cardStep(){ const first = track.children[0]; if(!first) return 360; const rect = first.getBoundingClientRect(); const gap = parseInt(getComputedStyle(track).gap||'0',10)||0; return Math.round(rect.width + gap); }
+    function scrollByCards(n){ vp.scrollBy({ left: n*cardStep(), behavior: 'smooth' }); }
+    function setDisabled(btn, disabled){ if(!btn) return; btn.disabled=!!disabled; btn.setAttribute('aria-disabled', disabled?'true':'false'); }
+    function update(){ const max=Math.max(0, vp.scrollWidth - vp.clientWidth - 1); const atStart = vp.scrollLeft <= 1; const atEnd = vp.scrollLeft >= max; setDisabled(prev, atStart); setDisabled(next, atEnd); }
+    if (prev) prev.addEventListener('click', ()=>scrollByCards(-1));
+    if (next) next.addEventListener('click', ()=>scrollByCards(+1));
+    vp.addEventListener('scroll', update, {passive:true});
+    window.addEventListener('resize', ()=>requestAnimationFrame(update));
+    requestAnimationFrame(update);
+  });
+})();
+</script>
+<?php });
+
 add_filter('register_post_type_args', function($args, $post_type){
   if ($post_type === 'tour') {
     $args['public']             = true;

@@ -80,6 +80,11 @@ body {
   border-top: 1px solid #F3EEEC;    /* léger séparateur, optionnel */
 }
 
+/* Buttons for testimonial sliders (no Tailwind utilities) */
+.kgh-testi-wrap { position: relative; }
+.kgh-testi-controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+.kgh-testi-wrap .kgh-carousel-btn { position: static; transform: none; }
+
 /* Tablet: 2 cartes */
 @media (max-width:1024px){
   .kgh-testi-viewport{ --per: 2; --gap: 28px; }
@@ -121,3 +126,20 @@ body {
 @media (min-width: 1024px) {
   .kgh-container { max-width: 1320px; padding-left: 2rem; padding-right: 2rem; }
 }
+
+/* --- Simple lightbox --- */
+.kgh-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.kgh-lightbox.open { display: flex; }
+.kgh-lightbox img { max-width: 90vw; max-height: 90vh; border: 2px solid #fff; border-radius: 6px; box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+.kgh-lightbox-prev, .kgh-lightbox-next, .kgh-lightbox-close { position: absolute; background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; font-size: 28px; line-height: 1; width: 40px; height: 40px; display: grid; place-items: center; }
+.kgh-lightbox-prev { left: 16px; }
+.kgh-lightbox-next { right: 16px; }
+.kgh-lightbox-close{ top: 16px; right: 16px; font-size: 30px; width: 44px; height: 44px; }
+.kgh-lightbox-cap { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; color: #fff; opacity: .9; font-size: 14px; padding: 4px 10px; }
+.kgh-hero-clickable { cursor: zoom-in; }
+.kgh-gal-more { position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.45); color:#fff; font-weight:700; font-size: 18px; letter-spacing:.2px; }
+
+/* Gallery grid below hero */
+.kgh-gal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+.kgh-gal-thumb { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #fff; border: 1px solid #131313; border-radius: 4px; padding: 0; }
+.kgh-gal-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }

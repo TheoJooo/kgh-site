@@ -73,7 +73,7 @@ if (!function_exists('kgh_fmt_duration')) {
 }
 ?>
 
-<main class="kgh-container px-6 py-10 md:py-16 lg:px-10">
+<main class="kgh-container px-6 py-5 md:pb-5 lg:px-10">
   <!-- Two-column layout wrapper (desktop) -->
   <div class="kgh-tour-layout">
     <div class="kgh-tour-main">
@@ -87,14 +87,14 @@ if (!function_exists('kgh_fmt_duration')) {
         </a>
       </nav>
 
-      <!-- Image 16:9 -->
-      <figure class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] bg-white">
-        <?php if (has_post_thumbnail()): ?>
-          <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
-        <?php else: ?>
-          <div class="absolute inset-0 grid place-items-center text-gray-500">No image yet</div>
-        <?php endif; ?>
-      </figure>
+  <!-- Image 16:9 -->
+  <figure id="kgh-hero-figure" class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] bg-white">
+    <?php if (has_post_thumbnail()): ?>
+      <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
+    <?php else: ?>
+      <div class="absolute inset-0 grid place-items-center text-gray-500">No image yet</div>
+    <?php endif; ?>
+  </figure>
 
       <?php
       $tag = function_exists('SCF') ? SCF::get('tag', $tour_id) : get_post_meta($tour_id, 'tag', true);
@@ -193,6 +193,46 @@ if (!function_exists('kgh_fmt_duration')) {
         </div>
       </section>
 
+      <?php
+      // Optional gallery images (SCF repeatable image or meta list of IDs)
+      $gallery_raw = function_exists('SCF') ? SCF::get('gallery_images', $tour_id) : get_post_meta($tour_id, 'gallery_images', false);
+      $gallery_ids = [];
+      if (is_array($gallery_raw)) {
+        foreach ($gallery_raw as $g) {
+          if (is_numeric($g)) { $gallery_ids[] = (int)$g; }
+          elseif (is_array($g) && isset($g['id'])) { $gallery_ids[] = (int)$g['id']; }
+          elseif (is_array($g) && isset($g[0]) && is_numeric($g[0])) { $gallery_ids[] = (int)$g[0]; }
+        }
+      } elseif (is_numeric($gallery_raw)) {
+        $gallery_ids[] = (int)$gallery_raw;
+      }
+      $gallery_urls = [];
+      foreach (array_values(array_unique($gallery_ids)) as $aid) {
+        $url_large = wp_get_attachment_image_url($aid, 'large');
+        $url_thumb = wp_get_attachment_image_url($aid, 'thumbnail');
+        if ($url_large) { $gallery_urls[] = ['large'=>$url_large, 'thumb'=>$url_thumb ?: $url_large]; }
+      }
+      ?>
+      <?php if (!empty($gallery_urls)): ?>
+        <?php $count_gal = count($gallery_urls); $show_more = ($count_gal > 4); ?>
+        <div class="kgh-gal-grid">
+          <?php
+            $max = $show_more ? 3 : min(4, $count_gal);
+            for ($i=0; $i<$max; $i++): $row = $gallery_urls[$i];
+          ?>
+            <button type="button" class="kgh-gal-thumb" data-kgh-gal-index="<?php echo (int)$i; ?>">
+              <img src="<?php echo esc_url($row['thumb']); ?>" alt="">
+            </button>
+          <?php endfor; ?>
+          <?php if ($show_more): $row = $gallery_urls[3]; $more = $count_gal - 3; ?>
+            <button type="button" class="kgh-gal-thumb" data-kgh-gal-index="3">
+              <img src="<?php echo esc_url($row['thumb']); ?>" alt="">
+              <span class="kgh-gal-more">+<?php echo (int)$more; ?> more</span>
+            </button>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+
       <!-- Advantages / Guarantees -->
       <section class="mt-8 md:mt-10">
         <div class="rounded-lg bg-white px-6 py-6 md:py-8">
@@ -228,19 +268,9 @@ if (!function_exists('kgh_fmt_duration')) {
           </ul>
         </div>
       </section>
+          
 
-
-      <?php
-      // --- DEBUG : à retirer après
-      echo "\n<!-- POST id=" . get_the_ID() . " title=" . get_the_title() . " -->\n";
-
-      if (function_exists('SCF')) {
-        $all = SCF::gets($tour_id);                // toutes les metas SCF du post
-        echo "\n<!-- SCF keys: " . implode(',', array_keys((array)$all)) . " -->\n";
-        echo "\n<!-- SCF discover_items raw: " . print_r(SCF::get('discover_items', $tour_id), true) . " -->\n";
-      }
-      echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'discover_items', true), true) . " -->\n";
-      ?>
+      
 
 
         <?php
@@ -704,6 +734,40 @@ if (!function_exists('kgh_fmt_duration')) {
   </section>
 
 </main>
+
+<?php if (!empty($gallery_urls)): ?>
+<!-- Lightweight lightbox for tour gallery -->
+  <div id="kgh-lightbox" class="kgh-lightbox" hidden>
+    <button type="button" class="kgh-lightbox-close" aria-label="Close">×</button>
+    <button type="button" class="kgh-lightbox-prev" aria-label="Previous">‹</button>
+    <img id="kgh-lightbox-img" src="" alt="">
+    <button type="button" class="kgh-lightbox-next" aria-label="Next">›</button>
+    <script>
+      (function(){
+        const gal = <?php echo wp_json_encode($gallery_urls); ?>;
+        if (!Array.isArray(gal) || gal.length===0) return;
+        const box = document.getElementById('kgh-lightbox');
+        const img = document.getElementById('kgh-lightbox-img');
+        const btnPrev = box.querySelector('.kgh-lightbox-prev');
+        const btnNext = box.querySelector('.kgh-lightbox-next');
+        const btnClose= box.querySelector('.kgh-lightbox-close');
+        const hero = document.getElementById('kgh-hero-figure');
+        let cur = 0;
+        function show(i){ cur = (i+gal.length)%gal.length; img.src = gal[cur].large; box.hidden=false; box.classList.add('open'); document.body.style.overflow='hidden'; }
+        function close(){ box.classList.remove('open'); box.hidden=true; img.src=''; document.body.style.overflow=''; }
+        document.querySelectorAll('.kgh-gal-thumb').forEach(btn=>{
+          btn.addEventListener('click', ()=>{ const idx=parseInt(btn.getAttribute('data-kgh-gal-index')||'0',10)||0; show(idx); });
+        });
+        if (hero) { hero.classList.add('kgh-hero-clickable'); hero.addEventListener('click', ()=>show(0)); }
+        btnPrev.addEventListener('click', ()=>show(cur-1));
+        btnNext.addEventListener('click', ()=>show(cur+1));
+        btnClose.addEventListener('click', close);
+        box.addEventListener('click', (e)=>{ if(e.target===box) close(); });
+        window.addEventListener('keydown', (e)=>{ if(box.hidden) return; if(e.key==='Escape') close(); if(e.key==='ArrowLeft') show(cur-1); if(e.key==='ArrowRight') show(cur+1); });
+      })();
+    </script>
+  </div>
+<?php endif; ?>
 
 
 
