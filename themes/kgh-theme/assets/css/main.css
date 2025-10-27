@@ -97,3 +97,27 @@ body {
 
 /* --- Availability section helpers (override Tailwind preflight if needed) --- */
 .kgh-separator { display:block; width:100%; border:0 !important; border-top:2px solid #131313 !important; margin:16px 0 !important; }
+
+/* --- Two-column layout for tour page (desktop) --- */
+.kgh-tour-layout { display: block; }
+.kgh-tour-main { min-width: 0; }
+.kgh-tour-aside {margin-top: 2rem;}
+@media (min-width: 1024px) { /* lg */
+  .kgh-tour-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 362px;
+    gap: 40px;
+    align-items: start;
+  }
+  .kgh-tour-aside {
+    position: sticky;
+    top: 96px; /* offset below header; adjust if needed */
+    align-self: start;
+    min-width: 362px;
+  }
+}
+
+/* Widen main container on desktop for better 2-col readability */
+@media (min-width: 1024px) {
+  .kgh-container { max-width: 1320px; padding-left: 2rem; padding-right: 2rem; }
+}

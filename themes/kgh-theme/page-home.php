@@ -12,7 +12,7 @@ get_header(); ?>
           <h1 class="kgh-h1 my-8">Chasing the Korea’s</br>Authentic Flavors!</h1>
           <p class="kgh-subtle mb-8 max-w-[36ch] md:max-w-none mx-auto md:mx-0">Your journey into Korean food and</br>gastronomic culture starts here!</p>
           <div class="flex flex-wrap items-center gap-3 justify-center md:justify-start">
-            <a href="<?php echo esc_url( home_url('/contact/') ); ?>" class="kgh-btn--primary hover:no-underline">Book a tour</a>
+            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--primary hover:no-underline">Book a tour</a>
             <a href="<?php echo esc_url( home_url('/contact/') ); ?>" class="kgh-btn--ghost hover:no-underline">Contact Us</a>
           </div>
           <div class="kgh-google-review justify-center md:justify-start">

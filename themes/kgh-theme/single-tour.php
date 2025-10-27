@@ -73,604 +73,618 @@ if (!function_exists('kgh_fmt_duration')) {
 }
 ?>
 
-<main class="kgh-container md:px-44 py-10 md:py-16">
-  <div id="kgh-booking-root"
+<main class="kgh-container px-6 py-10 md:py-16 lg:px-10">
+  <!-- Two-column layout wrapper (desktop) -->
+  <div class="kgh-tour-layout">
+    <div class="kgh-tour-main">
+      <div id="kgh-booking-root"
       data-tour-id="<?php echo (int) $tour_id; ?>"
       hidden></div>
-  <!-- Back to Our Tours -->
-  <nav class="mb-5 md:mb-6">
-    <a href="<?php echo esc_url($archive_url); ?>" class="inline-flex items-center gap-2 text-sm hover:opacity-80">
-      <span aria-hidden="true">←</span><span>Back to Our Tours</span>
-    </a>
-  </nav>
+      <!-- Back to Our Tours -->
+      <nav class="mb-5 md:mb-6">
+        <a href="<?php echo esc_url($archive_url); ?>" class="inline-flex items-center gap-2 text-sm hover:opacity-80">
+          <span aria-hidden="true">←</span><span>Back to Our Tours</span>
+        </a>
+      </nav>
 
-  <!-- Image 16:9 -->
-  <figure class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] bg-white">
-    <?php if (has_post_thumbnail()): ?>
-      <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
-    <?php else: ?>
-      <div class="absolute inset-0 grid place-items-center text-gray-500">No image yet</div>
-    <?php endif; ?>
-  </figure>
-
-  <?php
-  $tag = function_exists('SCF') ? SCF::get('tag', $tour_id) : get_post_meta($tour_id, 'tag', true);
-  $tag = is_string($tag) ? trim($tag) : '';
-  ?>
-  <header class="mt-8 md:mt-10 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4">
-    <h1 class="kgh-h1"><?php the_title(); ?></h1>
-    <?php if ($tag !== ''): ?>
-      <div class="kgh-stamp self-start md:self-auto"><?php echo esc_html($tag); ?></div>
-    <?php endif; ?>
-  </header>
-
-  <?php
-  // --- SCF same as home ---
-  $area = function_exists('SCF')
-    ? SCF::get('area_label', $tour_id)
-    : get_post_meta($tour_id, 'area_label', true);
-
-  /** Always get badges as an array (same normalisation as home) */
-  if (function_exists('SCF')) {
-    $badge_raw = (array) SCF::get('badge_tags', $tour_id);
-  } else {
-    // IMPORTANT: third arg = false => array of all values
-    $badge_raw = (array) get_post_meta($tour_id, 'badge_tags', false);
-  }
-  $badges = [];
-  if (!empty($badge_raw)) {
-    foreach ($badge_raw as $k => $v) {
-      if (is_int($k)) {                // ['spicy','traditional']
-        $slug  = trim((string) $v);
-        $label = ucwords(str_replace('-', ' ', $slug));
-      } else {                         // ['spicy' => 'Spicy'] or ['spicy' => 1]
-        $slug  = trim((string) $k);
-        $label = (is_string($v) && $v !== '') ? $v : ucwords(str_replace('-', ' ', $slug));
-      }
-      if ($slug !== '') $badges[] = ['slug'=>$slug,'label'=>$label];
-    }
-  }
-  // limit like home if needed
-  $badges = array_slice($badges, 0, 3);
-  ?>
-
-  <!-- ROW: area + badges (exact same look as cards) -->
-  <div class="mt-3 flex flex-wrap items-center gap-2">
-    <?php if (!empty($area)) : ?>
-      <span class="kgh-badge kgh-badge--light border border-kgh-grey">
-        <span class="kgh-badge-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
-        <span><?php echo esc_html($area); ?></span>
-      </span>
-    <?php endif; ?>
-
-    <?php if (!empty($badges)) : ?>
-      <?php foreach ($badges as $it): ?>
-        <span class="kgh-badge kgh-badge--dark !bg-kgh-grey border-2 border-kgh-grey ">
-          <?php $ico = function_exists('kgh_badge_icon') ? kgh_badge_icon($it['slug']) : ''; ?>
-          <?php if ($ico): ?>
-            <span class="kgh-badge-ico" aria-hidden="true"><?php echo $ico; ?></span>
-          <?php endif; ?>
-          <span><?php echo esc_html($it['label']); ?></span>
-        </span>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
-
-  <!-- Subtitle (SCF) -->
-  <?php if (!empty($subtitle)): ?>
-    <p class="mt-6 kgh-subtle">
-      <?php echo esc_html($subtitle); ?>
-    </p>
-  <?php endif; ?>
-
-  <!-- Méta (icônes via kgh_icon(), pas d’emoji) -->
-  <section class="mt-6">
-    <div class="flex flex-wrap gap-2">
-      
-      <?php if (!empty($duration)): ?> 
-        <span class="kgh-meta-item" title="<?php echo esc_attr($duration); ?>">
-          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
-          <span><?php echo esc_html(kgh_fmt_duration($duration)); ?></span>
-        </span>
-      <?php endif; ?>
-
-      <?php if (!empty($capacity)): ?>
-        <span class="kgh-meta-item" title="<?php echo esc_attr($capacity); ?>">
-          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-          <span><?php echo esc_html__('Max', 'kgh'); ?> <?php echo esc_html($capacity); ?></span>
-        </span>
-      <?php endif; ?>
-
-      <?php if (!empty($languages)): ?>
-        <span class="kgh-meta-item" title="<?php echo esc_attr($languages); ?>">
-          <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-globe'); ?></span>
-          <span class="truncate max-w-[9rem] sm:max-w-[12rem]"><?php echo esc_html($languages); ?></span>
-        </span>
-      <?php endif; ?>
-    </div>
-  </section>
-
-  <?php if (!$booking_enabled || !$has_price): ?>
-  <!-- CTA: Contact us to book -->
-  <div class="flex flex-col mt-6 max-w-[400px]">
-    <div class="flex flex-row items-center">
-      <span class="mr-4">to book this tour :</span>
-      <a href="#kgh-contact" class="kgh-btn--primary text-center">
-        Contact us
-      </a>
-    </div>
-  </div>
-  <?php endif; ?>
-
-  <?php if ($booking_enabled && $has_price): ?>
-  <section class="mt-8 md:mt-10 rounded-lg bg-white p-6 md:p-8">
-    <?php
-      // Optional SCF note displayed under the availability controls
-      $avail_note = function_exists('SCF')
-        ? SCF::get('availability_note', $tour_id)
-        : get_post_meta($tour_id, 'availability_note', true);
-      $avail_note = is_string($avail_note) ? trim($avail_note) : '';
-    ?>
-
-    <?php if ($from_price_cents > 0): ?>
-      <p class="text-base text-black">from <strong><?php echo '$'.number_format($from_price_cents/100, 2); ?></strong> per person</p>
-    <?php endif; ?>
-    <?php if ($avail_note !== ''): ?>
-      <p class="mt-1 text-base text-gray-700"><?php echo esc_html($avail_note); ?></p>
-    <?php endif; ?>
-    <hr class="kgh-separator">
-
-    <!-- Date -->
-    <label class="block mb-4">
-      <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
-        <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-calendar'); ?></span>
-        <span>Date</span>
-      </div>
-      <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
-    </label>
-
-    <!-- Time -->
-    <label class="block mb-4">
-      <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
-        <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
-        <span>Starting Time</span>
-      </div>
-      <select id="kgh-time" class="kgh-input w-full"></select>
-    </label>
-
-    <!-- Guests -->
-    <label class="block mb-4">
-      <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
-        <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-        <span>Guests</span>
-      </div>
-      <select id="kgh-guests" class="kgh-input w-full">
-        <option value="1">1</option>
-      </select>
-    </label>
-
-    <hr class="kgh-separator">
-    <div class="flex items-center justify-between text-base mb-2">
-      <span>Summary</span>
-      <span id="kgh-summary"></span>
-    </div>
-    <hr class="kgh-separator" style="margin-top:8px;margin-bottom:8px">
-    <div class="flex items-center justify-between text-base font-semibold text-black mb-4">
-      <span>Total amount</span>
-      <span id="kgh-total">$0.00</span>
-    </div>
-
-    <button id="kgh-cta" class="kgh-btn--primary w-full">Book this tour</button>
-
-    <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
-      No availability for this date
-    </p>
-    <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
-  </section>
-  <?php endif; ?>
-
-  <!-- Advantages / Guarantees -->
-  <section class="mt-8 md:mt-10">
-    <div class="rounded-lg bg-white px-6 py-6 md:py-8">
-      <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-8 items-center text-center">
-        <!-- 1 -->
-        <li class="flex flex-col items-center gap-2">
-          <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
-            <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
-          </span>
-          <span class="text-sm md:text-base">Free 24h Cancellation</span>
-        </li>
-        <!-- 2 -->
-        <li class="flex flex-col items-center gap-2">
-          <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
-            <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
-          </span>
-          <span class="text-sm md:text-base">All diets available</span>
-        </li>
-        <!-- 3 -->
-        <li class="flex flex-col items-center gap-2">
-          <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
-            <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
-          </span>
-          <span class="text-sm md:text-base">All tasting included</span>
-        </li>
-        <!-- 4 -->
-        <li class="flex flex-col items-center gap-2">
-          <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
-            <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
-          </span>
-          <span class="text-sm md:text-base">No tourist traps</span>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-
-<?php
-// --- DEBUG : à retirer après
-echo "\n<!-- POST id=" . get_the_ID() . " title=" . get_the_title() . " -->\n";
-
-if (function_exists('SCF')) {
-  $all = SCF::gets($tour_id);                // toutes les metas SCF du post
-  echo "\n<!-- SCF keys: " . implode(',', array_keys((array)$all)) . " -->\n";
-  echo "\n<!-- SCF discover_items raw: " . print_r(SCF::get('discover_items', $tour_id), true) . " -->\n";
-}
-echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'discover_items', true), true) . " -->\n";
-?>
-
-
-   <?php
-    // What you'll discover – DATA (version metas séparées)
-    $discover_items = [];
-    $post_id = $tour_id;
-
-    // 1) lecture préférée : nos 3 clés step_*
-    $titles = (array) get_post_meta($post_id, 'step_title', false);     // false => toutes les valeurs
-    $texts  = (array) get_post_meta($post_id, 'step_text', false);
-    $locs   = (array) get_post_meta($post_id, 'step_location', false);
-
-    // 2) fallback si tu reviens aux anciens noms
-    if (!$titles && !$texts && !$locs) {
-      $titles = (array) get_post_meta($post_id, 'title', false);
-      $texts  = (array) get_post_meta($post_id, 'text', false);
-      $locs   = (array) get_post_meta($post_id, 'location', false);
-    }
-    // 3) autre fallback (au cas où)
-    if (!$titles && !$texts && !$locs) {
-      $titles = (array) get_post_meta($post_id, 'discover_title', false);
-      $texts  = (array) get_post_meta($post_id, 'discover_text', false);
-      $locs   = (array) get_post_meta($post_id, 'discover_location', false);
-    }
-
-    // 4) recomposition par index
-    $max = max(count($titles), count($texts), count($locs));
-    for ($i = 0; $i < $max; $i++) {
-      $title = trim((string) ($titles[$i] ?? ''));
-      $text  = trim((string) ($texts[$i]  ?? ''));
-      $loc   = trim((string) ($locs[$i]   ?? ''));
-      if ($title !== '' || $text !== '' || $loc !== '') {
-        $discover_items[] = ['title'=>$title, 'text'=>$text, 'loc'=>$loc];
-      }
-    }
-    ?>
-
-
-    <?php if (!empty($discover_items)): ?>
-  <section class="mt-8 md:mt-12">
-    <div class="rounded-lg bg-white p-6 md:p-8">
-      <h3 class="text-lg font-semibold text-black mb-6">What you’ll discover in this tour</h3>
-      <ul class="space-y-8">
-        <?php foreach ($discover_items as $it): ?>
-          <li>
-            <div class="pl-4 border-l-2 border-black/90">
-              <?php if ($it['title'] !== ''): ?>
-                <p class="font-semibold text-black mb-1"><?php echo esc_html($it['title']); ?></p>
-              <?php endif; ?>
-              <?php if ($it['text'] !== ''): ?>
-                <p class="text-gray-800"><?php echo esc_html($it['text']); ?></p>
-              <?php endif; ?>
-              <?php if ($it['loc'] !== ''): ?>
-                <p class="mt-3 flex items-center gap-2 text-gray-800">
-                  <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
-                  <span><?php echo esc_html($it['loc']); ?></span>
-                </p>
-              <?php endif; ?>
-            </div>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-
-      <div class="mt-8 rounded-md bg-gray-100 p-4 md:p-5">
-        <div class="flex items-center gap-5">
-          <span class="kgh-ico w-5 h-5 text-kgh-grey" aria-hidden="true"><?php echo kgh_icon('icon-alert-octagon'); ?></span>
-          <div class="min-w-0">
-            <div class="text-xs font-semibold text-black">Dietary Requirements</div>
-            <p class="text-xs text-gray-700">Please inform us of any allergies or dietary restrictions when booking.</p>
-            <p class="text-xs text-gray-700">We can accommodate vegetarian, halal, and gluten-free needs.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <?php endif; ?>
-
-
-
-
-  <!-- Meeting / Ending Points -->
-  <section class="mt-8 md:mt-12">
-    <div class="rounded-lg bg-white p-6 md:p-8">
+      <!-- Image 16:9 -->
+      <figure class="relative aspect-[16/9] overflow-hidden rounded-sm border-2 border-[#131313] bg-white">
+        <?php if (has_post_thumbnail()): ?>
+          <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
+        <?php else: ?>
+          <div class="absolute inset-0 grid place-items-center text-gray-500">No image yet</div>
+        <?php endif; ?>
+      </figure>
 
       <?php
-      // SCF: read once with fallback to meta
-      $scf_get = function($key) use ($tour_id) {
-        if (function_exists('SCF')) return SCF::get($key, $tour_id);
-        return get_post_meta($tour_id, $key, true);
-      };
+      $tag = function_exists('SCF') ? SCF::get('tag', $tour_id) : get_post_meta($tour_id, 'tag', true);
+      $tag = is_string($tag) ? trim($tag) : '';
+      ?>
+      <header class="mt-8 md:mt-10 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4">
+        <h1 class="kgh-h1"><?php the_title(); ?></h1>
+        <?php if ($tag !== ''): ?>
+          <div class="kgh-stamp self-start md:self-auto"><?php echo esc_html($tag); ?></div>
+        <?php endif; ?>
+      </header>
 
-      $mt_title   = trim((string) $scf_get('meeting_point_title'));
-      $mt_details = trim((string) $scf_get('meeting_point_details'));
-      $mt_gmaps   = trim((string) $scf_get('exact_location_link_google_maps'));
-      $mt_naver   = trim((string) $scf_get('exact_location_link_naver_maps'));
-      $mt_kakao   = trim((string) $scf_get('exact_location_link_kakao_map'));
+      <?php
+      // --- SCF same as home ---
+      $area = function_exists('SCF')
+        ? SCF::get('area_label', $tour_id)
+        : get_post_meta($tour_id, 'area_label', true);
 
-      $end_title   = trim((string) $scf_get('ending_point_title'));
-      $end_details = trim((string) $scf_get('ending_point_details'));
-
-      // util bouton ghost noir
-      $btn_base = 'kgh-btn--ghost border-[#131313] text-black hover:no-underline';
+      /** Always get badges as an array (same normalisation as home) */
+      if (function_exists('SCF')) {
+        $badge_raw = (array) SCF::get('badge_tags', $tour_id);
+      } else {
+        // IMPORTANT: third arg = false => array of all values
+        $badge_raw = (array) get_post_meta($tour_id, 'badge_tags', false);
+      }
+      $badges = [];
+      if (!empty($badge_raw)) {
+        foreach ($badge_raw as $k => $v) {
+          if (is_int($k)) {                // ['spicy','traditional']
+            $slug  = trim((string) $v);
+            $label = ucwords(str_replace('-', ' ', $slug));
+          } else {                         // ['spicy' => 'Spicy'] or ['spicy' => 1]
+            $slug  = trim((string) $k);
+            $label = (is_string($v) && $v !== '') ? $v : ucwords(str_replace('-', ' ', $slug));
+          }
+          if ($slug !== '') $badges[] = ['slug'=>$slug,'label'=>$label];
+        }
+      }
+      // limit like home if needed
+      $badges = array_slice($badges, 0, 3);
       ?>
 
-      
+      <!-- ROW: area + badges (exact same look as cards) -->
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <?php if (!empty($area)) : ?>
+          <span class="kgh-badge kgh-badge--light border border-kgh-grey">
+            <span class="kgh-badge-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
+            <span><?php echo esc_html($area); ?></span>
+          </span>
+        <?php endif; ?>
 
-      <?php if ($mt_title || $mt_details): ?>
-        <section class="mb-10 md:mb-12">
-          <h3 class="text-lg font-semibold text-black mb-4">Meeting Point</h3>
-          <div class="pl-4 border-l-2 border-black/90">
-            <?php if ($mt_title): ?>
-              <p class="font-semibold mb-1"><?php echo esc_html($mt_title); ?></p>
-            <?php endif; ?>
-            <?php if ($mt_details): ?>
-              <p class="text-gray-800"><?php echo esc_html($mt_details); ?></p>
-            <?php endif; ?>
-          </div>
+        <?php if (!empty($badges)) : ?>
+          <?php foreach ($badges as $it): ?>
+            <span class="kgh-badge kgh-badge--dark !bg-kgh-grey border-2 border-kgh-grey ">
+              <?php $ico = function_exists('kgh_badge_icon') ? kgh_badge_icon($it['slug']) : ''; ?>
+              <?php if ($ico): ?>
+                <span class="kgh-badge-ico" aria-hidden="true"><?php echo $ico; ?></span>
+              <?php endif; ?>
+              <span><?php echo esc_html($it['label']); ?></span>
+            </span>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
 
-          <?php if ($mt_gmaps || $mt_naver || $mt_kakao): ?>
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <?php if ($mt_gmaps): ?>
-                <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_gmaps); ?>" target="_blank" rel="noopener">
-                  Open in Google Maps
-                </a>
-              <?php endif; ?>
-              <?php if ($mt_naver): ?>
-                <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_naver); ?>" target="_blank" rel="noopener">
-                  Open in Naver Maps
-                </a>
-              <?php endif; ?>
-              <?php if ($mt_kakao): ?>
-                <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_kakao); ?>" target="_blank" rel="noopener">
-                  Open in Kakao Maps
-                </a>
-              <?php endif; ?>
-            </div>
+      <!-- Subtitle (SCF) -->
+      <?php if (!empty($subtitle)): ?>
+        <p class="mt-6 kgh-subtle">
+          <?php echo esc_html($subtitle); ?>
+        </p>
+      <?php endif; ?>
+
+      <!-- Méta (icônes via kgh_icon(), pas d’emoji) -->
+      <section class="mt-6">
+        <div class="flex flex-wrap gap-2">
+          
+          <?php if (!empty($duration)): ?> 
+            <span class="kgh-meta-item" title="<?php echo esc_attr($duration); ?>">
+              <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
+              <span><?php echo esc_html(kgh_fmt_duration($duration)); ?></span>
+            </span>
           <?php endif; ?>
-        </section>
-      <?php endif; ?>
 
-      <?php if ($end_title || $end_details): ?>
-        <section>
-          <h3 class="text-lg font-semibold text-black mb-4">Ending Point</h3>
-          <div class="pl-4 border-l-2 border-black/90">
-            <?php if ($end_title): ?>
-              <p class="font-semibold mb-1"><?php echo esc_html($end_title); ?></p>
-            <?php endif; ?>
-            <?php if ($end_details): ?>
-              <p class="text-gray-800"><?php echo esc_html($end_details); ?></p>
-            <?php endif; ?>
-          </div>
-        </section>
-      <?php endif; ?>
+          <?php if (!empty($capacity)): ?>
+            <span class="kgh-meta-item" title="<?php echo esc_attr($capacity); ?>">
+              <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
+              <span><?php echo esc_html__('Max', 'kgh'); ?> <?php echo esc_html($capacity); ?></span>
+            </span>
+          <?php endif; ?>
 
-    </div>
-  </section>
+          <?php if (!empty($languages)): ?>
+            <span class="kgh-meta-item" title="<?php echo esc_attr($languages); ?>">
+              <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-globe'); ?></span>
+              <span class="truncate max-w-[9rem] sm:max-w-[12rem]"><?php echo esc_html($languages); ?></span>
+            </span>
+          <?php endif; ?>
+        </div>
+      </section>
 
-  <!-- Your Guide(s) -->
-  <?php
-  // 1) Récupère la relation SCF: tour_guides (IDs / objets / arrays)
-  $raw_guides = function_exists('SCF') ? SCF::get('tour_guides', $tour_id) : get_post_meta($tour_id, 'tour_guides', false);
-  $guide_ids  = [];
+      <!-- Advantages / Guarantees -->
+      <section class="mt-8 md:mt-10">
+        <div class="rounded-lg bg-white px-6 py-6 md:py-8">
+          <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-8 items-center text-center">
+            <!-- 1 -->
+            <li class="flex flex-col items-center gap-2">
+              <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
+              </span>
+              <span class="text-sm md:text-base">Free 24h Cancellation</span>
+            </li>
+            <!-- 2 -->
+            <li class="flex flex-col items-center gap-2">
+              <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
+              </span>
+              <span class="text-sm md:text-base">All diets available</span>
+            </li>
+            <!-- 3 -->
+            <li class="flex flex-col items-center gap-2">
+              <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
+              </span>
+              <span class="text-sm md:text-base">All tasting included</span>
+            </li>
+            <!-- 4 -->
+            <li class="flex flex-col items-center gap-2">
+              <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
+                <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
+              </span>
+              <span class="text-sm md:text-base">No tourist traps</span>
+            </li>
+          </ul>
+        </div>
+      </section>
 
-  // Normalisation -> [int,int,...]
-  $push_id = function($v) use (&$guide_ids) {
-    if ($v === null) return;
-    if (is_numeric($v))                    { $guide_ids[] = (int)$v; return; }
-    if ($v instanceof WP_Post)             { $guide_ids[] = (int)$v->ID; return; }
-    if (is_array($v)) {
-      if (isset($v['id']))                 { $guide_ids[] = (int)$v['id']; return; }
-      if (isset($v['ID']))                 { $guide_ids[] = (int)$v['ID']; return; }
-      if (isset($v['post_id']))            { $guide_ids[] = (int)$v['post_id']; return; }
-      if (isset($v['object_id']))          { $guide_ids[] = (int)$v['object_id']; return; }
-      if (isset($v['post']) && $v['post'] instanceof WP_Post) { $guide_ids[] = (int)$v['post']->ID; return; }
-      if (isset($v[0])) {
-        if (is_array($v[0]) && isset($v[0]['id'])) { $guide_ids[] = (int)$v[0]['id']; return; }
-        if (is_numeric($v[0]))                     { $guide_ids[] = (int)$v[0]; return; }
+
+      <?php
+      // --- DEBUG : à retirer après
+      echo "\n<!-- POST id=" . get_the_ID() . " title=" . get_the_title() . " -->\n";
+
+      if (function_exists('SCF')) {
+        $all = SCF::gets($tour_id);                // toutes les metas SCF du post
+        echo "\n<!-- SCF keys: " . implode(',', array_keys((array)$all)) . " -->\n";
+        echo "\n<!-- SCF discover_items raw: " . print_r(SCF::get('discover_items', $tour_id), true) . " -->\n";
       }
-    }
-  };
-  if (is_array($raw_guides)) { foreach ($raw_guides as $g) { $push_id($g); } } else { $push_id($raw_guides); }
+      echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'discover_items', true), true) . " -->\n";
+      ?>
 
-  // uniques + publiés
-  $guide_ids = array_values(array_unique(array_filter($guide_ids, function($id){
-    return $id && get_post_status($id) === 'publish';
-  })));
 
-  // util: resolve image
-  $kgh_resolve_img = function($raw, $size = 'thumbnail'){
-    if (is_numeric($raw))                    return wp_get_attachment_image_url((int)$raw, $size) ?: '';
-    if ($raw instanceof WP_Post)             return wp_get_attachment_image_url((int)$raw->ID, $size) ?: '';
-    if (is_array($raw)) {
-      $pid = isset($raw['id']) ? (int)$raw['id'] : (isset($raw[0]) && is_numeric($raw[0]) ? (int)$raw[0] : 0);
-      if ($pid) return wp_get_attachment_image_url($pid, $size) ?: '';
-      if (!empty($raw['url'])) return (string)$raw['url'];
-    }
-    if (is_string($raw) && preg_match('~^https?://~', $raw)) return $raw;
-    return '';
-  };
+        <?php
+          // What you'll discover – DATA (version metas séparées)
+          $discover_items = [];
+          $post_id = $tour_id;
 
-  if (!empty($guide_ids)):
-    $title_guides = count($guide_ids) > 1 ? 'Your Guides' : 'Your Guide';
-  ?>
-  <section class="mt-8 md:mt-12">
-    <div class="rounded-lg bg-white p-6 md:p-8">
-      <h3 class="text-lg font-semibold text-black mb-6"><?php echo esc_html($title_guides); ?></h3>
+          // 1) lecture préférée : nos 3 clés step_*
+          $titles = (array) get_post_meta($post_id, 'step_title', false);     // false => toutes les valeurs
+          $texts  = (array) get_post_meta($post_id, 'step_text', false);
+          $locs   = (array) get_post_meta($post_id, 'step_location', false);
 
-      <div class="grid grid-cols-1 gap-8">
-        <?php foreach ($guide_ids as $gid): ?>
-          <?php
-            $g_title   = get_the_title($gid);
-            $g_sub     = function_exists('SCF') ? SCF::get('subtitle',        $gid) : get_post_meta($gid, 'subtitle', true);
-            $g_desc    = function_exists('SCF') ? SCF::get('description',     $gid) : get_post_meta($gid, 'description', true);
-            $g_lang    = function_exists('SCF') ? SCF::get('languages',       $gid) : get_post_meta($gid, 'languages', true); // 1 chip
-            $g_pic_raw = function_exists('SCF') ? SCF::get('profil_picture',  $gid) : get_post_meta($gid, 'profil_picture', true);
-            $g_pic_url = $kgh_resolve_img($g_pic_raw, 'thumbnail');
+          // 2) fallback si tu reviens aux anciens noms
+          if (!$titles && !$texts && !$locs) {
+            $titles = (array) get_post_meta($post_id, 'title', false);
+            $texts  = (array) get_post_meta($post_id, 'text', false);
+            $locs   = (array) get_post_meta($post_id, 'location', false);
+          }
+          // 3) autre fallback (au cas où)
+          if (!$titles && !$texts && !$locs) {
+            $titles = (array) get_post_meta($post_id, 'discover_title', false);
+            $texts  = (array) get_post_meta($post_id, 'discover_text', false);
+            $locs   = (array) get_post_meta($post_id, 'discover_location', false);
+          }
 
-            // Labels (repeat "Label") => array de strings
-            $g_labels_raw = function_exists('SCF') ? SCF::get('label', $gid) : get_post_meta($gid, 'label', false);
-            $labels = [];
-            if (is_array($g_labels_raw)) {
-              foreach ($g_labels_raw as $row) {
-                $val = is_array($row) && isset($row['label']) ? trim((string)$row['label']) : trim((string)$row);
-                if ($val !== '') $labels[] = $val;
-              }
-            } elseif (is_string($g_labels_raw) && trim($g_labels_raw) !== '') {
-              $labels[] = trim($g_labels_raw);
+          // 4) recomposition par index
+          $max = max(count($titles), count($texts), count($locs));
+          for ($i = 0; $i < $max; $i++) {
+            $title = trim((string) ($titles[$i] ?? ''));
+            $text  = trim((string) ($texts[$i]  ?? ''));
+            $loc   = trim((string) ($locs[$i]   ?? ''));
+            if ($title !== '' || $text !== '' || $loc !== '') {
+              $discover_items[] = ['title'=>$title, 'text'=>$text, 'loc'=>$loc];
             }
-            $labels = array_values(array_unique($labels));
+          }
           ?>
 
-          <!-- Carte guide -->
-          <article class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0">
-            <!-- avatar -->
-            <div class="w-11 h-11 rounded-full bg-[#F2EDEA] grid place-items-center overflow-hidden">
-              <?php if ($g_pic_url): ?>
-                <img src="<?php echo esc_url($g_pic_url); ?>" alt="<?php echo esc_attr($g_title); ?>" class="w-full h-full object-cover">
-              <?php else: ?>
-                <span class="kgh-ico w-11 h-11 text-kgh-red" aria-hidden="true">
-                  <?php echo function_exists('kgh_icon') ? kgh_icon('icon-user') : ''; ?>
-                </span>
-              <?php endif; ?>
-            </div>
 
-            <!-- infos -->
-            <div class="min-w-0">
-              <div class="font-semibold text-black"><?php echo esc_html($g_title); ?></div>
-              <?php if (!empty($g_sub)): ?>
-                <div class="text-xs text-gray-700 mb-3"><?php echo esc_html($g_sub); ?></div>
-              <?php endif; ?>
+          <?php if (!empty($discover_items)): ?>
+        <section class="mt-8 md:mt-12">
+          <div class="rounded-lg bg-white p-6 md:p-8">
+            <h3 class="text-lg font-semibold text-black mb-6">What you’ll discover in this tour</h3>
+            <ul class="space-y-8">
+              <?php foreach ($discover_items as $it): ?>
+                <li>
+                  <div class="pl-4 border-l-2 border-black/90">
+                    <?php if ($it['title'] !== ''): ?>
+                      <p class="font-semibold text-black mb-1"><?php echo esc_html($it['title']); ?></p>
+                    <?php endif; ?>
+                    <?php if ($it['text'] !== ''): ?>
+                      <p class="text-gray-800"><?php echo esc_html($it['text']); ?></p>
+                    <?php endif; ?>
+                    <?php if ($it['loc'] !== ''): ?>
+                      <p class="mt-3 flex items-center gap-2 text-gray-800">
+                        <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-map-pin'); ?></span>
+                        <span><?php echo esc_html($it['loc']); ?></span>
+                      </p>
+                    <?php endif; ?>
+                  </div>
+                </li>
+              <?php endforeach; ?>
+            </ul>
 
-              <div class="flex flex-wrap gap-2 mb-4">
-                <?php if (!empty($g_lang)): ?>
-                  <span class="kgh-badge !bg-gray-100"><?php echo esc_html('Languages: ' . $g_lang); ?></span>
-                <?php endif; ?>
-                <?php foreach ($labels as $lab): ?>
-                  <span class="kgh-badge !bg-gray-100"><?php echo esc_html($lab); ?></span>
-                <?php endforeach; ?>
-              </div> 
-            </div>
-            <?php if (!empty($g_desc)): ?>
-                <div class="col-span-2 kgh-subtle text-[15px] md:text-base leading-relaxed">
-                  <?php echo esc_html($g_desc); ?>
+            <div class="mt-8 rounded-md bg-gray-100 p-4 md:p-5">
+              <div class="flex items-center gap-5">
+                <span class="kgh-ico w-5 h-5 text-kgh-grey" aria-hidden="true"><?php echo kgh_icon('icon-alert-octagon'); ?></span>
+                <div class="min-w-0">
+                  <div class="text-xs font-semibold text-black">Dietary Requirements</div>
+                  <p class="text-xs text-gray-700">Please inform us of any allergies or dietary restrictions when booking.</p>
+                  <p class="text-xs text-gray-700">We can accommodate vegetarian, halal, and gluten-free needs.</p>
                 </div>
-              <?php endif; ?>
-          </article>
+              </div>
+            </div>
+          </div>
+        </section>
+        <?php endif; ?>
 
-        <?php endforeach; ?>
-      </div>
-    </div>
-  </section>
-  <?php endif; ?>
 
-  <!-- Tour Details (static for now) -->
-  <section class="mt-8 md:mt-12">
-    <div class="rounded-lg bg-white p-6 md:p-8">
-      <h3 class="text-lg font-semibold text-black mb-6">Tour Details</h3>
 
-      <!-- 2 columns: included / not included -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-8 mx-3">
-        <!-- What's included -->
-        <div>
-          <h4 class="font-medium text-black mb-3">What’s included</h4>
-          <ul class="space-y-3">
+
+        <!-- Meeting / Ending Points -->
+        <section class="mt-8 md:mt-12">
+          <div class="rounded-lg bg-white p-6 md:p-8">
+
             <?php
-              // simple helper to print a checked line with your green icon
-              $kgh_check = function($text){
-                echo '<li class="flex items-start gap-2">'
-                  .   '<span class="inline-block w-5 text-center text-gray-500">✓</span>'
-                  .   '<span class="text-black">'. esc_html($text) .'</span>'
-                  . '</li>';
-              };
-              $kgh_check('Transportation fees');
-              $kgh_check('Expert Guide');
-              $kgh_check('Cultural Insights');
-              $kgh_check('Market navigation');
-            ?>
-          </ul>
-        </div>
+            // SCF: read once with fallback to meta
+            $scf_get = function($key) use ($tour_id) {
+              if (function_exists('SCF')) return SCF::get($key, $tour_id);
+              return get_post_meta($tour_id, $key, true);
+            };
 
-        <!-- What's not included -->
-        <div>
-          <h4 class="font-medium text-black mb-3">What’s not included</h4>
-          <ul class="space-y-3">
-            <?php
-              // cross lines (typographic ×)
-              $kgh_cross = function($text){
-                echo '<li class="flex items-start gap-2">'
-                  .   '<span class="inline-block w-5 text-center text-gray-500 translate-y-[1px]">&times;</span>'
-                  .   '<span class="text-black font-normal">'. esc_html($text) .'</span>'
-                  . '</li>';
-              };
-              $kgh_cross('Hotel pickup');
-              $kgh_cross('Additional drinks');
-              $kgh_cross('Souvenirs');
+            $mt_title   = trim((string) $scf_get('meeting_point_title'));
+            $mt_details = trim((string) $scf_get('meeting_point_details'));
+            $mt_gmaps   = trim((string) $scf_get('exact_location_link_google_maps'));
+            $mt_naver   = trim((string) $scf_get('exact_location_link_naver_maps'));
+            $mt_kakao   = trim((string) $scf_get('exact_location_link_kakao_map'));
+
+            $end_title   = trim((string) $scf_get('ending_point_title'));
+            $end_details = trim((string) $scf_get('ending_point_details'));
+
+            // util bouton ghost noir
+            $btn_base = 'kgh-btn--ghost border-[#131313] text-black hover:no-underline';
             ?>
-          </ul>
+
+            
+
+            <?php if ($mt_title || $mt_details): ?>
+              <section class="mb-10 md:mb-12">
+                <h3 class="text-lg font-semibold text-black mb-4">Meeting Point</h3>
+                <div class="pl-4 border-l-2 border-black/90">
+                  <?php if ($mt_title): ?>
+                    <p class="font-semibold mb-1"><?php echo esc_html($mt_title); ?></p>
+                  <?php endif; ?>
+                  <?php if ($mt_details): ?>
+                    <p class="text-gray-800"><?php echo esc_html($mt_details); ?></p>
+                  <?php endif; ?>
+                </div>
+
+                <?php if ($mt_gmaps || $mt_naver || $mt_kakao): ?>
+                  <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <?php if ($mt_gmaps): ?>
+                      <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_gmaps); ?>" target="_blank" rel="noopener">
+                        Open in Google Maps
+                      </a>
+                    <?php endif; ?>
+                    <?php if ($mt_naver): ?>
+                      <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_naver); ?>" target="_blank" rel="noopener">
+                        Open in Naver Maps
+                      </a>
+                    <?php endif; ?>
+                    <?php if ($mt_kakao): ?>
+                      <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_kakao); ?>" target="_blank" rel="noopener">
+                        Open in Kakao Maps
+                      </a>
+                    <?php endif; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
+            <?php endif; ?>
+
+            <?php if ($end_title || $end_details): ?>
+              <section>
+                <h3 class="text-lg font-semibold text-black mb-4">Ending Point</h3>
+                <div class="pl-4 border-l-2 border-black/90">
+                  <?php if ($end_title): ?>
+                    <p class="font-semibold mb-1"><?php echo esc_html($end_title); ?></p>
+                  <?php endif; ?>
+                  <?php if ($end_details): ?>
+                    <p class="text-gray-800"><?php echo esc_html($end_details); ?></p>
+                  <?php endif; ?>
+                </div>
+              </section>
+            <?php endif; ?>
+
+          </div>
+        </section>
+
+        <!-- Your Guide(s) -->
+        <?php
+        // 1) Récupère la relation SCF: tour_guides (IDs / objets / arrays)
+        $raw_guides = function_exists('SCF') ? SCF::get('tour_guides', $tour_id) : get_post_meta($tour_id, 'tour_guides', false);
+        $guide_ids  = [];
+
+        // Normalisation -> [int,int,...]
+        $push_id = function($v) use (&$guide_ids) {
+          if ($v === null) return;
+          if (is_numeric($v))                    { $guide_ids[] = (int)$v; return; }
+          if ($v instanceof WP_Post)             { $guide_ids[] = (int)$v->ID; return; }
+          if (is_array($v)) {
+            if (isset($v['id']))                 { $guide_ids[] = (int)$v['id']; return; }
+            if (isset($v['ID']))                 { $guide_ids[] = (int)$v['ID']; return; }
+            if (isset($v['post_id']))            { $guide_ids[] = (int)$v['post_id']; return; }
+            if (isset($v['object_id']))          { $guide_ids[] = (int)$v['object_id']; return; }
+            if (isset($v['post']) && $v['post'] instanceof WP_Post) { $guide_ids[] = (int)$v['post']->ID; return; }
+            if (isset($v[0])) {
+              if (is_array($v[0]) && isset($v[0]['id'])) { $guide_ids[] = (int)$v[0]['id']; return; }
+              if (is_numeric($v[0]))                     { $guide_ids[] = (int)$v[0]; return; }
+            }
+          }
+        };
+        if (is_array($raw_guides)) { foreach ($raw_guides as $g) { $push_id($g); } } else { $push_id($raw_guides); }
+
+        // uniques + publiés
+        $guide_ids = array_values(array_unique(array_filter($guide_ids, function($id){
+          return $id && get_post_status($id) === 'publish';
+        })));
+
+        // util: resolve image
+        $kgh_resolve_img = function($raw, $size = 'thumbnail'){
+          if (is_numeric($raw))                    return wp_get_attachment_image_url((int)$raw, $size) ?: '';
+          if ($raw instanceof WP_Post)             return wp_get_attachment_image_url((int)$raw->ID, $size) ?: '';
+          if (is_array($raw)) {
+            $pid = isset($raw['id']) ? (int)$raw['id'] : (isset($raw[0]) && is_numeric($raw[0]) ? (int)$raw[0] : 0);
+            if ($pid) return wp_get_attachment_image_url($pid, $size) ?: '';
+            if (!empty($raw['url'])) return (string)$raw['url'];
+          }
+          if (is_string($raw) && preg_match('~^https?://~', $raw)) return $raw;
+          return '';
+        };
+
+        if (!empty($guide_ids)):
+          $title_guides = count($guide_ids) > 1 ? 'Your Guides' : 'Your Guide';
+        ?>
+        <section class="mt-8 md:mt-12">
+          <div class="rounded-lg bg-white p-6 md:p-8">
+            <h3 class="text-lg font-semibold text-black mb-6"><?php echo esc_html($title_guides); ?></h3>
+
+            <div class="grid grid-cols-1 gap-8">
+              <?php foreach ($guide_ids as $gid): ?>
+                <?php
+                  $g_title   = get_the_title($gid);
+                  $g_sub     = function_exists('SCF') ? SCF::get('subtitle',        $gid) : get_post_meta($gid, 'subtitle', true);
+                  $g_desc    = function_exists('SCF') ? SCF::get('description',     $gid) : get_post_meta($gid, 'description', true);
+                  $g_lang    = function_exists('SCF') ? SCF::get('languages',       $gid) : get_post_meta($gid, 'languages', true); // 1 chip
+                  $g_pic_raw = function_exists('SCF') ? SCF::get('profil_picture',  $gid) : get_post_meta($gid, 'profil_picture', true);
+                  $g_pic_url = $kgh_resolve_img($g_pic_raw, 'thumbnail');
+
+                  // Labels (repeat "Label") => array de strings
+                  $g_labels_raw = function_exists('SCF') ? SCF::get('label', $gid) : get_post_meta($gid, 'label', false);
+                  $labels = [];
+                  if (is_array($g_labels_raw)) {
+                    foreach ($g_labels_raw as $row) {
+                      $val = is_array($row) && isset($row['label']) ? trim((string)$row['label']) : trim((string)$row);
+                      if ($val !== '') $labels[] = $val;
+                    }
+                  } elseif (is_string($g_labels_raw) && trim($g_labels_raw) !== '') {
+                    $labels[] = trim($g_labels_raw);
+                  }
+                  $labels = array_values(array_unique($labels));
+                ?>
+
+                <!-- Carte guide -->
+                <article class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0">
+                  <!-- avatar -->
+                  <div class="w-11 h-11 rounded-full bg-[#F2EDEA] grid place-items-center overflow-hidden">
+                    <?php if ($g_pic_url): ?>
+                      <img src="<?php echo esc_url($g_pic_url); ?>" alt="<?php echo esc_attr($g_title); ?>" class="w-full h-full object-cover">
+                    <?php else: ?>
+                      <span class="kgh-ico w-11 h-11 text-kgh-red" aria-hidden="true">
+                        <?php echo function_exists('kgh_icon') ? kgh_icon('icon-user') : ''; ?>
+                      </span>
+                    <?php endif; ?>
+                  </div>
+
+                  <!-- infos -->
+                  <div class="min-w-0">
+                    <div class="font-semibold text-black"><?php echo esc_html($g_title); ?></div>
+                    <?php if (!empty($g_sub)): ?>
+                      <div class="text-xs text-gray-700 mb-3"><?php echo esc_html($g_sub); ?></div>
+                    <?php endif; ?>
+
+                    <div class="flex flex-wrap gap-2 mb-4">
+                      <?php if (!empty($g_lang)): ?>
+                        <span class="kgh-badge !bg-gray-100"><?php echo esc_html('Languages: ' . $g_lang); ?></span>
+                      <?php endif; ?>
+                      <?php foreach ($labels as $lab): ?>
+                        <span class="kgh-badge !bg-gray-100"><?php echo esc_html($lab); ?></span>
+                      <?php endforeach; ?>
+                    </div> 
+                  </div>
+                  <?php if (!empty($g_desc)): ?>
+                      <div class="col-span-2 kgh-subtle text-[15px] md:text-base leading-relaxed">
+                        <?php echo esc_html($g_desc); ?>
+                      </div>
+                    <?php endif; ?>
+                </article>
+
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- Tour Details (static for now) -->
+        <section class="mt-8 md:mt-12">
+          <div class="rounded-lg bg-white p-6 md:p-8">
+            <h3 class="text-lg font-semibold text-black mb-6">Tour Details</h3>
+
+            <!-- 2 columns: included / not included -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-8 mx-3">
+              <!-- What's included -->
+              <div>
+                <h4 class="font-medium text-black mb-3">What’s included</h4>
+                <ul class="space-y-3">
+                  <?php
+                    // simple helper to print a checked line with your green icon
+                    $kgh_check = function($text){
+                      echo '<li class="flex items-start gap-2">'
+                        .   '<span class="inline-block w-5 text-center text-gray-500">✓</span>'
+                        .   '<span class="text-black">'. esc_html($text) .'</span>'
+                        . '</li>';
+                    };
+                    $kgh_check('Transportation fees');
+                    $kgh_check('Expert Guide');
+                    $kgh_check('Cultural Insights');
+                    $kgh_check('Market navigation');
+                  ?>
+                </ul>
+              </div>
+
+              <!-- What's not included -->
+              <div>
+                <h4 class="font-medium text-black mb-3">What’s not included</h4>
+                <ul class="space-y-3">
+                  <?php
+                    // cross lines (typographic ×)
+                    $kgh_cross = function($text){
+                      echo '<li class="flex items-start gap-2">'
+                        .   '<span class="inline-block w-5 text-center text-gray-500 translate-y-[1px]">&times;</span>'
+                        .   '<span class="text-black font-normal">'. esc_html($text) .'</span>'
+                        . '</li>';
+                    };
+                    $kgh_cross('Hotel pickup');
+                    $kgh_cross('Additional drinks');
+                    $kgh_cross('Souvenirs');
+                  ?>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 3 guarantee blocks -->
+            <div class="rounded-2xl border border-gray-300 bg-white px-3 py-6 md:py-7">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-y-0 md:divide-x md:divide-gray-200">
+                <!-- Photo service -->
+                <div class="flex flex-col items-center text-center px-2">
+                  <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
+                    <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+                  </span>
+                  <div class="text-sm font-semibold text-black">Photo Service</div>
+                  <div class="text-sm text-gray-700">Ask your guide to take pictures</div>
+                </div>
+
+                <!-- Hygiene -->
+                <div class="flex flex-col items-center text-center px-2">
+                  <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
+                    <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+                  </span>
+                  <div class="text-sm font-semibold text-black">Hygienes Standards</div>
+                  <div class="text-sm text-gray-700">All venues inspected</div>
+                </div>
+
+
+                <!-- All tastes included -->
+                <div class="flex flex-col items-center text-center px-2">
+                  <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
+                    <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
+                  </span>
+                  <div class="text-sm font-semibold text-black">All tastes included</div>
+                  <div class="text-sm text-gray-700">Choose what you want to eat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        </div> <!-- /.kgh-tour-main (left column end) -->
+
+    <?php if ($booking_enabled && $has_price): ?>
+    <aside class="kgh-tour-aside">
+      <section class="rounded-lg bg-white p-6 md:p-8">
+      <h3 class="text-lg font-semibold text-black mb-6">Check Availabilities & Prices</h3>
+      <?php
+        // Optional SCF note displayed under the availability controls
+        $avail_note = function_exists('SCF')
+          ? SCF::get('availability_note', $tour_id)
+          : get_post_meta($tour_id, 'availability_note', true);
+        $avail_note = is_string($avail_note) ? trim($avail_note) : '';
+      ?>
+
+      <?php if ($from_price_cents > 0): ?>
+        <p class="text-base text-black">from <strong><?php echo '$'.number_format($from_price_cents/100, 2); ?></strong> per person</p>
+      <?php endif; ?>
+      <?php if ($avail_note !== ''): ?>
+        <p class="mt-1 text-base text-gray-700"><?php echo esc_html($avail_note); ?></p>
+      <?php endif; ?>
+      <hr class="kgh-separator">
+
+      <!-- Date -->
+      <label class="block mb-4">
+        <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
+          <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-calendar'); ?></span>
+          <span>Date</span>
         </div>
+        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
+      </label>
+
+      <!-- Time -->
+      <label class="block mb-4">
+        <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
+          <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
+          <span>Starting Time</span>
+        </div>
+        <select id="kgh-time" class="kgh-input w-full"></select>
+      </label>
+
+      <!-- Guests -->
+      <label class="block mb-4">
+        <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
+          <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
+          <span>Guests</span>
+        </div>
+        <select id="kgh-guests" class="kgh-input w-full">
+          <option value="1">1</option>
+        </select>
+      </label>
+
+      <hr class="kgh-separator">
+      <div class="flex items-center justify-between text-base mb-2">
+        <span>Summary</span>
+        <span id="kgh-summary"></span>
+      </div>
+      <hr class="kgh-separator" style="margin-top:8px;margin-bottom:8px">
+      <div class="flex items-center justify-between text-base font-semibold text-black mb-4">
+        <span>Total amount</span>
+        <span id="kgh-total">$0.00</span>
       </div>
 
-      <!-- 3 guarantee blocks -->
-      <div class="rounded-2xl border border-gray-300 bg-white px-3 py-6 md:py-7">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 md:gap-y-0 md:divide-x md:divide-gray-200">
-          <!-- Photo service -->
-          <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
-              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
-            </span>
-            <div class="text-sm font-semibold text-black">Photo Service</div>
-            <div class="text-sm text-gray-700">Ask your guide to take pictures</div>
-          </div>
+      <button id="kgh-cta" class="kgh-btn--primary w-full">Book this tour</button>
 
-          <!-- Hygiene -->
-          <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
-              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
-            </span>
-            <div class="text-sm font-semibold text-black">Hygienes Standards</div>
-            <div class="text-sm text-gray-700">All venues inspected</div>
-          </div>
+      <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
+        No availability for this date
+      </p>
+      <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
+    </section>
+    </aside>
+    <?php endif; ?>
 
-
-          <!-- All tastes included -->
-          <div class="flex flex-col items-center text-center px-2">
-            <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
-              <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
-            </span>
-            <div class="text-sm font-semibold text-black">All tastes included</div>
-            <div class="text-sm text-gray-700">Choose what you want to eat</div>
-          </div>
+    <!-- CTA: Contact us to book -->
+    <?php if (!$booking_enabled || !$has_price): ?>
+    <aside class="kgh-tour-aside">
+      <section class="rounded-lg bg-white p-6 md:p-8">
+      <div class="flex flex-col max-w-[400px]">
+        <div class="flex flex-row items-center">
+          <span class="mr-4">to book this tour :</span>
+          <a href="#kgh-contact" class="kgh-btn--primary text-center">
+            Contact us
+          </a>
         </div>
       </div>
-    </div>
-  </section>
+      </section>
+    </aside>
+    <?php endif; ?>
+
+  </div> <!-- /.kgh-tour-layout -->
 
 
   <!-- Contact section -->
