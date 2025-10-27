@@ -23,7 +23,15 @@ require_once KGH_BOOKING_PATH . 'includes/utils.php';
 require_once KGH_BOOKING_PATH . 'includes/exceptions.php';
 require_once KGH_BOOKING_PATH . 'includes/availability.php';
 
-require_once KGH_BOOKING_PATH . 'includes/metaboxes.php';
+// Feature flag: old "tour_date" system (All Tour Dates)
+if (!defined('KGH_ENABLE_TOUR_DATE')) {
+  define('KGH_ENABLE_TOUR_DATE', false);
+}
+
+// Load legacy metaboxes only if the old system is enabled
+if (KGH_ENABLE_TOUR_DATE) {
+  require_once KGH_BOOKING_PATH . 'includes/metaboxes.php';
+}
 require_once KGH_BOOKING_PATH . 'includes/schedule.php';
 require_once KGH_BOOKING_PATH . 'includes/paypal-http.php';
 require_once KGH_BOOKING_PATH . 'includes/rest-paypal.php';   // << NOUVEAU (create order)

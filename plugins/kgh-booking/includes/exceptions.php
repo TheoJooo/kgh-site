@@ -51,7 +51,7 @@ function kgh_ex_utc_string(DateTimeImmutable $dt): string {
 function kgh_ex_align_check(DateTimeImmutable $dt): bool {
   $m = (int)$dt->format('i');
   $s = (int)$dt->format('s');
-  return ($s === 0) && ($m === 0 || $m === 30);
+  return ($s === 0) && in_array($m, [0,15,30,45], true);
 }
 
 function kgh_ex_in_window_kst(DateTimeImmutable $dt): bool {
@@ -84,7 +84,7 @@ function kgh_ex_add(array $data) {
   $slot_iso = (string)($data['slot_start_utc_iso'] ?? '');
   $dt = kgh_ex_dt_from_iso($slot_iso);
   if (!$dt) return new WP_Error('ex_time', __('Invalid slot_start ISO', 'kgh-booking'));
-  if (!kgh_ex_align_check($dt)) return new WP_Error('ex_time_align', __('Slot must align to :00 or :30', 'kgh-booking'));
+  if (!kgh_ex_align_check($dt)) return new WP_Error('ex_time_align', __('Slot must align to :00, :15, :30 or :45', 'kgh-booking'));
   if (!kgh_ex_in_window_kst($dt)) return new WP_Error('ex_time_window', __('Slot must be within allowed window', 'kgh-booking'));
   $slot_utc = kgh_ex_utc_string($dt);
 
@@ -195,4 +195,3 @@ function kgh_ex_for_slot(int $tour_id, string $slot_start_iso_kst): array {
   $sql = $wpdb->prepare("SELECT * FROM {$table} WHERE tour_id=%d AND slot_start_utc=%s ORDER BY FIELD(type,'closed','override','external_booked')", $tour_id, $utc);
   return $wpdb->get_results($sql, ARRAY_A) ?: [];
 }
-

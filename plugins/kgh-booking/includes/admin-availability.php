@@ -122,12 +122,11 @@ function kgh_admin_availability_get(WP_REST_Request $req) {
   }
 
   $schedule = function_exists('kgh_avail_load_schedule') ? kgh_avail_load_schedule($tour_id) : null;
-  if (!$schedule || empty($schedule['time_slots'])) {
-    return new WP_REST_Response(['error'=>'no_schedule'], 400);
+  $times = [];
+  if ($schedule && !empty($schedule['time_slots'])) {
+    $times = array_values(array_map('trim', $schedule['time_slots']));
+    sort($times);
   }
-
-  $times = array_values(array_map('trim', $schedule['time_slots']));
-  sort($times);
 
   $kst = new DateTimeZone('Asia/Seoul');
   try {
@@ -147,7 +146,7 @@ function kgh_admin_availability_get(WP_REST_Request $req) {
     $end_dt = $start_dt->add(new DateInterval('P'.$max_days.'D'));
   }
 
-  // Exceptions for range
+  // Exceptions for range (also used to infer times when no schedule)
   $range_start_utc = $start_dt->setTime(0,0)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
   $range_end_utc   = $end_dt->add(new DateInterval('P1D'))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
   $exceptions = function_exists('kgh_ex_list_for_range') ? kgh_ex_list_for_range($tour_id, $range_start_utc, $range_end_utc) : [];
@@ -158,7 +157,13 @@ function kgh_admin_availability_get(WP_REST_Request $req) {
       if (!$dt_utc) continue;
       $iso_kst = $dt_utc->setTimezone($kst)->format('Y-m-d\TH:i:sP');
       $ex_map[$iso_kst][$ex['type']] = $ex;
+      $hm = $dt_utc->setTimezone($kst)->format('H:i');
+      if (!in_array($hm, $times, true)) $times[] = $hm;
     }
+  }
+  sort($times);
+  if (empty($times)) {
+    return new WP_REST_Response(['error'=>'no_schedule'], 400);
   }
 
   $days = [];
@@ -177,7 +182,12 @@ function kgh_admin_availability_get(WP_REST_Request $req) {
     foreach ($times as $time) {
       $slot_iso = $ymd.'T'.$time.':00+09:00';
       $slot_data = isset($slot_map[$slot_iso]) ? $slot_map[$slot_iso] : [];
-      $row_slots[$time] = kgh_admin_availability_build_cell($tour_id, $slot_iso, $slot_data, $ex_map[$slot_iso] ?? []);
+      $ex_for_slot = $ex_map[$slot_iso] ?? [];
+      if (empty($slot_data) && empty($ex_for_slot)) {
+        $row_slots[$time] = null; // no schedule slot and no exception => keep cell empty
+      } else {
+        $row_slots[$time] = kgh_admin_availability_build_cell($tour_id, $slot_iso, $slot_data, $ex_for_slot);
+      }
     }
 
     $days[] = [
@@ -339,6 +349,146 @@ function kgh_admin_availability_save(WP_REST_Request $req) {
     'cell' => $cell,
   ], 200);
 }
+
+// Add a one-off slot (outside schedule) by creating an override with cap/price/lang
+add_action('rest_api_init', function(){
+  register_rest_route('kgh/v1', '/admin/availability/add', [
+    'methods' => 'POST',
+    'permission_callback' => 'kgh_admin_availability_capability',
+    'callback' => function(WP_REST_Request $req){
+      $tour_id = (int)$req->get_param('tour_id');
+      $date    = sanitize_text_field($req->get_param('date'));
+      $time    = sanitize_text_field($req->get_param('time'));
+      $cap     = $req->get_param('cap');
+      $price   = $req->get_param('price_usd');
+      $lang    = $req->get_param('language');
+      if ($tour_id<=0 || get_post_type($tour_id)!=='tour') return new WP_REST_Response(['error'=>'invalid_tour'],400);
+      if (!preg_match('/^\d{4}-\d{2}-\d{2}$/',$date) || !preg_match('/^\d{2}:\d{2}$/',$time)) return new WP_REST_Response(['error'=>'invalid_slot'],400);
+      // quarter-hour minutes only
+      list($hh,$mm) = array_map('intval', explode(':',$time));
+      if ($hh<0 || $hh>23 || !in_array($mm,[0,15,30,45],true)) return new WP_REST_Response(['error'=>'invalid_time','message'=>__('Minutes must be 00, 15, 30 or 45','kgh-booking')],400);
+      $cap = (int)$cap; $price = (int)$price; $lang = strtoupper(sanitize_text_field((string)$lang));
+      if ($cap<1 || $cap>50) return new WP_REST_Response(['error'=>'invalid_cap'],400);
+      if ($price<0) return new WP_REST_Response(['error'=>'invalid_price'],400);
+      if (!in_array($lang,['EN','FR','KO'],true)) return new WP_REST_Response(['error'=>'invalid_lang'],400);
+      $slot_iso = $date.'T'.$time.':00+09:00';
+      $res = kgh_ex_add([
+        'tour_id' => $tour_id,
+        'slot_start_utc_iso' => $slot_iso,
+        'type' => 'override',
+        'cap_override' => $cap,
+        'price_usd_override' => $price,
+        'lang_override' => $lang,
+      ]);
+      if (is_wp_error($res)) return new WP_REST_Response(['error'=>$res->get_error_code(),'message'=>$res->get_error_message()],400);
+      if (function_exists('kgh_avail_invalidate_day_cache')) kgh_avail_invalidate_day_cache($tour_id, $date);
+      // compute cell
+      $slots = function_exists('kgh_avail_day_slots') ? kgh_avail_day_slots($tour_id, $date) : [];
+      $slot_data = [];
+      foreach ((array)$slots as $s) { if (!empty($s['slot_start_iso']) && $s['slot_start_iso'] === $slot_iso) { $slot_data = $s; break; } }
+      $cell = kgh_admin_availability_build_cell($tour_id, $slot_iso, $slot_data, function_exists('kgh_ex_for_slot') ? kgh_ex_for_slot($tour_id, $slot_iso) : []);
+      return new WP_REST_Response(['date'=>$date,'time'=>$time,'cell'=>$cell],201);
+    }
+  ]);
+});
+
+// Bulk operations on a date range
+add_action('rest_api_init', function(){
+  register_rest_route('kgh/v1', '/admin/availability/bulk', [
+    'methods' => 'POST',
+    'permission_callback' => 'kgh_admin_availability_capability',
+    'callback' => function(WP_REST_Request $req){
+      $p = $req->get_json_params();
+      $tour_id = (int)($p['tour_id'] ?? 0);
+      $from = sanitize_text_field($p['from'] ?? '');
+      $to   = sanitize_text_field($p['to']   ?? '');
+      $times= isset($p['times']) ? (array)$p['times'] : [];
+      $week = isset($p['weekdays']) ? array_map('intval',(array)$p['weekdays']) : [];
+      $ops  = (array)($p['ops'] ?? []);
+      if ($tour_id<=0 || get_post_type($tour_id)!=='tour') return new WP_REST_Response(['error'=>'invalid_tour'],400);
+      if (!preg_match('/^\d{4}-\d{2}-\d{2}$/',$from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/',$to)) return new WP_REST_Response(['error'=>'invalid_range'],400);
+      $kst = new DateTimeZone('Asia/Seoul');
+      $start = new DateTimeImmutable($from.' 00:00:00', $kst);
+      $end   = new DateTimeImmutable($to.' 00:00:00', $kst);
+      if ($end < $start) return new WP_REST_Response(['error'=>'invalid_range'],400);
+      // Determine base times if none provided
+      if (empty($times)) {
+        $sched = function_exists('kgh_avail_load_schedule') ? kgh_avail_load_schedule($tour_id) : null;
+        if ($sched && !empty($sched['time_slots'])) $times = (array)$sched['time_slots'];
+      }
+      // If still empty, infer from exceptions in range
+      if (empty($times)) {
+        $from_utc = $start->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
+        $to_utc   = $end->add(new DateInterval('P1D'))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
+        $rows = function_exists('kgh_ex_list_for_range') ? kgh_ex_list_for_range($tour_id, $from_utc, $to_utc) : [];
+        foreach ($rows as $r) {
+          $dt = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $r['slot_start_utc'], new DateTimeZone('UTC'));
+          if ($dt) { $hm = $dt->setTimezone($kst)->format('H:i'); if (!in_array($hm,$times,true)) $times[]=$hm; }
+        }
+      }
+      if (empty($times)) return new WP_REST_Response(['error'=>'no_times'],400);
+      // validate quarter-hour minutes
+      $times = array_values(array_filter(array_map(function($t){
+        if (!preg_match('/^\d{2}:\d{2}$/',(string)$t)) return null;
+        list($h,$m) = array_map('intval', explode(':',(string)$t));
+        return ($h>=0 && $h<=23 && in_array($m,[0,15,30,45],true)) ? sprintf('%02d:%02d',$h,$m) : null;
+      }, $times)));
+      if (empty($times)) return new WP_REST_Response(['error'=>'invalid_times','message'=>__('Minutes must be 00, 15, 30 or 45','kgh-booking')],400);
+      // Normalize ops
+      $closed = array_key_exists('closed', $ops) ? (bool)$ops['closed'] : null; // true to set, false to remove
+      $ov_cap = array_key_exists('override_cap', $ops) ? ($ops['override_cap']===null? null : max(0,(int)$ops['override_cap'])) : null;
+      $ov_price = array_key_exists('override_price_usd', $ops) ? ($ops['override_price_usd']===null? null : max(0,(int)$ops['override_price_usd'])) : (array_key_exists('override_price',$ops) ? ($ops['override_price']===null? null : max(0,(int)$ops['override_price'])) : null);
+      $ov_lang = array_key_exists('override_lang', $ops) ? ( ($ops['override_lang']===null || $ops['override_lang']==='') ? null : strtoupper(sanitize_text_field($ops['override_lang'])) ) : null;
+      $ext_qty = array_key_exists('external_booked', $ops) ? ($ops['external_booked']===null? 0 : max(0,(int)$ops['external_booked'])) : null;
+      $count = 0;
+      $cur = $start;
+      while ($cur <= $end) {
+        $ymd = $cur->format('Y-m-d');
+        $w = (int)$cur->format('w');
+        if (!empty($week) && !in_array($w,$week,true)) { $cur=$cur->add(new DateInterval('P1D')); continue; }
+        foreach ($times as $t) {
+          if (!preg_match('/^\d{2}:\d{2}$/',(string)$t)) continue;
+          $slot_iso = $ymd.'T'.$t.':00+09:00';
+          $existing = function_exists('kgh_ex_for_slot') ? kgh_ex_for_slot($tour_id, $slot_iso) : [];
+          $byType = [];
+          foreach ($existing as $row) $byType[$row['type']] = $row;
+          // Closed
+          if ($closed !== null) {
+            if ($closed) {
+              $r = kgh_ex_add(['tour_id'=>$tour_id,'slot_start_utc_iso'=>$slot_iso,'type'=>'closed']);
+              if (!is_wp_error($r)) $count++;
+            } else {
+              if (!empty($byType['closed'])) { kgh_ex_delete((int)$byType['closed']['id']); $count++; }
+            }
+          }
+          // Override
+          if ($ov_cap !== null || $ov_price !== null || $ov_lang !== null) {
+            $r = kgh_ex_add([
+              'tour_id'=>$tour_id,
+              'slot_start_utc_iso'=>$slot_iso,
+              'type'=>'override',
+              'cap_override'=>$ov_cap,
+              'price_usd_override'=>$ov_price,
+              'lang_override'=>$ov_lang,
+            ]);
+            if (!is_wp_error($r)) $count++;
+          }
+          // External booked
+          if ($ext_qty !== null) {
+            if ($ext_qty>0) {
+              $r = kgh_ex_add(['tour_id'=>$tour_id,'slot_start_utc_iso'=>$slot_iso,'type'=>'external_booked','external_qty'=>$ext_qty]);
+              if (!is_wp_error($r)) $count++;
+            } else {
+              if (!empty($byType['external_booked'])) { kgh_ex_delete((int)$byType['external_booked']['id']); $count++; }
+            }
+          }
+        }
+        $cur = $cur->add(new DateInterval('P1D'));
+      }
+      return new WP_REST_Response(['ok'=>true,'updated'=>$count],200);
+    }
+  ]);
+});
 
 function kgh_admin_availability_build_cell($tour_id, $slot_iso, $slot_data, $exceptions) {
   if (!is_array($exceptions)) {

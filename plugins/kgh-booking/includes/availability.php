@@ -165,7 +165,8 @@ function kgh_avail_day_slots(int $tour_id, string $ymd_kst): array {
   if ($cached !== false) return is_array($cached) ? $cached : [];
 
   $sched = kgh_avail_load_schedule($tour_id);
-  if (!$sched) { set_transient($ckey, [], 30); return []; }
+  // Note: we now support one-off slots outside of schedule via exceptions.
+  // If no schedule exists, we will still expose slots found in exceptions for that day.
 
   $kst = kgh_kst_tz();
   try { $day = new DateTimeImmutable($ymd_kst.' 00:00:00', $kst); }
@@ -174,22 +175,40 @@ function kgh_avail_day_slots(int $tour_id, string $ymd_kst): array {
   $wd = (int)$day->format('w'); // 0..6 (Sun..Sat)
   $weekdays = isset($sched['weekdays']) && is_array($sched['weekdays']) ? array_map('intval', $sched['weekdays']) : [];
   $alt_weekdays = isset($sched['alt_weekdays']) && is_array($sched['alt_weekdays']) ? array_map('intval', $sched['alt_weekdays']) : [];
-  $is_alt_day = in_array($wd, $alt_weekdays, true);
-  if (!in_array($wd, $weekdays, true) && !$is_alt_day) { set_transient($ckey, [], 30); return []; }
+  $is_alt_day = $sched ? in_array($wd, $alt_weekdays, true) : false;
+  $day_in_schedule = $sched ? (in_array($wd, $weekdays, true) || $is_alt_day) : false;
 
   $capacity = (int)($sched['capacity'] ?? 0);
   $price_usd = (int)($sched['price_usd'] ?? 0);
   $language = (string)($sched['language'] ?? 'EN');
   $cutoff_h = (int)($sched['cutoff_hours'] ?? 0);
-  $slots = $is_alt_day ? (array)($sched['alt_time_slots'] ?? []) : (array)($sched['time_slots'] ?? []);
-  if ($is_alt_day && isset($sched['alt_price_usd']) && $sched['alt_price_usd'] !== null) {
+  $slots = $sched ? ($is_alt_day ? (array)($sched['alt_time_slots'] ?? []) : (array)($sched['time_slots'] ?? [])) : [];
+  if ($sched && $is_alt_day && isset($sched['alt_price_usd']) && $sched['alt_price_usd'] !== null) {
     $price_usd = (int)$sched['alt_price_usd'];
   }
   $now_kst = new DateTimeImmutable('now', $kst);
 
   $out = [];
+  $slot_times = [];
   foreach ($slots as $t) {
     if (!preg_match('/^\d{2}:\d{2}$/', (string)$t)) continue;
+    $slot_times[] = (string)$t;
+  }
+
+  // Also merge in times coming from exceptions for that day (one-off slots etc.)
+  $range_start_utc = $day->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
+  $range_end_utc   = $day->add(new DateInterval('P1D'))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP');
+  $ex_rows = function_exists('kgh_ex_list_for_range') ? kgh_ex_list_for_range($tour_id, $range_start_utc, $range_end_utc) : [];
+  foreach ($ex_rows as $row) {
+    $dt_utc = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $row['slot_start_utc'], new DateTimeZone('UTC'));
+    if (!$dt_utc) continue;
+    $hm = $dt_utc->setTimezone($kst)->format('H:i');
+    if (!in_array($hm, $slot_times, true)) $slot_times[] = $hm;
+  }
+
+  sort($slot_times);
+
+  foreach ($slot_times as $t) {
     [$hh,$mm] = explode(':', $t, 2);
     $slot = $day->setTime((int)$hh, (int)$mm, 0);
     $slot_iso_kst = kgh_avail_iso_kst($slot);
@@ -202,7 +221,7 @@ function kgh_avail_day_slots(int $tour_id, string $ymd_kst): array {
 
     // Cutoff first
     $cutoff_time = $now_kst->add(new DateInterval('PT'.max(0,$cutoff_h).'H'));
-    $cutoff_hit = ($slot < $cutoff_time);
+    $cutoff_hit = $sched ? ($slot < $cutoff_time) : false; // if no schedule, ignore cutoff for safety
 
     // Exceptions (collect first, then apply priority rules)
     $external_sum = 0;
@@ -251,6 +270,16 @@ function kgh_avail_day_slots(int $tour_id, string $ymd_kst): array {
     if ($ov_cap !== null)   $eff_capacity = $ov_cap;
     if ($ov_price !== null) $eff_price = $ov_price;
     if ($ov_lang !== null)  $eff_lang = $ov_lang;
+
+    // If this day/time is outside schedule, require at least an override cap/price to be meaningful.
+    if (!$day_in_schedule && !in_array($t, $slots, true)) {
+      // For one-off slots created via override, both cap and price should be present; if not, skip.
+      if ($ov_cap === null || $ov_price === null) {
+        // Skip exposing an unusable slot
+        continue;
+      }
+      // Base values are already the overrides set above.
+    }
 
     // Site bookings + holds (only when not cutoff/closed)
     $site = kgh_sum_booked_qty($tour_id, $slot_iso_kst);

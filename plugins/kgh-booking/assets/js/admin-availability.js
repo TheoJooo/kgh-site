@@ -19,6 +19,51 @@
       <button class="button button-primary" id="kgh-avail-load">${esc(data.i18n.load || 'Load')}</button>
       <span style="opacity:.7;">${esc(data.i18n.allTimesKst || 'All times KST')}</span>
     </div>
+    <div class="kgh-actions" style="margin:12px 0;padding:12px;border:1px solid #ddd;border-radius:6px;background:#fafafa;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div><strong>Add one-off slot</strong></div>
+        <label>Date <input type="date" id="kgh-oneoff-date"></label>
+        <label>Time <input type="time" id="kgh-oneoff-time" step="900"></label>
+        <label>Cap <input type="number" id="kgh-oneoff-cap" min="1" max="50" style="width:90px"></label>
+        <label>Price (USD cents) <input type="number" id="kgh-oneoff-price" min="0" style="width:120px"></label>
+        <label>Lang
+          <select id="kgh-oneoff-lang">
+            <option value="EN">EN</option>
+            <option value="FR">FR</option>
+            <option value="KO">KO</option>
+          </select>
+        </label>
+        <button class="button" id="kgh-oneoff-add">Add</button>
+      </div>
+      <hr style="margin:12px 0;opacity:.25">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div><strong>Bulk actions</strong></div>
+        <div>Weekdays:
+          <label><input type="checkbox" class="kgh-bulk-wd" value="0"> Sun</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="1"> Mon</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="2"> Tue</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="3"> Wed</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="4"> Thu</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="5"> Fri</label>
+          <label><input type="checkbox" class="kgh-bulk-wd" value="6"> Sat</label>
+        </div>
+        <label>Time (HH:MM or empty=all) <input type="time" id="kgh-bulk-time" step="900"></label>
+        <label><input type="checkbox" id="kgh-bulk-closed"> Set closed</label>
+        <label><input type="checkbox" id="kgh-bulk-open"> Reopen (clear closed)</label>
+        <label>Override cap <input type="number" id="kgh-bulk-cap" min="0" max="50" style="width:90px" placeholder="—"></label>
+        <label>Override price (USD cents) <input type="number" id="kgh-bulk-price" min="0" style="width:120px" placeholder="—"></label>
+        <label>Override language
+          <select id="kgh-bulk-lang">
+            <option value="">—</option>
+            <option value="EN">EN</option>
+            <option value="FR">FR</option>
+            <option value="KO">KO</option>
+          </select>
+        </label>
+        <label>External booked <input type="number" id="kgh-bulk-ext" min="0" max="50" style="width:90px" placeholder="—"></label>
+        <button class="button" id="kgh-bulk-apply">Apply</button>
+      </div>
+    </div>
     <div id="kgh-availability-status"></div>
     <div id="kgh-availability-table"></div>
     <div class="kgh-legend">
@@ -33,6 +78,20 @@
   const btnLoad = document.getElementById('kgh-avail-load');
   const statusBox = document.getElementById('kgh-availability-status');
   const tableWrap = document.getElementById('kgh-availability-table');
+  const oneDate = document.getElementById('kgh-oneoff-date');
+  const oneTime = document.getElementById('kgh-oneoff-time');
+  const oneCap  = document.getElementById('kgh-oneoff-cap');
+  const onePrice= document.getElementById('kgh-oneoff-price');
+  const oneLang = document.getElementById('kgh-oneoff-lang');
+  const btnOne  = document.getElementById('kgh-oneoff-add');
+  const bulkTime = document.getElementById('kgh-bulk-time');
+  const bulkClosed = document.getElementById('kgh-bulk-closed');
+  const bulkOpen = document.getElementById('kgh-bulk-open');
+  const bulkCap = document.getElementById('kgh-bulk-cap');
+  const bulkPrice = document.getElementById('kgh-bulk-price');
+  const bulkLang = document.getElementById('kgh-bulk-lang');
+  const bulkExt = document.getElementById('kgh-bulk-ext');
+  const btnBulk = document.getElementById('kgh-bulk-apply');
 
   function esc(str){ return String(str || '').replace(/[&<>]/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[s])); }
 
@@ -245,6 +304,53 @@
     if (!state.start || !state.end){ setStatus('Select a range','error'); return; }
     if (state.start > state.end) { setStatus('Start date must be before end date','error'); return; }
     loadData();
+  });
+
+  btnOne.addEventListener('click', async ()=>{
+    if (!state.tourId) { setStatus('Select a tour','error'); return; }
+    const d = oneDate.value; const t = oneTime.value.slice(0,5);
+    const cap = parseInt(oneCap.value,10); const price = parseInt(onePrice.value,10); const lang = oneLang.value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !/^\d{2}:\d{2}$/.test(t)) { setStatus('Pick date/time','error'); return; }
+    try {
+      const res = await fetch(`${data.restBase}/admin/availability/add`, {
+        method:'POST', headers:{'Content-Type':'application/json','X-WP-Nonce':data.nonce},
+        body: JSON.stringify({ tour_id: state.tourId, date:d, time:t, cap, price_usd: price, language: lang })
+      });
+      const json = await res.json();
+      if (!res.ok) { setStatus(json.message || json.error || 'Add failed','error'); return; }
+      setStatus(data.i18n.saved || 'Saved','success');
+      // if current table covers that day and time, reload for visibility; else just leave
+      await loadData();
+    } catch(e) { setStatus('Network error','error'); }
+  });
+
+  btnBulk.addEventListener('click', async ()=>{
+    if (!state.tourId) { setStatus('Select a tour','error'); return; }
+    if (!state.start || !state.end) { setStatus('Select a range','error'); return; }
+    const wd = Array.from(document.querySelectorAll('.kgh-bulk-wd:checked')).map(el=>parseInt(el.value,10));
+    const t = bulkTime.value ? bulkTime.value.slice(0,5) : '';
+    const ops = {};
+    // Closed/open
+    if (bulkClosed.checked) ops.closed = true;
+    if (bulkOpen.checked) ops.closed = false;
+    // Only include fields when provided
+    if (bulkCap.value !== '') ops.override_cap = parseInt(bulkCap.value,10);
+    if (bulkPrice.value !== '') ops.override_price_usd = parseInt(bulkPrice.value,10);
+    if (bulkLang.value !== '') ops.override_lang = bulkLang.value;
+    if (bulkExt.value !== '') ops.external_booked = parseInt(bulkExt.value,10);
+    const payload = { tour_id: state.tourId, from: state.start, to: state.end, ops };
+    if (wd.length) payload.weekdays = wd;
+    if (t) payload.times = [t];
+    try {
+      const res = await fetch(`${data.restBase}/admin/availability/bulk`, {
+        method:'POST', headers:{'Content-Type':'application/json','X-WP-Nonce':data.nonce},
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (!res.ok) { setStatus(json.message || json.error || 'Bulk failed','error'); return; }
+      setStatus(`${json.updated || 0} slots updated`,'success');
+      await loadData();
+    } catch(e) { setStatus('Network error','error'); }
   });
 
   populateTours();

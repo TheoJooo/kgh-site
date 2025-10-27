@@ -7,6 +7,11 @@
  */
 if ( ! defined('ABSPATH') ) exit;
 
+// Legacy UI for the deprecated `tour_date` CPT. Disabled unless explicitly re-enabled.
+if (!defined('KGH_ENABLE_TOUR_DATE') || !KGH_ENABLE_TOUR_DATE) {
+  return;
+}
+
 /* ---------------------------------------------
  * 0) Helpers
  * -------------------------------------------*/

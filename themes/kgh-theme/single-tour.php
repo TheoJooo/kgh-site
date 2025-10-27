@@ -59,6 +59,14 @@ if (is_string($sched_raw) && $sched_raw !== '') {
   }
 }
 
+// If no price from schedule, enable booking UI when there are actual upcoming slots (one-off or scheduled)
+if (!$has_price && function_exists('kgh_avail_days')) {
+  $upcoming = kgh_avail_days($tour_id, 120);
+  if (!empty($upcoming)) {
+    $has_price = true;
+  }
+}
+
 // badges (taxonomie)
 $badges = get_the_terms($tour_id, 'kgh_badge');
 if (is_wp_error($badges)) $badges = [];

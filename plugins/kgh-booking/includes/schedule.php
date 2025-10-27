@@ -46,8 +46,8 @@ function kgh_schedule_validate(array $in) {
     }
     [$hh,$mm] = explode(':', $t, 2);
     $hh = (int)$hh; $mm = (int)$mm;
-    if ($hh<0 || $hh>23 || !in_array($mm, [0,30], true)) {
-      return new WP_Error('schedule_time', sprintf(__('Invalid time %s. Minutes must be 00 or 30.', 'kgh-booking'), $t));
+    if ($hh<0 || $hh>23 || !in_array($mm, [0,15,30,45], true)) {
+      return new WP_Error('schedule_time', sprintf(__('Invalid time %s. Minutes must be 00, 15, 30 or 45.', 'kgh-booking'), $t));
     }
     $ts[] = sprintf('%02d:%02d', $hh, $mm);
   }
@@ -92,8 +92,8 @@ function kgh_schedule_validate(array $in) {
     }
     [$hh,$mm] = explode(':', $t, 2);
     $hh = (int)$hh; $mm = (int)$mm;
-    if ($hh<0 || $hh>23 || !in_array($mm, [0,30], true)) {
-      return new WP_Error('schedule_time_alt', sprintf(__('Invalid alternate time %s. Minutes must be 00 or 30.', 'kgh-booking'), $t));
+    if ($hh<0 || $hh>23 || !in_array($mm, [0,15,30,45], true)) {
+      return new WP_Error('schedule_time_alt', sprintf(__('Invalid alternate time %s. Minutes must be 00, 15, 30 or 45.', 'kgh-booking'), $t));
     }
     $ats[] = sprintf('%02d:%02d', $hh, $mm);
   }
@@ -172,22 +172,24 @@ function kgh_render_tour_schedule_metabox($post){
   }
   wp_nonce_field('kgh_save_tour_schedule','kgh_tour_schedule_nonce');
   $raw = get_post_meta($post->ID, '_kgh_schedule', true);
-  $data = kgh_schedule_defaults();
-  if (is_string($raw) && $raw !== '') {
+  $has_data = (is_string($raw) && $raw !== '');
+  if ($has_data) {
     $dec = json_decode($raw, true);
-    if (is_array($dec)) $data = array_merge($data, $dec);
+    $data = is_array($dec) ? array_merge(kgh_schedule_defaults(), $dec) : kgh_schedule_defaults();
+  } else {
+    $data = null; // render blank for tours without a schedule
   }
 
-  $weekdays = $data['weekdays'];
-  $time_slots = implode(',', $data['time_slots']);
-  $capacity = (int)$data['capacity'];
-  $price_usd = (int)$data['price_usd'];
-  $duration = (int)$data['duration_min'];
-  $language = (string)$data['language'];
-  $cutoff = (int)$data['cutoff_hours'];
-  $alt_weekdays = (array)($data['alt_weekdays'] ?? []);
-  $alt_time_slots = implode(',', (array)($data['alt_time_slots'] ?? []));
-  $alt_price_usd = isset($data['alt_price_usd']) && $data['alt_price_usd'] !== null ? (int)$data['alt_price_usd'] : '';
+  $weekdays = $data ? (array)$data['weekdays'] : [];
+  $time_slots = $data ? implode(',', (array)$data['time_slots']) : '';
+  $capacity = $data ? (string)(int)$data['capacity'] : '';
+  $price_usd = $data ? (string)(int)$data['price_usd'] : '';
+  $duration = $data ? (string)(int)$data['duration_min'] : '';
+  $language = $data ? (string)$data['language'] : 'EN';
+  $cutoff = $data ? (string)(int)$data['cutoff_hours'] : '';
+  $alt_weekdays = $data ? (array)($data['alt_weekdays'] ?? []) : [];
+  $alt_time_slots = $data ? implode(',', (array)($data['alt_time_slots'] ?? [])) : '';
+  $alt_price_usd = ($data && isset($data['alt_price_usd']) && $data['alt_price_usd'] !== null) ? (string)(int)$data['alt_price_usd'] : '';
 
   echo '<div style="display:grid;gap:12px;max-width:740px;font-family:system-ui;">';
 
@@ -211,17 +213,17 @@ function kgh_render_tour_schedule_metabox($post){
 
   // Capacity
   echo '<div><label><strong>'.esc_html__('Capacity','kgh-booking').'</strong></label><br/>';
-  printf('<input type="number" name="kgh_schedule_capacity" value="%d" min="1" max="50" step="1" style="width:120px;">', $capacity);
+  printf('<input type="number" name="kgh_schedule_capacity" value="%s" min="1" max="50" step="1" style="width:120px;" placeholder="12">', esc_attr($capacity));
   echo '</div>';
 
   // Price USD (cents)
   echo '<div><label><strong>'.esc_html__('Price USD (cents)','kgh-booking').'</strong></label><br/>';
-  printf('<input type="number" name="kgh_schedule_price_usd" value="%d" min="0" step="1" style="width:160px;">', $price_usd);
+  printf('<input type="number" name="kgh_schedule_price_usd" value="%s" min="0" step="1" style="width:160px;" placeholder="11500">', esc_attr($price_usd));
   echo '<div style="opacity:.7">'.esc_html__('in cents (11500 = $115.00)','kgh-booking').'</div></div>';
 
   // Duration
   echo '<div><label><strong>'.esc_html__('Duration (minutes)','kgh-booking').'</strong></label><br/>';
-  printf('<input type="number" name="kgh_schedule_duration_min" value="%d" min="60" max="360" step="1" style="width:140px;">', $duration);
+  printf('<input type="number" name="kgh_schedule_duration_min" value="%s" min="60" max="360" step="1" style="width:140px;" placeholder="180">', esc_attr($duration));
   echo '</div>';
 
   // Language
@@ -234,7 +236,7 @@ function kgh_render_tour_schedule_metabox($post){
 
   // Cutoff hours
   echo '<div><label><strong>'.esc_html__('Cutoff (hours)','kgh-booking').'</strong></label><br/>';
-  printf('<input type="number" name="kgh_schedule_cutoff_hours" value="%d" min="0" max="72" step="1" style="width:120px;">', $cutoff);
+  printf('<input type="number" name="kgh_schedule_cutoff_hours" value="%s" min="0" max="72" step="1" style="width:120px;" placeholder="12">', esc_attr($cutoff));
   echo '</div>';
 
   // --- Alternate rule ---
@@ -284,6 +286,13 @@ add_action('save_post_tour', function($post_id, $post){
   $in['alt_weekdays']   = isset($_POST['kgh_schedule_alt_weekdays']) ? (array) $_POST['kgh_schedule_alt_weekdays'] : [];
   $in['alt_time_slots'] = (string)($_POST['kgh_schedule_alt_time_slots'] ?? '');
   $in['alt_price_usd']  = ($_POST['kgh_schedule_alt_price_usd'] === '' ? null : (int)($_POST['kgh_schedule_alt_price_usd'] ?? 0));
+
+  // If both weekdays and time slots are empty, treat as "no schedule": clear meta and exit.
+  if (empty($in['weekdays']) && trim($in['time_slots']) === '') {
+    delete_post_meta($post_id, '_kgh_schedule');
+    set_transient('kgh_schedule_updated', __('Schedule cleared.', 'kgh-booking'), 30);
+    return;
+  }
 
   $norm = kgh_schedule_validate($in);
   if (is_wp_error($norm)) {
