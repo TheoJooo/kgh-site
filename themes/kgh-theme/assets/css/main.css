@@ -94,3 +94,6 @@ body {
 
 /* assets/css/main.css */
 [data-kgh-ts-track] > article { min-height: 260px; }
+
+/* --- Availability section helpers (override Tailwind preflight if needed) --- */
+.kgh-separator { display:block; width:100%; border:0 !important; border-top:2px solid #131313 !important; margin:16px 0 !important; }

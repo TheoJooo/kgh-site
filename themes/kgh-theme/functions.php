@@ -51,11 +51,19 @@ function kgh_enqueue_assets() {
     true
   );
 
-  // assets/css/main.css
+  // assets/css/app.css (Tailwind) — load BEFORE our main so main can override
+  wp_enqueue_style(
+    'kgh-app',
+    KGH_URI . '/assets/css/app.css',
+    ['kgh-style'],
+    KGH_VERSION
+  );
+
+  // assets/css/main.css — depends on tailwind so it overrides base/preflight
   wp_enqueue_style(
     'kgh-main',
     KGH_URI . '/assets/css/main.css',
-    ['kgh-style'],
+    ['kgh-style','kgh-app'],
     KGH_VERSION
   );
 
@@ -76,14 +84,6 @@ function kgh_enqueue_assets() {
     [],
     KGH_VERSION,
     true
-  );
-
-  // assets/css/app.css (généré par Tailwind)
-  wp_enqueue_style(
-    'kgh-app',
-    KGH_URI . '/assets/css/app.css',
-    ['kgh-style'],
-    KGH_VERSION
   );
 
   wp_localize_script('kgh-main-js', 'KGHBooking', [
