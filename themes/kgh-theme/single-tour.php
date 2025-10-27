@@ -10,8 +10,8 @@ $tour_id = get_the_ID();
 get_header();
 
 /** —————————————————— Feature flag réservation —————————————————— */
-// $booking_enabled = (bool) apply_filters('kgh_booking_enabled', true);
-$booking_enabled = false; 
+$booking_enabled = (bool) apply_filters('kgh_booking_enabled', true);
+// $booking_enabled = false; 
 
 /** —————————————————— Strings UI (réservation) —————————————————— */
 $ui_strings = [
@@ -40,6 +40,19 @@ $subtitle = function_exists('SCF')
 $duration  = trim((string) get_post_meta($tour_id, 'duration', true));
 $capacity  = trim((string) get_post_meta($tour_id, 'capacity', true));
 $languages = trim((string) get_post_meta($tour_id, 'languages', true));
+
+// Determine if tour has a configured price in schedule (main or alternate)
+$has_price = false;
+$sched_raw = get_post_meta($tour_id, '_kgh_schedule', true);
+if (is_string($sched_raw) && $sched_raw !== '') {
+  $sched = json_decode($sched_raw, true);
+  if (is_array($sched)) {
+    $main_price = isset($sched['price_usd']) ? (int)$sched['price_usd'] : 0;
+    $alt_days   = isset($sched['alt_weekdays']) && is_array($sched['alt_weekdays']) ? $sched['alt_weekdays'] : [];
+    $alt_price  = array_key_exists('alt_price_usd', $sched) ? $sched['alt_price_usd'] : null; // may be null
+    $has_price = ($main_price > 0) || (!empty($alt_days) && $alt_price !== null && (int)$alt_price > 0);
+  }
+}
 
 // badges (taxonomie)
 $badges = get_the_terms($tour_id, 'kgh_badge');
@@ -172,6 +185,7 @@ if (!function_exists('kgh_fmt_duration')) {
     </div>
   </section>
 
+  <?php if (!$booking_enabled || !$has_price): ?>
   <!-- CTA: Contact us to book -->
   <div class="flex flex-col mt-6 max-w-[400px]">
     <div class="flex flex-row items-center">
@@ -181,6 +195,55 @@ if (!function_exists('kgh_fmt_duration')) {
       </a>
     </div>
   </div>
+  <?php endif; ?>
+
+  <?php if ($booking_enabled && $has_price): ?>
+  <section class="mt-8 md:mt-10 rounded-lg bg-white p-6 md:p-8">
+    <h3 class="text-lg font-semibold text-black mb-4">Check availability</h3>
+    <?php
+      // Optional SCF note displayed under the availability controls
+      $avail_note = function_exists('SCF')
+        ? SCF::get('availability_note', $tour_id)
+        : get_post_meta($tour_id, 'availability_note', true);
+      $avail_note = is_string($avail_note) ? trim($avail_note) : '';
+    ?>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <!-- <label class="block">
+        <span class="block text-sm mb-1">Date</span>
+          <select id="kgh-date" class="kgh-input w-full"></select>
+          <input id="kgh-date" type="date" class="kgh-input w-full">
+      </label> -->
+      <label class="block">
+        <span class="block text-sm mb-1">Date</span>
+        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
+      </label>
+
+      <label class="block">
+        <span class="block text-sm mb-1">Time</span>
+        <select id="kgh-time" class="kgh-input w-full"></select>
+      </label>
+
+      <label class="block">
+        <span class="block text-sm mb-1">Guests</span>
+        <select id="kgh-guests" class="kgh-input w-full">
+          <option value="1">1</option>
+        </select>
+      </label>
+
+      <button id="kgh-cta" class="kgh-btn--primary">Reserve</button>
+    </div>
+
+    <p id="kgh-estimate" class="mt-3 text-sm text-black" style="display:none"></p>
+    <?php if ($avail_note !== ''): ?>
+      <p class="mt-2 text-sm text-gray-700"><?php echo esc_html($avail_note); ?></p>
+    <?php endif; ?>
+    <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
+      No availability for this date
+    </p>
+    <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
+  </section>
+  <?php endif; ?>
 
   <!-- Advantages / Guarantees -->
   <section class="mt-8 md:mt-10">
@@ -586,44 +649,6 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
   </section>
 
 
-  <?php if ($booking_enabled): ?>
-  <section class="mt-8 md:mt-10 rounded-lg bg-white p-6 md:p-8">
-    <h3 class="text-lg font-semibold text-black mb-4">Check availability</h3>
-
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-      <!-- <label class="block">
-        <span class="block text-sm mb-1">Date</span>
-          <select id="kgh-date" class="kgh-input w-full"></select>
-          <input id="kgh-date" type="date" class="kgh-input w-full">
-      </label> -->
-      <label class="block">
-        <span class="block text-sm mb-1">Date</span>
-        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
-      </label>
-
-      <label class="block">
-        <span class="block text-sm mb-1">Time</span>
-        <select id="kgh-time" class="kgh-input w-full"></select>
-      </label>
-
-      <label class="block">
-        <span class="block text-sm mb-1">Guests</span>
-        <select id="kgh-guests" class="kgh-input w-full">
-          <option value="1">1</option>
-        </select>
-      </label>
-
-      <button id="kgh-cta" class="kgh-btn--primary">Reserve</button>
-    </div>
-
-    <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
-      No availability for this date
-    </p>
-    <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
-  </section>
-  <?php endif; ?>
-
-
   <!-- Contact section -->
   <section id="kgh-contact" class="mt-12 md:mt-16 scroll-mt-24">
     <?php
@@ -664,6 +689,7 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
   const elCTA    = document.getElementById('kgh-cta');
   const elErr    = document.getElementById('kgh-booking-error');
   const elNo     = document.getElementById('kgh-no-slots');
+  const elEst    = document.getElementById('kgh-estimate');
 
   let slots = [];
   let selectedSlot = null;
@@ -684,6 +710,17 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
     }
     elErr.textContent = msg;
     elErr.style.display = 'block';
+  }
+  function dollars(cents){ return '$' + ((cents||0)/100).toFixed(2); }
+  function updateEstimate(){
+    if (!selectedSlot) { if(elEst){ elEst.style.display='none'; elEst.textContent=''; } return; }
+    const qty = Math.max(1, parseInt(elGuests.value||'1',10));
+    const unit = parseInt(selectedSlot.price_usd||0,10);
+    const total = unit * qty;
+    if (elEst) {
+      elEst.textContent = `Estimated total: ${dollars(total)} (${qty} × ${dollars(unit)})`;
+      elEst.style.display = 'block';
+    }
   }
 
   function isoToKstHm(iso) {
@@ -845,6 +882,7 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
       } else {
         elNo.style.display = 'block';
         elGuests.innerHTML = '<option value="1">1</option>';
+        updateEstimate();
       }
     } catch (e) {
       elTime.innerHTML = `<option value="">${messages.networkError}</option>`;
@@ -861,6 +899,7 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
       setDisabled(elGuests, true);
       setDisabled(elCTA, true);
       elGuests.innerHTML = '<option value="1">1</option>';
+      updateEstimate();
       return;
     }
     const max = Math.min(50, Math.max(1, parseInt(selectedSlot.left, 10)));
@@ -877,6 +916,7 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
     elGuests.value = String(want);
     setDisabled(elGuests, false);
     setDisabled(elCTA, false);
+    updateEstimate();
   }
 
   function todayKST() {
@@ -893,6 +933,7 @@ echo "\n<!-- raw meta discover_items: " . print_r(get_post_meta($tour_id, 'disco
   //   if (elDate.value) { loadSlotsForDate(elDate.value); }
   // });
   elTime.addEventListener('change', onTimeChange);
+  elGuests.addEventListener('change', updateEstimate);
   elCTA.addEventListener('click', async () => {
     if (!selectedSlot) return;
     const hm = isoToKstHm(selectedSlot.slot_start_iso);

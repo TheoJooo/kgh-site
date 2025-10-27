@@ -80,6 +80,7 @@ function kghp_webhook_handle(WP_REST_Request $req) {
 
     // Parse "tour:ID;date:ID;qty:N;email:foo"
     $tour_id = $tour_date_id = $qty = 0; $email = ''; $slot_iso = '';
+    $first_name = $last_name = $phone = '';
     foreach (explode(';', (string)$custom) as $pair) {
       if (strpos($pair, ':') !== false) {
         list($k,$v) = array_map('trim', explode(':', $pair, 2));
@@ -88,6 +89,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
         if ($k==='qty')   $qty = max(1, (int)$v);
         if ($k==='email') $email = sanitize_email($v);
         if ($k==='slot')  $slot_iso = $v;
+        if ($k==='fn')    $first_name = sanitize_text_field($v);
+        if ($k==='ln')    $last_name  = sanitize_text_field($v);
+        if ($k==='ph')    $phone      = sanitize_text_field($v);
       }
     }
 
@@ -123,6 +127,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
         'amount_usd_cents' => $amount_cents,
         'currency'         => strtolower($currency),
         'customer_email'   => $email,
+        'customer_first_name' => $first_name,
+        'customer_last_name'  => $last_name,
+        'customer_phone'      => $phone,
         'slot_start_iso'   => $slot_iso,
         'paypal_capture_id'=> $capture_id,
         'paypal_order_id'  => $order_id,
@@ -160,12 +167,14 @@ function kghp_webhook_handle(WP_REST_Request $req) {
   if ($type === 'PAYMENT.CAPTURE.COMPLETED') {
     $res = $event['resource'] ?? [];
     $custom = $res['custom_id'] ?? '';
+    $order_id = $res['supplementary_data']['related_ids']['order_id'] ?? '';
 
     // Debug utile
     error_log('[KGH] WEBHOOK capture completed raw='.substr($raw,0,500));
 
     // Parse custom_id "tour:ID;date:ID;qty:N;email:foo"
     $tour_id = $tour_date_id = $qty = 0; $email = ''; $slot_iso = '';
+    $first_name = $last_name = $phone = '';
     foreach (explode(';', $custom) as $pair) {
       if (str_contains($pair, ':')) {
         [$k,$v] = array_map('trim', explode(':', $pair, 2));
@@ -174,6 +183,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
         if ($k==='qty')   $qty = max(1, intval($v));
         if ($k==='email') $email = sanitize_email($v);
         if ($k==='slot')  $slot_iso = $v;
+        if ($k==='fn')    $first_name = sanitize_text_field($v);
+        if ($k==='ln')    $last_name  = sanitize_text_field($v);
+        if ($k==='ph')    $phone      = sanitize_text_field($v);
       }
     }
 
@@ -214,6 +226,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       'amount_usd_cents' => $amount_cents,
       'currency'         => $currency,
       'customer_email'   => $email,
+      'customer_first_name' => $first_name,
+      'customer_last_name'  => $last_name,
+      'customer_phone'      => $phone,
       'slot_start_iso'   => $slot_iso,
       'paypal_capture_id'=> $capture_id,
       'payment_status'   => 'paid',
@@ -221,6 +236,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
     // Compat alias for capture meta key
     if (!is_wp_error($booking_id) && $capture_id) {
       update_post_meta($booking_id, '_kgh_paypal_capture_id', $capture_id);
+    }
+    if (!is_wp_error($booking_id) && $order_id) {
+      update_post_meta($booking_id, '_kgh_paypal_order_id', sanitize_text_field($order_id));
     }
     if (function_exists('kgh_capacity_invalidate')) {
       kgh_capacity_invalidate((int)$tour_date_id);
@@ -233,10 +251,9 @@ function kghp_webhook_handle(WP_REST_Request $req) {
       kgh_avail_invalidate_day_cache((int)$tour_id, substr($slot_iso,0,10));
     }
 
-    // Remove hold if any (try to find order_id from related_ids)
-    if (function_exists('kgh_remove_hold') && $slot_iso) {
-      $order_id = $res['supplementary_data']['related_ids']['order_id'] ?? '';
-      if ($order_id) kgh_remove_hold((int)$tour_id, $slot_iso, $order_id);
+    // Remove hold if any
+    if (function_exists('kgh_remove_hold') && $slot_iso && $order_id) {
+      kgh_remove_hold((int)$tour_id, $slot_iso, $order_id);
     }
 
     // 3) Emails (stub pour l’instant)

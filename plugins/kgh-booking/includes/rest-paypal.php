@@ -24,6 +24,9 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $slot_start_iso = (string)$req->get_param('slot_start_iso');
   $qty            = max(1, (int)$req->get_param('qty'));
   $customer_email = sanitize_email($req->get_param('customer_email'));
+  $first_name     = sanitize_text_field($req->get_param('customer_first_name'));
+  $last_name      = sanitize_text_field($req->get_param('customer_last_name'));
+  $phone          = sanitize_text_field($req->get_param('customer_phone'));
 
   if ($tour_id <= 0 || !$slot_start_iso) {
     return new WP_Error('BAD_REQUEST','tour_id and slot_start_iso required',['status'=>400]);
@@ -53,8 +56,16 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $amount_value = number_format(($quote['unit_usd'] / 100) * $qty, 2, '.', '');
 
   // Pass useful details via custom_id (<=127 chars)
-  $custom_id = sprintf('tour:%d;slot:%s;qty:%d;email:%s',
-    $tour_id, substr($slot_start_iso,0,32), $qty, substr($customer_email,0,40)
+  // Keep it parseable and short; strip semicolons/colons to avoid breaking parser
+  $norm = function($s, $len){ $s = preg_replace('~[;:]~','-', (string)$s); return substr($s, 0, $len); };
+  $custom_id = sprintf('tour:%d;slot:%s;qty:%d;email:%s;fn:%s;ln:%s;ph:%s',
+    $tour_id,
+    substr($slot_start_iso,0,32),
+    $qty,
+    $norm($customer_email,40),
+    $norm($first_name,20),
+    $norm($last_name,20),
+    $norm($phone,20)
   );
   $success_url = function_exists('home_url') ? home_url('/checkout/success/') : '/checkout/success/';
   $cancel_url  = function_exists('home_url') ? home_url('/checkout/cancel/')  : '/checkout/cancel/';
@@ -180,8 +191,41 @@ function kghp_paypal_status( WP_REST_Request $req ) {
     'meta_query'  => [[ 'key'=>'_kgh_paypal_order_id','value'=>$order_id,'compare'=>'=' ]],
   ]);
   if (empty($ids)) {
-    // fallback: sometimes we only have capture id; cannot map from order id reliably here
-    return new WP_REST_Response(['status'=>'processing'], 200);
+    // Fallback: query PayPal for this order to get the capture id, then map to our booking
+    $order = kghp_paypal_request('GET', '/v2/checkout/orders/' . urlencode($order_id));
+    if (!is_wp_error($order)) {
+      $pu = $order['purchase_units'][0] ?? [];
+      $captures = $pu['payments']['captures'] ?? [];
+      $cap = is_array($captures) && !empty($captures) ? $captures[0] : [];
+      $capture_id = isset($cap['id']) ? (string)$cap['id'] : '';
+      if ($capture_id !== '') {
+        $ids_by_cap = get_posts([
+          'post_type'   => 'booking',
+          'post_status' => 'any',
+          'numberposts' => 1,
+          'fields'      => 'ids',
+          'meta_query'  => [[ 'key'=>'_kgh_paypal_capture','value'=>$capture_id,'compare'=>'=' ]],
+        ]);
+        if (empty($ids_by_cap)) {
+          // also try alias meta key used as compatibility
+          $ids_by_cap = get_posts([
+            'post_type'   => 'booking',
+            'post_status' => 'any',
+            'numberposts' => 1,
+            'fields'      => 'ids',
+            'meta_query'  => [[ 'key'=>'_kgh_paypal_capture_id','value'=>$capture_id,'compare'=>'=' ]],
+          ]);
+        }
+        if (!empty($ids_by_cap)) {
+          $ids = $ids_by_cap;
+          // Cache linkage for future status lookups
+          update_post_meta((int)$ids[0], '_kgh_paypal_order_id', $order_id);
+        }
+      }
+    }
+    if (empty($ids)) {
+      return new WP_REST_Response(['status'=>'processing'], 200);
+    }
   }
   $bid = (int)$ids[0];
   $tour_id = (int) get_post_meta($bid, '_kgh_tour_id', true);

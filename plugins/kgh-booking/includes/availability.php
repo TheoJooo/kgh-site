@@ -173,13 +173,18 @@ function kgh_avail_day_slots(int $tour_id, string $ymd_kst): array {
 
   $wd = (int)$day->format('w'); // 0..6 (Sun..Sat)
   $weekdays = isset($sched['weekdays']) && is_array($sched['weekdays']) ? array_map('intval', $sched['weekdays']) : [];
-  if (!in_array($wd, $weekdays, true)) { set_transient($ckey, [], 30); return []; }
+  $alt_weekdays = isset($sched['alt_weekdays']) && is_array($sched['alt_weekdays']) ? array_map('intval', $sched['alt_weekdays']) : [];
+  $is_alt_day = in_array($wd, $alt_weekdays, true);
+  if (!in_array($wd, $weekdays, true) && !$is_alt_day) { set_transient($ckey, [], 30); return []; }
 
   $capacity = (int)($sched['capacity'] ?? 0);
   $price_usd = (int)($sched['price_usd'] ?? 0);
   $language = (string)($sched['language'] ?? 'EN');
   $cutoff_h = (int)($sched['cutoff_hours'] ?? 0);
-  $slots = (array)($sched['time_slots'] ?? []);
+  $slots = $is_alt_day ? (array)($sched['alt_time_slots'] ?? []) : (array)($sched['time_slots'] ?? []);
+  if ($is_alt_day && isset($sched['alt_price_usd']) && $sched['alt_price_usd'] !== null) {
+    $price_usd = (int)$sched['alt_price_usd'];
+  }
   $now_kst = new DateTimeImmutable('now', $kst);
 
   $out = [];

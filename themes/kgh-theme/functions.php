@@ -116,8 +116,9 @@ add_action('after_setup_theme', 'kgh_theme_setup');
 add_shortcode('kgh_checkout_success', function () {
   $order_id = isset($_GET['order_id']) ? sanitize_text_field($_GET['order_id']) : (isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '');
   $strings = [
-    'heading'        => __( 'Thank you! Your payment is processing…', 'kgh-booking' ),
-    'processing'     => __( 'Processing your payment… this page will update automatically.', 'kgh-booking' ),
+    'headingProcessing' => __( 'Thank you! Your payment is processing…', 'kgh-booking' ),
+    'headingApproved'   => __( 'Thank you! Your payment was approved.', 'kgh-booking' ),
+    'processing'        => __( 'Processing your payment… this page will update automatically.', 'kgh-booking' ),
     'missingOrder'   => __( 'Missing order reference.', 'kgh-booking' ),
     'stillProcessing'=> __( 'We are still finalizing your payment. If this persists, please contact us.', 'kgh-booking' ),
     'bookingTitle'   => __( 'Your booking', 'kgh-booking' ),
@@ -128,7 +129,7 @@ add_shortcode('kgh_checkout_success', function () {
   ];
   ob_start(); ?>
   <div class="kgh-outcome">
-    <h2><?php echo esc_html( $strings['heading'] ); ?></h2>
+    <h2 id="kgh-succ-heading"><?php echo esc_html( $strings['headingProcessing'] ); ?></h2>
     <div id="kgh-succ-alert" class="kgh-status" role="status" aria-live="polite">
       <div class="notice notice-info"><p><?php echo esc_html( $strings['processing'] ); ?></p></div>
     </div>
@@ -142,10 +143,11 @@ add_shortcode('kgh_checkout_success', function () {
     </div>
   </div>
   <script>
-    (function(){
+    (async function(){
       const orderId = <?php echo wp_json_encode( $order_id ); ?>;
       const strings = <?php echo wp_json_encode( $strings ); ?>;
       const alertBox = document.getElementById('kgh-succ-alert');
+      const headingEl = document.getElementById('kgh-succ-heading');
       const recap = document.getElementById('kgh-succ-recap');
       const titleEl = document.getElementById('kgh-succ-title');
       const whenEl = document.getElementById('kgh-succ-when');
@@ -182,6 +184,7 @@ add_shortcode('kgh_checkout_success', function () {
 
       function showPaid(data, label='Paid'){
         alertBox.style.display = 'none';
+        if (headingEl && strings.headingApproved) headingEl.textContent = strings.headingApproved;
         recap.style.display = 'block';
         titleEl.textContent = data.tour_title || strings.bookingTitle;
         if (data.slot_start_iso) whenEl.textContent = `${data.slot_start_iso.substring(0,10)} · ${formatTime(data.slot_start_iso)}`;
@@ -225,7 +228,7 @@ add_shortcode('kgh_checkout_cancel', function () {
   $strings = [
     'heading'   => __( 'Payment cancelled', 'kgh-booking' ),
     'message'   => __( 'No charge has been made. You can try again from your tour page.', 'kgh-booking' ),
-    'backHome'  => __( 'Back to Home', 'kgh-booking' ),
+    // 'backHome'  => __( 'Back to Home', 'kgh-booking' ),
   ];
   ob_start(); ?>
   <div class="kgh-outcome">

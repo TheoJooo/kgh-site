@@ -14,6 +14,9 @@ function kgh_create_booking(array $args) {
   $amount_usd_cents = isset($args['amount_usd_cents']) ? intval($args['amount_usd_cents']) : (int) round(floatval($amount_total) * 100);
   $currency     = strtolower($args['currency'] ?? 'usd');
   $email        = sanitize_email($args['customer_email'] ?? '');
+  $first_name   = sanitize_text_field($args['customer_first_name'] ?? '');
+  $last_name    = sanitize_text_field($args['customer_last_name'] ?? '');
+  $phone        = sanitize_text_field($args['customer_phone'] ?? '');
   $slot_iso     = sanitize_text_field($args['slot_start_iso'] ?? '');
   $pp_capture   = sanitize_text_field($args['paypal_capture_id'] ?? '');
   $pp_order     = sanitize_text_field($args['paypal_order_id'] ?? '');
@@ -48,6 +51,9 @@ function kgh_create_booking(array $args) {
   update_post_meta($post_id, '_kgh_amount_usd',     $amount_usd_cents);
   update_post_meta($post_id, '_kgh_currency',       $currency);
   update_post_meta($post_id, '_kgh_customer_email', $email);
+  if ($first_name !== '') update_post_meta($post_id, '_kgh_customer_first_name', $first_name);
+  if ($last_name  !== '') update_post_meta($post_id, '_kgh_customer_last_name',  $last_name);
+  if ($phone      !== '') update_post_meta($post_id, '_kgh_customer_phone',      $phone);
   if ($slot_iso) update_post_meta($post_id, '_kgh_slot_start_iso', $slot_iso);
   update_post_meta($post_id, '_kgh_paypal_capture', $pp_capture);
   if ($pp_order) update_post_meta($post_id, '_kgh_paypal_order_id', $pp_order);

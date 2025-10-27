@@ -13,6 +13,10 @@ function kgh_schedule_defaults(): array {
     'duration_min' => 180,
     'language'     => 'EN',
     'cutoff_hours' => 12,
+    // Optional alternate rule: different weekdays + time slots + price
+    'alt_weekdays'   => [],
+    'alt_time_slots' => [],
+    'alt_price_usd'  => null,
   ];
 }
 
@@ -72,6 +76,37 @@ function kgh_schedule_validate(array $in) {
   $cut = (int)($in['cutoff_hours'] ?? $def['cutoff_hours']);
   if ($cut < 0 || $cut > 72) return new WP_Error('schedule_cutoff', __('Cutoff must be between 0 and 72 hours.', 'kgh-booking'));
 
+  // --- Optional alternate rule ---
+  $aw = array_values(array_unique(array_map('intval', $in['alt_weekdays'] ?? $def['alt_weekdays'])));
+  $aw = array_values(array_filter($aw, fn($d) => $d>=0 && $d<=6));
+  sort($aw);
+
+  $ats_raw = $in['alt_time_slots'] ?? $def['alt_time_slots'];
+  if (is_string($ats_raw)) {
+    $ats_raw = array_filter(array_map('trim', explode(',', $ats_raw)));
+  }
+  $ats = [];
+  foreach ((array)$ats_raw as $t) {
+    if (!preg_match('/^\d{2}:\d{2}$/', $t)) {
+      return new WP_Error('schedule_time_alt', sprintf(__('Invalid alternate time %s. Use HH:MM.', 'kgh-booking'), $t));
+    }
+    [$hh,$mm] = explode(':', $t, 2);
+    $hh = (int)$hh; $mm = (int)$mm;
+    if ($hh<0 || $hh>23 || !in_array($mm, [0,30], true)) {
+      return new WP_Error('schedule_time_alt', sprintf(__('Invalid alternate time %s. Minutes must be 00 or 30.', 'kgh-booking'), $t));
+    }
+    $ats[] = sprintf('%02d:%02d', $hh, $mm);
+  }
+  $ats = array_values(array_unique($ats));
+
+  $aprice = $in['alt_price_usd'] ?? $def['alt_price_usd'];
+  if ($aprice !== null) { $aprice = (int)$aprice; if ($aprice < 0) return new WP_Error('schedule_alt_price', __('Alt price must be >= 0.', 'kgh-booking')); }
+
+  // If alternate weekdays are set, require at least one time slot; price defaults to main if not provided
+  if (!empty($aw) && empty($ats)) {
+    return new WP_Error('schedule_alt_time_empty', __('Provide at least one alternate time slot.', 'kgh-booking'));
+  }
+
   return [
     'weekdays'     => $w,
     'time_slots'   => $ts,
@@ -80,6 +115,9 @@ function kgh_schedule_validate(array $in) {
     'duration_min' => $dur,
     'language'     => $lang,
     'cutoff_hours' => $cut,
+    'alt_weekdays'   => $aw,
+    'alt_time_slots' => $ats,
+    'alt_price_usd'  => $aprice,
   ];
 }
 
@@ -147,6 +185,9 @@ function kgh_render_tour_schedule_metabox($post){
   $duration = (int)$data['duration_min'];
   $language = (string)$data['language'];
   $cutoff = (int)$data['cutoff_hours'];
+  $alt_weekdays = (array)($data['alt_weekdays'] ?? []);
+  $alt_time_slots = implode(',', (array)($data['alt_time_slots'] ?? []));
+  $alt_price_usd = isset($data['alt_price_usd']) && $data['alt_price_usd'] !== null ? (int)$data['alt_price_usd'] : '';
 
   echo '<div style="display:grid;gap:12px;max-width:740px;font-family:system-ui;">';
 
@@ -196,6 +237,32 @@ function kgh_render_tour_schedule_metabox($post){
   printf('<input type="number" name="kgh_schedule_cutoff_hours" value="%d" min="0" max="72" step="1" style="width:120px;">', $cutoff);
   echo '</div>';
 
+  // --- Alternate rule ---
+  echo '<hr style="margin:12px 0;opacity:.25">';
+  echo '<div><strong>'.esc_html__('Alternate rule (optional)','kgh-booking').'</strong><div style="opacity:.8;margin-bottom:6px">'.esc_html__('Use different weekdays/slots at a different price.', 'kgh-booking').'</div>';
+  // alt weekdays
+  echo '<div style="margin-top:6px"><label><strong>'.esc_html__('Alt Weekdays','kgh-booking').'</strong></label><br/>';
+  $labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for ($d=0; $d<=6; $d++) {
+    $id = 'kgh_sched_alt_day_'.$d;
+    printf('<label for="%1$s" style="margin-right:10px;"><input type="checkbox" id="%1$s" name="kgh_schedule_alt_weekdays[]" value="%2$d" %3$s> %4$s</label>',
+      esc_attr($id), $d, checked(in_array($d,$alt_weekdays,true), true, false), esc_html($labels[$d])
+    );
+  }
+  echo '</div>';
+
+  // alt slots
+  echo '<div><label><strong>'.esc_html__('Alt Time slots','kgh-booking').'</strong></label><br/>';
+  printf('<input type="text" name="kgh_schedule_alt_time_slots" value="%s" placeholder="%s" style="width:360px;">',
+    esc_attr($alt_time_slots), esc_attr(__('ex: 12:00,17:30','kgh-booking'))
+  );
+  echo '</div>';
+
+  // alt price
+  echo '<div><label><strong>'.esc_html__('Alt Price USD (cents)','kgh-booking').'</strong></label><br/>';
+  printf('<input type="number" name="kgh_schedule_alt_price_usd" value="%s" min="0" step="1" style="width:160px;">', esc_attr($alt_price_usd));
+  echo '<div style="opacity:.7">'.esc_html__('leave empty to reuse main price','kgh-booking').'</div></div>';
+
   echo '</div>';
 }
 
@@ -213,6 +280,10 @@ add_action('save_post_tour', function($post_id, $post){
   $in['duration_min'] = (int)($_POST['kgh_schedule_duration_min'] ?? 0);
   $in['language']     = (string)($_POST['kgh_schedule_language'] ?? '');
   $in['cutoff_hours'] = (int)($_POST['kgh_schedule_cutoff_hours'] ?? 0);
+  // alt rule
+  $in['alt_weekdays']   = isset($_POST['kgh_schedule_alt_weekdays']) ? (array) $_POST['kgh_schedule_alt_weekdays'] : [];
+  $in['alt_time_slots'] = (string)($_POST['kgh_schedule_alt_time_slots'] ?? '');
+  $in['alt_price_usd']  = ($_POST['kgh_schedule_alt_price_usd'] === '' ? null : (int)($_POST['kgh_schedule_alt_price_usd'] ?? 0));
 
   $norm = kgh_schedule_validate($in);
   if (is_wp_error($norm)) {
