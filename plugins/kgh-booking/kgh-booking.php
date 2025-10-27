@@ -5,7 +5,8 @@
  * Version: 0.1.0
  * Author: Theo J.
  * Text Domain: kgh-booking
- */
+ * Domain Path: /languages
+*/
 
 if ( ! defined('ABSPATH') ) exit; // Sécurité
 
@@ -41,3 +42,8 @@ require_once KGH_BOOKING_PATH . 'includes/admin-availability.php';
 
 // Install DB table for slot exceptions on plugin activation
 register_activation_hook(__FILE__, 'kgh_ex_install_table');
+
+// Load plugin text domain for translations
+add_action('plugins_loaded', function(){
+  load_plugin_textdomain('kgh-booking', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});

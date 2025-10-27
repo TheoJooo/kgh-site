@@ -91,7 +91,7 @@ if (!function_exists('kgh_fmt_duration')) {
       <!-- Back to Our Tours -->
       <nav class="mb-5 md:mb-6">
         <a href="<?php echo esc_url($archive_url); ?>" class="inline-flex items-center gap-2 text-sm hover:opacity-80">
-          <span aria-hidden="true">←</span><span>Back to Our Tours</span>
+          <span aria-hidden="true">←</span><span><?php echo esc_html__('Back to Our Tours', 'kgh-theme'); ?></span>
         </a>
       </nav>
 
@@ -100,7 +100,7 @@ if (!function_exists('kgh_fmt_duration')) {
     <?php if (has_post_thumbnail()): ?>
       <?php the_post_thumbnail('large', ['class'=>'absolute inset-0 w-full h-full object-cover','loading'=>'eager','fetchpriority'=>'high']); ?>
     <?php else: ?>
-      <div class="absolute inset-0 grid place-items-center text-gray-500">No image yet</div>
+      <div class="absolute inset-0 grid place-items-center text-gray-500"><?php echo esc_html__('No image yet', 'kgh-theme'); ?></div>
     <?php endif; ?>
   </figure>
 
@@ -188,7 +188,7 @@ if (!function_exists('kgh_fmt_duration')) {
           <?php if (!empty($capacity)): ?>
             <span class="kgh-meta-item" title="<?php echo esc_attr($capacity); ?>">
               <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-              <span><?php echo esc_html__('Max', 'kgh'); ?> <?php echo esc_html($capacity); ?></span>
+              <span><?php echo esc_html__('Max', 'kgh-theme'); ?> <?php echo esc_html($capacity); ?></span>
             </span>
           <?php endif; ?>
 
@@ -235,7 +235,7 @@ if (!function_exists('kgh_fmt_duration')) {
           <?php if ($show_more): $row = $gallery_urls[3]; $more = $count_gal - 3; ?>
             <button type="button" class="kgh-gal-thumb" data-kgh-gal-index="3">
               <img src="<?php echo esc_url($row['thumb']); ?>" alt="">
-              <span class="kgh-gal-more">+<?php echo (int)$more; ?> more</span>
+              <span class="kgh-gal-more">+<?php echo (int)$more; ?> <?php echo esc_html__('more', 'kgh-theme'); ?></span>
             </button>
           <?php endif; ?>
         </div>

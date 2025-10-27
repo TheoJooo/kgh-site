@@ -46,7 +46,7 @@ function kghp_webhook_handle(WP_REST_Request $req) {
   $ok = kghp_verify_webhook($raw, $h);
   error_log('[KGH webhook] verify result: ' . (is_wp_error($ok) ? 'ERROR:'.print_r($ok,true) : ($ok ? 'SUCCESS' : 'FAIL')));
   if (is_wp_error($ok)) return $ok;
-  if (!$ok) return new WP_Error('bad_signature','Webhook signature invalid',['status'=>400]);
+  if (!$ok) return new WP_Error('bad_signature', __('Webhook signature invalid', 'kgh-booking'), ['status'=>400]);
 
   $event = json_decode($raw, true);
   $type  = $event['event_type'] ?? '';

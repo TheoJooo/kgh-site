@@ -6,7 +6,8 @@ Description: Thème custom minimal pour Korean Gourmet Hunters.
 Version: 0.1.1
 Tested up to: 6.6
 Requires PHP: 8.0
-Text Domain: koreangourmethunters
+Text Domain: kgh-theme
+Domain Path: /languages
 */
 
 :root {

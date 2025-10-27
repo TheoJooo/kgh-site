@@ -8,7 +8,7 @@
 if (!defined('ABSPATH')) exit;
 
 $defaults = [
-  'title'       => 'Contact us',
+  'title'       => __('Contact us', 'kgh-theme'),
   'portrait_id' => function_exists('SCF') ? (int) SCF::get('contact_portrait', get_the_ID()) : 0,
   'services'    => [],
 ];
@@ -23,7 +23,13 @@ $services = $args['services'];
 if (empty($services)) {
   $csv = function_exists('SCF') ? trim((string) SCF::get('contact_services', get_the_ID())) : '';
   if ($csv) $services = array_map('trim', explode(',', $csv));
-  if (!$services) $services = ['Private tour','Fixed tour','Cooking class','Corporate','Other'];
+  if (!$services) $services = [
+    __('Private tour', 'kgh-theme'),
+    __('Fixed tour', 'kgh-theme'),
+    __('Cooking class', 'kgh-theme'),
+    __('Corporate', 'kgh-theme'),
+    __('Other', 'kgh-theme'),
+  ];
 }
 
 $portrait_url = $args['portrait_id']
@@ -53,10 +59,10 @@ $success = isset($_GET['sent']) && $_GET['sent'] === '1';
 
       <!-- COLONNE FORMULAIRE -->
       <div class="w-full md:w-1/2 md:self-stretch">
-        <h1 class="kgh-h1 text-black mb-6">Contact us</h1>
+        <h1 class="kgh-h1 text-black mb-6"><?php echo esc_html( $args['title'] ); ?></h1>
 
         <?php if (!empty($success)): ?>
-          <p class="mb-6 text-green-700">Thanks! Your message was sent. We’ll get back to you shortly.</p>
+          <p class="mb-6 text-green-700"><?php echo esc_html__("Thanks! Your message was sent. We’ll get back to you shortly.", 'kgh-theme'); ?></p>
         <?php endif; ?>
 
         <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" class="kgh-contact-form space-y-4" novalidate>
@@ -65,31 +71,30 @@ $success = isset($_GET['sent']) && $_GET['sent'] === '1';
           <input type="hidden" name="redirect_to" value="<?php echo esc_url( add_query_arg(null,null) ); ?>">
 
           <div style="position:absolute;left:-10000px;top:auto;height:0;overflow:hidden;">
-            <label>Leave this field empty</label>
+            <label><?php echo esc_html__('Leave this field empty', 'kgh-theme'); ?></label>
             <input type="text" name="website" tabindex="-1" autocomplete="off">
           </div>
 
-          <div><label class="kgh-label">Name</label><input type="text" name="name" required class="kgh-field"></div>
-          <div><label class="kgh-label">Email</label><input type="email" name="email" required class="kgh-field"></div>
+          <div><label class="kgh-label"><?php echo esc_html__('Name', 'kgh-theme'); ?></label><input type="text" name="name" required class="kgh-field"></div>
+          <div><label class="kgh-label"><?php echo esc_html__('Email', 'kgh-theme'); ?></label><input type="email" name="email" required class="kgh-field"></div>
           <div>
-            <label class="kgh-label">Service</label>
+            <label class="kgh-label"><?php echo esc_html__('Service', 'kgh-theme'); ?></label>
             <select name="service" class="kgh-field">
-              <option value="">Select</option>
-              <option value="private_tour">Private Tour</option>
-              <option value="fixed_tour">Fixed Tour</option>
-              <option value="cooking_class">Cooking Class</option>
-              <option value="corporate">Corporate</option>
-              <option value="other">Other</option>
+              <option value=""><?php echo esc_html__('Select', 'kgh-theme'); ?></option>
+              <option value="private_tour"><?php echo esc_html__('Private Tour', 'kgh-theme'); ?></option>
+              <option value="fixed_tour"><?php echo esc_html__('Fixed Tour', 'kgh-theme'); ?></option>
+              <option value="cooking_class"><?php echo esc_html__('Cooking Class', 'kgh-theme'); ?></option>
+              <option value="corporate"><?php echo esc_html__('Corporate', 'kgh-theme'); ?></option>
+              <option value="other"><?php echo esc_html__('Other', 'kgh-theme'); ?></option>
             </select>
           </div>
-          <div><label class="kgh-label">Message</label><textarea name="message" rows="6" required class="kgh-field"></textarea></div>
+          <div><label class="kgh-label"><?php echo esc_html__('Message', 'kgh-theme'); ?></label><textarea name="message" rows="6" required class="kgh-field"></textarea></div>
 
           <div class="pt-2 flex justify-end">
-            <button type="submit" class="kgh-btn--primary">Send</button>
+            <button type="submit" class="kgh-btn--primary"><?php echo esc_html__('Send', 'kgh-theme'); ?></button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </section>
-

@@ -36,7 +36,7 @@ get_header();
       </div>
     </article>
   <?php endwhile; else: ?>
-    <p><?php esc_html_e('No content.', 'kgh-booking'); ?></p>
+    <p><?php esc_html_e('No content.', 'kgh-theme'); ?></p>
   <?php endif; ?>
 </main>
 <?php get_footer(); ?>

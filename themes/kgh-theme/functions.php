@@ -96,6 +96,9 @@ add_action('wp_enqueue_scripts', 'kgh_enqueue_assets');
  * Theme supports basiques
  */
 function kgh_theme_setup() {
+  // Load theme text domain for translations
+  load_theme_textdomain('kgh-theme', get_template_directory() . '/languages');
+
   add_theme_support('title-tag');        // <title> géré par WP
   add_theme_support('post-thumbnails');  // images à la une
   add_theme_support('html5', ['search-form','comment-form','comment-list','gallery','caption','style','script']);
@@ -842,7 +845,7 @@ function kgh_post_list_thumb($post_id = 0){
     $src = esc_url($m[1]);
     return '<img src="'.$src.'" alt="'.esc_attr(get_the_title($post_id)).'" class="w-full h-full object-cover" loading="lazy">';
   }
-  return '<div class="w-full h-full bg-gray-100 grid place-items-center text-xs text-gray-500">No image</div>';
+  return '<div class="w-full h-full bg-gray-100 grid place-items-center text-xs text-gray-500">'.esc_html__('No image', 'kgh-theme').'</div>';
 }
 
 

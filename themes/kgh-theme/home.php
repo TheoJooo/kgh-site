@@ -7,7 +7,7 @@ get_header();
 // Page des articles + SCF (titre/intro éditables)
 $posts_page_id = (int) get_option('page_for_posts');
 
-$hero_title = 'Korean Food, Culture & Travel';
+$hero_title = __('Korean Food, Culture & Travel', 'kgh-theme');
 $hero_intro = '';
 
 if ($posts_page_id) {
@@ -46,15 +46,17 @@ $tours_url = get_post_type_archive_link('tour') ?: home_url('/tours/');
       <div class="kgh-subtle mt-6 max-w-xl"><?php echo $hero_intro; ?></div>
     <?php else: ?>
       <p class="kgh-subtle mt-6 max-w-xl">
-        Discover Korean food, culture, and travel with stories from markets to hidden eateries.
-        Tips and guides to help you taste and explore Seoul.
+        <?php echo esc_html__(
+          'Discover Korean food, culture, and travel with stories from markets to hidden eateries. Tips and guides to help you taste and explore Seoul.',
+          'kgh-theme'
+        ); ?>
       </p>
     <?php endif; ?>
   </section>
 
   <section class="kgh-container py-12 md:py-20">
         <!-- Section title -->
-        <h2 class="font-serif text-2xl md:text-3xl text-black mb-6">Articles</h2>
+        <h2 class="font-serif text-2xl md:text-3xl text-black mb-6"><?php echo esc_html__('Articles', 'kgh-theme'); ?></h2>
 
         <?php if (have_posts()): ?>
         <!-- Grid 2 colonnes -->
@@ -82,31 +84,31 @@ $tours_url = get_post_type_archive_link('tour') ?: home_url('/tours/');
         <!-- Footer CTA row -->
         <div class="mt-10 md:mt-12 flex items-center justify-between">
             <a href="<?php echo esc_url($tours_url); ?>" class="kgh-btn--ghost">
-                Check our tours
+                <?php esc_html_e('Check our tours', 'kgh-theme'); ?>
             </a>
 
             <?php if (get_previous_posts_link() || get_next_posts_link()): ?>
-            <nav class="kgh-pagination" aria-label="Blog pagination">
+            <nav class="kgh-pagination" aria-label="<?php echo esc_attr__('Blog pagination', 'kgh-theme'); ?>">
                 <?php
                 echo paginate_links([
                     'mid_size'  => 1,
-                    'prev_text' => '← Previous page',
-                    'next_text' => 'Next page →',
+                    'prev_text' => __('← Previous page', 'kgh-theme'),
+                    'next_text' => __('Next page →', 'kgh-theme'),
                     'type'      => 'list', // outputs <ul class="page-numbers">…</ul>
                 ]);
                 ?>
             </nav>
             <?php else: ?>
-            <span class="text-sm text-gray-500">More articles coming soon</span>
+            <span class="text-sm text-gray-500"><?php echo esc_html__('More articles coming soon', 'kgh-theme'); ?></span>
             <?php endif; ?>
 
         </div>
 
 
     <?php else: ?>
-        <p class="kgh-subtle">No posts yet.</p>
+        <p class="kgh-subtle"><?php echo esc_html__('No posts yet.', 'kgh-theme'); ?></p>
         <div class="mt-8">
-        <a href="<?php echo esc_url($tours_url); ?>" class="kgh-btn--ghost">Check our tours</a>
+        <a href="<?php echo esc_url($tours_url); ?>" class="kgh-btn--ghost"><?php esc_html_e('Check our tours', 'kgh-theme'); ?></a>
         </div>
     <?php endif; ?>
   </section>

@@ -143,3 +143,19 @@ body {
 .kgh-gal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
 .kgh-gal-thumb { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #fff; border: 1px solid #131313; border-radius: 4px; padding: 0; }
 .kgh-gal-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Minimal language select: no arrow, no border */
+.kgh-lang-select{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 2px 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.kgh-lang-select:focus{
+  outline: none;
+  text-decoration: underline;
+}

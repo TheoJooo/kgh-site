@@ -20,11 +20,11 @@ add_action('rest_api_init', function(){
     'permission_callback' => '__return_true',
     'callback' => function(WP_REST_Request $req){
       $tour = (int)$req->get_param('tour');
-      if ($tour<=0) return kgh_rest_err('BAD_REQUEST', "Missing 'tour'.", 400);
-      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', 'Tour not found.', 404);
+      if ($tour<=0) return kgh_rest_err('BAD_REQUEST', __("Missing 'tour'.", 'kgh-booking'), 400);
+      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', __('Tour not found.', 'kgh-booking'), 404);
       $days = (int)($req->get_param('days') ?: 90);
       if ($days<1) $days=1; if ($days>90) $days=90;
-      if (!function_exists('kgh_avail_days')) return kgh_rest_err('SERVER', 'Availability engine missing.', 500);
+      if (!function_exists('kgh_avail_days')) return kgh_rest_err('SERVER', __('Availability engine missing.', 'kgh-booking'), 500);
       $dates = kgh_avail_days($tour, $days);
       return new WP_REST_Response([
         'tour'  => $tour,
@@ -40,10 +40,10 @@ add_action('rest_api_init', function(){
     'callback' => function(WP_REST_Request $req){
       $tour = (int)$req->get_param('tour');
       $date = (string)$req->get_param('date');
-      if ($tour<=0) return kgh_rest_err('BAD_REQUEST', "Missing 'tour'.", 400);
-      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', 'Tour not found.', 404);
-      if (!$date || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) return kgh_rest_err('BAD_REQUEST', "Missing 'date' (YYYY-MM-DD).", 400);
-      if (!function_exists('kgh_avail_day_slots')) return kgh_rest_err('SERVER', 'Availability engine missing.', 500);
+      if ($tour<=0) return kgh_rest_err('BAD_REQUEST', __("Missing 'tour'.", 'kgh-booking'), 400);
+      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', __('Tour not found.', 'kgh-booking'), 404);
+      if (!$date || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) return kgh_rest_err('BAD_REQUEST', __("Missing 'date' (YYYY-MM-DD).", 'kgh-booking'), 400);
+      if (!function_exists('kgh_avail_day_slots')) return kgh_rest_err('SERVER', __('Availability engine missing.', 'kgh-booking'), 500);
       $slots = kgh_avail_day_slots($tour, $date);
       // Enrich slots with stable time formats derived from KST ISO
       $slots = array_map(function($s){
@@ -75,14 +75,14 @@ add_action('rest_api_init', function(){
       $tour = (int)$req->get_param('tour_id');
       $slot = (string)$req->get_param('slot_start_iso');
       $qty  = (int)$req->get_param('qty');
-      if ($tour<=0 || !$slot || $qty<=0) return kgh_rest_err('BAD_REQUEST', 'Missing or invalid fields (tour_id, slot_start_iso, qty).', 400);
-      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', 'Tour not found.', 404);
-      if (!function_exists('kgh_avail_quote')) return kgh_rest_err('SERVER', 'Availability engine missing.', 500);
+      if ($tour<=0 || !$slot || $qty<=0) return kgh_rest_err('BAD_REQUEST', __('Missing or invalid fields (tour_id, slot_start_iso, qty).', 'kgh-booking'), 400);
+      if (!kgh_rest_get_tour($tour)) return kgh_rest_err('NOT_FOUND', __('Tour not found.', 'kgh-booking'), 404);
+      if (!function_exists('kgh_avail_quote')) return kgh_rest_err('SERVER', __('Availability engine missing.', 'kgh-booking'), 500);
       $res = kgh_avail_quote($tour, $slot, $qty);
       if (is_wp_error($res)) {
         $code = $res->get_error_code();
         $msg  = $res->get_error_message();
-        return kgh_rest_err($code ?: 'UNPROCESSABLE', $msg ?: 'Unprocessable', 422);
+        return kgh_rest_err($code ?: 'UNPROCESSABLE', $msg ?: __('Unprocessable', 'kgh-booking'), 422);
       }
       return new WP_REST_Response(array_merge($res,[
         'tour_id'        => $tour,

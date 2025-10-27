@@ -55,15 +55,32 @@
 
       <!-- CTA + burger -->
       <div class="flex items-center gap-4">
+        <?php if (function_exists('pll_the_languages')): ?>
+          <?php $kgh_langs = pll_the_languages(['raw'=>1,'hide_if_empty'=>0,'hide_if_no_translation'=>0]); $kgh_cur = function_exists('pll_current_language') ? (string) pll_current_language('slug') : ''; ?>
+          <?php if (!empty($kgh_langs)): ?>
+            <div class="hidden md:flex items-center" aria-label="<?php echo esc_attr__('Language', 'kgh-theme'); ?>">
+              <label for="kgh-lang-desktop" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
+              <select id="kgh-lang-desktop" class="kgh-lang-select text-sm"
+                      onchange="if(this.value) window.location.href=this.value;">
+                <?php foreach ($kgh_langs as $lg): ?>
+                  <option value="<?php echo esc_url($lg['url']); ?>" <?php selected(isset($lg['slug']) && $lg['slug'] === $kgh_cur); ?>
+                          lang="<?php echo esc_attr($lg['slug']); ?>">
+                    <?php echo esc_html( $lg['name'] ?: strtoupper($lg['slug']) ); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          <?php endif; ?>
+        <?php endif; ?>
         <a href="<?php echo esc_url( $tours_url ); ?>"
            class="kgh-btn--ghost border-2 border-kgh-red text-kgh-red hover:bg-kgh-red hover:text-white hidden md:inline-block">
-          Book a tour
+          <?php esc_html_e('Book a tour', 'kgh-theme'); ?>
         </a>
 
         <!-- Burger (mobile) -->
         <button id="kgh-burger" data-kgh-open
                 class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded hover:bg-black/5"
-                aria-label="Open menu" aria-controls="kgh-mobile-overlay" aria-expanded="false">
+                aria-label="<?php echo esc_attr__('Open menu', 'kgh-theme'); ?>" aria-controls="kgh-mobile-overlay" aria-expanded="false">
           <!-- Icône "menu" -->
           <svg class="kgh-ico w-6 h-6 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" data-icon="menu">
@@ -87,7 +104,7 @@
   <!-- Mobile overlay menu -->
   <div id="kgh-mobile-overlay" class="fixed inset-0 z-50 hidden" aria-hidden="true">
     <!-- Backdrop -->
-    <button class="absolute inset-0 bg-black/40" data-kgh-close aria-label="Close menu"></button>
+    <button class="absolute inset-0 bg-black/40" data-kgh-close aria-label="<?php echo esc_attr__('Close menu', 'kgh-theme'); ?>"></button>
 
     <!-- Panel -->
     <div class="absolute inset-y-0 left-0 right-0 bg-kgh-red text-white
@@ -100,7 +117,7 @@
                alt="<?php echo esc_attr(get_bloginfo('name')); ?>" class="h-7 w-auto">
         </a>
         <button class="inline-flex h-10 w-10 items-center justify-center rounded hover:bg-white/10"
-                data-kgh-close aria-label="Close menu">
+                data-kgh-close aria-label="<?php echo esc_attr__('Close menu', 'kgh-theme'); ?>">
           <span class="block h-[2px] w-6 bg-white rotate-45 translate-y-[1px]"></span>
           <span class="block h-[2px] w-6 bg-white -rotate-45 -translate-y-[1px] -ml-6"></span>
         </button>
@@ -116,10 +133,27 @@
           'fallback_cb'    => '__return_empty_string',
         ]);
         ?>
+        <?php if (function_exists('pll_the_languages')): ?>
+          <?php $kgh_langs_m = pll_the_languages(['raw'=>1,'hide_if_empty'=>0,'hide_if_no_translation'=>0]); $kgh_cur_m = function_exists('pll_current_language') ? (string) pll_current_language('slug') : ''; ?>
+          <?php if (!empty($kgh_langs_m)): ?>
+            <div class="px-4 pb-4 flex items-center justify-center">
+              <label for="kgh-lang-mobile" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
+              <select id="kgh-lang-mobile" class="kgh-lang-select text-sm"
+                      onchange="if(this.value) window.location.href=this.value;">
+                <?php foreach ($kgh_langs_m as $lg): ?>
+                  <option value="<?php echo esc_url($lg['url']); ?>" <?php selected(isset($lg['slug']) && $lg['slug'] === $kgh_cur_m); ?>
+                          lang="<?php echo esc_attr($lg['slug']); ?>">
+                    <?php echo esc_html( $lg['name'] ?: strtoupper($lg['slug']) ); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          <?php endif; ?>
+        <?php endif; ?>
         <div class="px-4 pb-8">
           <a href="<?php echo esc_url($tours_url); ?>"
             class="block w-full text-center kgh-btn--primary bg-white text-kgh-red hover:brightness-95">
-            Book a tour
+            <?php esc_html_e('Book a tour', 'kgh-theme'); ?>
           </a>
         </div>
       </nav>
@@ -130,6 +164,10 @@
 <script>
 /* === Mobile menu toggle (overlay) === */
 document.addEventListener('DOMContentLoaded', () => {
+  const i18n = <?php echo wp_json_encode([
+    'openMenu'  => __('Open menu', 'kgh-theme'),
+    'closeMenu' => __('Close menu', 'kgh-theme'),
+  ]); ?>;
   const openBtn  = document.querySelector('[data-kgh-open]');
   const overlay  = document.getElementById('kgh-mobile-overlay');
   if (!openBtn || !overlay) return;
@@ -145,11 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isOpen) {
       icoMenu.classList.add('hidden');
       icoClose.classList.remove('hidden');
-      openBtn.setAttribute('aria-label', 'Close menu');
+      openBtn.setAttribute('aria-label', i18n.closeMenu);
     } else {
       icoClose.classList.add('hidden');
       icoMenu.classList.remove('hidden');
-      openBtn.setAttribute('aria-label', 'Open menu');
+      openBtn.setAttribute('aria-label', i18n.openMenu);
     }
   }
 
@@ -185,4 +223,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
-

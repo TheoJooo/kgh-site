@@ -29,20 +29,20 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $phone          = sanitize_text_field($req->get_param('customer_phone'));
 
   if ($tour_id <= 0 || !$slot_start_iso) {
-    return new WP_Error('BAD_REQUEST','tour_id and slot_start_iso required',['status'=>400]);
+    return new WP_Error('BAD_REQUEST', __('tour_id and slot_start_iso required', 'kgh-booking'), ['status'=>400]);
   }
   if (!get_post($tour_id) || get_post_type($tour_id)!=='tour') {
-    return new WP_Error('NOT_FOUND','Tour not found',['status'=>404]);
+    return new WP_Error('NOT_FOUND', __('Tour not found', 'kgh-booking'), ['status'=>404]);
   }
 
   if (!function_exists('kgh_avail_quote')) {
-    return new WP_Error('SERVER','Availability engine missing',['status'=>500]);
+    return new WP_Error('SERVER', __('Availability engine missing', 'kgh-booking'), ['status'=>500]);
   }
   $quote = kgh_avail_quote($tour_id, $slot_start_iso, $qty);
   if (is_wp_error($quote)) {
     $code = $quote->get_error_code();
     $msg  = $quote->get_error_message();
-    return new WP_Error($code ?: 'UNPROCESSABLE', $msg ?: 'Unprocessable', ['status'=>422]);
+    return new WP_Error($code ?: 'UNPROCESSABLE', $msg ?: __('Unprocessable', 'kgh-booking'), ['status'=>422]);
   }
 
   // Devise PayPal = USD
@@ -102,19 +102,19 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
     if (($l['rel'] ?? '') === 'approve') { $approve = $l['href']; break; }
   }
   if (!$approve) {
-    return new WP_Error('paypal_no_approve','No approve URL from PayPal',
+    return new WP_Error('paypal_no_approve', __('No approve URL from PayPal', 'kgh-booking'),
       ['status'=>502,'raw'=>$order]
     );
   }
 
   // Pose hold (10 min). If conflict occurred since quote => conflict
   if (!function_exists('kgh_add_hold')) {
-    return new WP_Error('SERVER','Hold engine missing',['status'=>500]);
+    return new WP_Error('SERVER', __('Hold engine missing', 'kgh-booking'), ['status'=>500]);
   }
   $hold = kgh_add_hold($tour_id, $slot_start_iso, (string)$order['id'], $qty, 600);
   if (is_wp_error($hold)) {
     // Optionally attempt cancel order here (not implemented). Return conflict
-    return new WP_Error('HOLD_CONFLICT','Slot just sold out. Please pick another time.',['status'=>409]);
+    return new WP_Error('HOLD_CONFLICT', __('Slot just sold out. Please pick another time.', 'kgh-booking'), ['status'=>409]);
   }
 
   return new WP_REST_Response([
@@ -145,7 +145,7 @@ add_action('rest_api_init', function() {
 function kghp_capture_paypal_order( WP_REST_Request $req ) {
   $order_id = sanitize_text_field( $req->get_param('order_id') ?: $req->get_param('token') );
   if (!$order_id) {
-    return new WP_Error('bad_request','order_id (token) required', ['status'=>400]);
+    return new WP_Error('bad_request', __('order_id (token) required', 'kgh-booking'), ['status'=>400]);
   }
 
   // Appelle l’API PayPal pour CAPTURE
@@ -171,8 +171,8 @@ function kghp_cancel_paypal_order( WP_REST_Request $req ) {
   $tour_id = (int)$req->get_param('tour_id');
   $slot    = (string)$req->get_param('slot_start_iso');
   $order_id= (string)$req->get_param('order_id');
-  if ($tour_id<=0 || !$slot || !$order_id) return new WP_Error('BAD_REQUEST','tour_id, slot_start_iso, order_id required',['status'=>400]);
-  if (!get_post($tour_id) || get_post_type($tour_id)!=='tour') return new WP_Error('NOT_FOUND','Tour not found',['status'=>404]);
+  if ($tour_id<=0 || !$slot || !$order_id) return new WP_Error('BAD_REQUEST', __('tour_id, slot_start_iso, order_id required', 'kgh-booking'), ['status'=>400]);
+  if (!get_post($tour_id) || get_post_type($tour_id)!=='tour') return new WP_Error('NOT_FOUND', __('Tour not found', 'kgh-booking'), ['status'=>404]);
   if (function_exists('kgh_remove_hold')) {
     kgh_remove_hold($tour_id, $slot, $order_id);
   }

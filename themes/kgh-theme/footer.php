@@ -33,7 +33,7 @@
           <?php endif; ?>
         </a>
         <p class="text-xs text-white/80">
-          Copyright <?php echo esc_html($year); ?> Korean Gourmet Hunters.
+          <?php echo esc_html__( 'Copyright', 'kgh-theme' ); ?> <?php echo esc_html($year); ?> Korean Gourmet Hunters.
         </p>
       </div>
 
@@ -54,12 +54,12 @@
           // Fallback simple si aucun menu n'est affecté
           ?>
           <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
-            <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($privacy_url); ?>">Privacy Policy</a></li>
-            <li class="text-kgh-grey">Terms &amp; Conditions</li>
+            <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($privacy_url); ?>"><?php esc_html_e('Privacy Policy', 'kgh-theme'); ?></a></li>
+            <li class="text-kgh-grey"><?php esc_html_e('Terms & Conditions', 'kgh-theme'); ?></li>
             <!-- <li class="text-kgh-grey">Cookie Policy</li> -->
             <!-- <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($terms_url); ?>">Terms &amp; Conditions</a></li>
             <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($cookies_url); ?>">Cookie Policy</a></li> -->
-            <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($contact_url); ?>">Contact</a></li>
+            <li><a class="hover:text-white hover:underline underline-offset-4" href="<?php echo esc_url($contact_url); ?>"><?php esc_html_e('Contact', 'kgh-theme'); ?></a></li>
           </ul>
           <?php
         }

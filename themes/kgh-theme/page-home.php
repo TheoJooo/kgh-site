@@ -303,7 +303,7 @@ get_header(); ?>
 
                   <div class="kgh-footer">
                     <span class="kgh-price">
-                      <?php echo $price_dollars ? esc_html__('from','kgh') . ' $' . esc_html($price_dollars) : esc_html__('Price on request','kgh'); ?>
+                      <?php echo $price_dollars ? esc_html__('from','kgh-theme') . ' $' . esc_html($price_dollars) : esc_html__('Price on request','kgh-theme'); ?>
                     </span>
                     <a href="<?php the_permalink(); ?>" class="kgh-card-cta kgh-btn--tertiary">
                       View Details
