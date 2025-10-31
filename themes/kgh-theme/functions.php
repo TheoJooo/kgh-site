@@ -878,7 +878,7 @@ function kgh_handle_contact_form(){
   }
 
   // Destinataire principal
-  $to = 'yunamisogo@gmail.com';
+  $to = 'info@koreangourmethunters.com';
 
   // Sujet + contenu
   $site   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
@@ -914,11 +914,28 @@ function kgh_contact_redirect($ok){
 
 
 
-// --- Booking feature flag (ON en local, OFF en prod) ---
+// --- Booking feature flag (enable when plugin active; always ON locally) ---
 add_filter('kgh_booking_enabled', function ($on) {
-  $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+  // Allow hard override via wp-config.php: define('KGH_BOOKING_FORCE_ON', true);
+  if (defined('KGH_BOOKING_FORCE_ON')) {
+    return (bool) KGH_BOOKING_FORCE_ON;
+  }
+
+  // Local dev: always on
+  $host = isset($_SERVER['HTTP_HOST']) ? (string) $_SERVER['HTTP_HOST'] : '';
   $is_local = (defined('WP_DEBUG') && WP_DEBUG) || str_contains($host, 'localhost') || str_contains($host, '.local');
-  return $is_local; // local => true, prod => false
+  if ($is_local) return true;
+
+  // Production/staging: enable if the booking plugin is active
+  if (!function_exists('is_plugin_active')) {
+    @include_once ABSPATH . 'wp-admin/includes/plugin.php';
+  }
+  if (function_exists('is_plugin_active') && is_plugin_active('kgh-booking/kgh-booking.php')) {
+    return true;
+  }
+
+  // Fallback to previous value
+  return (bool) $on;
 }, 10, 1);
 
 add_action('rest_api_init', function () {

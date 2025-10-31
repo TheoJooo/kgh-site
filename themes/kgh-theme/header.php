@@ -56,16 +56,29 @@
       <!-- CTA + burger -->
       <div class="flex items-center gap-4">
         <?php if (function_exists('pll_the_languages')): ?>
-          <?php $kgh_langs = pll_the_languages(['raw'=>1,'hide_if_empty'=>0,'hide_if_no_translation'=>0]); $kgh_cur = function_exists('pll_current_language') ? (string) pll_current_language('slug') : ''; ?>
+          <?php $kgh_langs = pll_the_languages(['raw'=>1,'hide_if_empty'=>0,'hide_if_no_translation'=>0]); $kgh_cur = function_exists('pll_current_language') ? (string) pll_current_language('slug') : ''; $kgh_external_ko = 'https://seoulgastrotour.com/'; ?>
           <?php if (!empty($kgh_langs)): ?>
             <div class="hidden md:flex items-center" aria-label="<?php echo esc_attr__('Language', 'kgh-theme'); ?>">
               <label for="kgh-lang-desktop" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
               <select id="kgh-lang-desktop" class="kgh-lang-select text-sm"
                       onchange="if(this.value) window.location.href=this.value;">
-                <?php foreach ($kgh_langs as $lg): ?>
-                  <option value="<?php echo esc_url($lg['url']); ?>" <?php selected(isset($lg['slug']) && $lg['slug'] === $kgh_cur); ?>
-                          lang="<?php echo esc_attr($lg['slug']); ?>">
-                    <?php echo esc_html( $lg['name'] ?: strtoupper($lg['slug']) ); ?>
+                <?php foreach ($kgh_langs as $lg): $slug = isset($lg['slug']) ? (string)$lg['slug'] : ''; $dest = ($slug==='ko') ? $kgh_external_ko : (string)($lg['url'] ?? ''); ?>
+                  <option value="<?php echo esc_url($dest); ?>" <?php selected($slug === $kgh_cur); ?>
+                          lang="<?php echo esc_attr($slug); ?>">
+                    <?php echo esc_html( $lg['name'] ?: strtoupper($slug) ); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <!-- Mobile, outside the overlay for better accessibility -->
+            <div class="md:hidden inline-flex items-center" aria-label="<?php echo esc_attr__('Language', 'kgh-theme'); ?>">
+              <label for="kgh-lang-xs" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
+              <select id="kgh-lang-xs" class="kgh-lang-select text-sm"
+                      onchange="if(this.value) window.location.href=this.value;">
+                <?php foreach ($kgh_langs as $lg): $slug = isset($lg['slug']) ? (string)$lg['slug'] : ''; $dest = ($slug==='ko') ? $kgh_external_ko : (string)($lg['url'] ?? ''); ?>
+                  <option value="<?php echo esc_url($dest); ?>" <?php selected($slug === $kgh_cur); ?>
+                          lang="<?php echo esc_attr($slug); ?>">
+                    <?php echo esc_html( $lg['name'] ?: strtoupper($slug) ); ?>
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -133,23 +146,7 @@
           'fallback_cb'    => '__return_empty_string',
         ]);
         ?>
-        <?php if (function_exists('pll_the_languages')): ?>
-          <?php $kgh_langs_m = pll_the_languages(['raw'=>1,'hide_if_empty'=>0,'hide_if_no_translation'=>0]); $kgh_cur_m = function_exists('pll_current_language') ? (string) pll_current_language('slug') : ''; ?>
-          <?php if (!empty($kgh_langs_m)): ?>
-            <div class="px-4 pb-4 flex items-center justify-center">
-              <label for="kgh-lang-mobile" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
-              <select id="kgh-lang-mobile" class="kgh-lang-select text-sm"
-                      onchange="if(this.value) window.location.href=this.value;">
-                <?php foreach ($kgh_langs_m as $lg): ?>
-                  <option value="<?php echo esc_url($lg['url']); ?>" <?php selected(isset($lg['slug']) && $lg['slug'] === $kgh_cur_m); ?>
-                          lang="<?php echo esc_attr($lg['slug']); ?>">
-                    <?php echo esc_html( $lg['name'] ?: strtoupper($lg['slug']) ); ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-          <?php endif; ?>
-        <?php endif; ?>
+        <?php /* language selector moved outside overlay on mobile for accessibility */ ?>
         <div class="px-4 pb-8">
           <a href="<?php echo esc_url($tours_url); ?>"
             class="block w-full text-center kgh-btn--primary bg-white text-kgh-red hover:brightness-95">
