@@ -188,7 +188,7 @@ if (!function_exists('kgh_fmt_duration')) {
           <?php if (!empty($capacity)): ?>
             <span class="kgh-meta-item" title="<?php echo esc_attr($capacity); ?>">
               <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-              <span><?php echo esc_html__('Max', 'kgh-theme'); ?> <?php echo esc_html($capacity); ?></span>
+              <span><?php echo esc_html($capacity); ?></span>
             </span>
           <?php endif; ?>
 
@@ -216,9 +216,10 @@ if (!function_exists('kgh_fmt_duration')) {
       }
       $gallery_urls = [];
       foreach (array_values(array_unique($gallery_ids)) as $aid) {
-        $url_large = wp_get_attachment_image_url($aid, 'large');
-        $url_thumb = wp_get_attachment_image_url($aid, 'thumbnail');
-        if ($url_large) { $gallery_urls[] = ['large'=>$url_large, 'thumb'=>$url_thumb ?: $url_large]; }
+        $url_large = wp_get_attachment_image_url($aid, 'kgh-gal-large')
+          ?: wp_get_attachment_image_url($aid, '2048x2048')
+          ?: wp_get_attachment_image_url($aid, 'full');
+        if ($url_large) { $gallery_urls[] = ['id' => (int)$aid, 'large' => $url_large]; }
       }
       ?>
       <?php if (!empty($gallery_urls)): ?>
@@ -229,12 +230,30 @@ if (!function_exists('kgh_fmt_duration')) {
             for ($i=0; $i<$max; $i++): $row = $gallery_urls[$i];
           ?>
             <button type="button" class="kgh-gal-thumb" data-kgh-gal-index="<?php echo (int)$i; ?>">
-              <img src="<?php echo esc_url($row['thumb']); ?>" alt="">
+              <?php echo wp_get_attachment_image(
+                $row['id'],
+                'kgh-gal-thumb',
+                false,
+                [
+                  'loading' => 'lazy',
+                  'class'   => 'absolute inset-0 w-full h-full object-cover',
+                  'sizes'   => '(min-width:1024px) 300px, (min-width:640px) 33vw, 50vw',
+                ]
+              ); ?>
             </button>
           <?php endfor; ?>
           <?php if ($show_more): $row = $gallery_urls[3]; $more = $count_gal - 3; ?>
             <button type="button" class="kgh-gal-thumb" data-kgh-gal-index="3">
-              <img src="<?php echo esc_url($row['thumb']); ?>" alt="">
+              <?php echo wp_get_attachment_image(
+                $row['id'],
+                'kgh-gal-thumb',
+                false,
+                [
+                  'loading' => 'lazy',
+                  'class'   => 'absolute inset-0 w-full h-full object-cover',
+                  'sizes'   => '(min-width:1024px) 300px, (min-width:640px) 33vw, 50vw',
+                ]
+              ); ?>
               <span class="kgh-gal-more">+<?php echo (int)$more; ?> <?php echo esc_html__('more', 'kgh-theme'); ?></span>
             </button>
           <?php endif; ?>

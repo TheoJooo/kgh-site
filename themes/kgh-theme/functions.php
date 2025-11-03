@@ -829,6 +829,15 @@ add_action('after_setup_theme', function () {
   add_image_size('kgh-post-thumb', 120, 120, true);
 });
 
+// Tailles dédiées à la galerie des tours
+add_action('after_setup_theme', function () {
+  // Vignette 4:3 (grid 4 colonnes) + variante 2x pour écrans Retina
+  add_image_size('kgh-gal-thumb',    600,  450, true);
+  add_image_size('kgh-gal-thumb-2x', 1200, 900, true);
+  // Grande image pour la lightbox (largeur cible ~1600px, pas de recadrage pour conserver le cadrage)
+  add_image_size('kgh-gal-large', 1600, 0, false);
+});
+
 // Helper vignettes pour la liste d’articles
 function kgh_post_list_thumb($post_id = 0){
   $post_id = $post_id ?: get_the_ID();
