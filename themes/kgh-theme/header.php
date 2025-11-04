@@ -61,7 +61,7 @@
             <div class="hidden md:flex items-center" aria-label="<?php echo esc_attr__('Language', 'kgh-theme'); ?>">
               <label for="kgh-lang-desktop" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
               <select id="kgh-lang-desktop" class="kgh-lang-select text-sm"
-                      onchange="if(this.value) window.location.href=this.value;">
+                      onchange="if(this.value){var u=this.value,q=location.search; if(q){u+=(u.indexOf('?')>-1?'&':'?')+q.slice(1);} location.href=u;}">
                 <?php foreach ($kgh_langs as $lg): $slug = isset($lg['slug']) ? (string)$lg['slug'] : ''; $dest = ($slug==='ko') ? $kgh_external_ko : (string)($lg['url'] ?? ''); ?>
                   <option value="<?php echo esc_url($dest); ?>" <?php selected($slug === $kgh_cur); ?>
                           lang="<?php echo esc_attr($slug); ?>">
@@ -74,7 +74,7 @@
             <div class="md:hidden inline-flex items-center" aria-label="<?php echo esc_attr__('Language', 'kgh-theme'); ?>">
               <label for="kgh-lang-xs" class="sr-only"><?php echo esc_html__('Language', 'kgh-theme'); ?></label>
               <select id="kgh-lang-xs" class="kgh-lang-select text-sm"
-                      onchange="if(this.value) window.location.href=this.value;">
+                      onchange="if(this.value){var u=this.value,q=location.search; if(q){u+=(u.indexOf('?')>-1?'&':'?')+q.slice(1);} location.href=u;}">
                 <?php foreach ($kgh_langs as $lg): $slug = isset($lg['slug']) ? (string)$lg['slug'] : ''; $dest = ($slug==='ko') ? $kgh_external_ko : (string)($lg['url'] ?? ''); ?>
                   <option value="<?php echo esc_url($dest); ?>" <?php selected($slug === $kgh_cur); ?>
                           lang="<?php echo esc_attr($slug); ?>">

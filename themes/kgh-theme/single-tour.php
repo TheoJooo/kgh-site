@@ -806,6 +806,40 @@ if (!function_exists('kgh_fmt_duration')) {
 <script>
 (function(){
   const messages = <?php echo wp_json_encode( $ui_strings ); ?>;
+  <?php
+    $lang_slug = function_exists('pll_current_language') ? (string) pll_current_language('slug') : '';
+    $checkout_page = get_page_by_path('checkout');
+    $checkout_id = $checkout_page ? (int) $checkout_page->ID : 0;
+    if ($checkout_id && function_exists('pll_get_post')) {
+      $mapped = (int) pll_get_post($checkout_id);
+      if ($mapped) { $checkout_id = $mapped; }
+    }
+    // Fallback: find page containing [kgh_checkout] in current language
+    if (!$checkout_id) {
+      $args = [
+        'post_type'      => 'page',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'suppress_filters'=> false,
+      ];
+      if ($lang_slug && taxonomy_exists('language')) {
+        $args['tax_query'] = [[
+          'taxonomy' => 'language',
+          'field'    => 'slug',
+          'terms'    => $lang_slug,
+        ]];
+      }
+      foreach (get_posts($args) as $p) {
+        if (has_shortcode($p->post_content, 'kgh_checkout')) { $checkout_id = (int) $p->ID; break; }
+      }
+    }
+    $checkout_url = $checkout_id ? get_permalink($checkout_id) : home_url('/checkout/');
+  ?>
+  const checkoutBase = <?php echo wp_json_encode( $checkout_url ); ?>;
+  const i18nQty = <?php echo wp_json_encode([
+    'guest'  => __('guest', 'kgh-theme'),
+    'guests' => __('guests', 'kgh-theme'),
+  ]); ?>;
   const tourId = <?php echo (int) $tour_id; ?>;
   const qs = new URLSearchParams(window.location.search);
   const preDate = qs.get('kgh_date') || qs.get('date') || '';
@@ -848,7 +882,7 @@ if (!function_exists('kgh_fmt_duration')) {
     const unit = parseInt(selectedSlot.price_usd||0,10);
     const total = unit * qty;
     if (elSummary) {
-      const label = qty>1 ? `${qty} guests` : '1 guest';
+      const label = `${qty} ${qty>1 ? i18nQty.guests : i18nQty.guest}`;
       elSummary.textContent = `${label} × ${dollars(unit)}`;
     }
     if (elTotal) elTotal.textContent = dollars(total);
@@ -1087,7 +1121,7 @@ if (!function_exists('kgh_fmt_duration')) {
       showError(messages.networkError);
       return;
     }
-    const url = new URL('/checkout/', window.location.origin);
+    const url = new URL(checkoutBase, window.location.origin);
     url.searchParams.set('kgh_tour', String(tourId));
     url.searchParams.set('kgh_date', selectedSlot.slot_start_iso.substring(0, 10));
     url.searchParams.set('kgh_time', hm);

@@ -131,18 +131,23 @@ add_shortcode('kgh_checkout_success', function () {
     'backHome'       => __( 'Back to Home', 'kgh-booking' ),
   ];
   ob_start(); ?>
-  <div class="kgh-outcome">
-    <h2 id="kgh-succ-heading"><?php echo esc_html( $strings['headingProcessing'] ); ?></h2>
-    <div id="kgh-succ-alert" class="kgh-status" role="status" aria-live="polite">
-      <div class="notice notice-info"><p><?php echo esc_html( $strings['processing'] ); ?></p></div>
-    </div>
-    <div id="kgh-succ-recap" class="kgh-success-card" style="display:none;">
-      <div id="kgh-succ-title" style="font-weight:700;margin-bottom:4px;">—</div>
-      <div id="kgh-succ-when" style="opacity:.9;">—</div>
-      <div id="kgh-succ-guests" style="opacity:.9;margin-top:6px;">—</div>
-      <div id="kgh-succ-total" style="margin-top:8px;font-weight:700;">—</div>
-      <div id="kgh-succ-status" style="margin-top:8px;color:#1a7a3a;"><?php echo esc_html( $strings['paid'] ); ?></div>
-      <div style="margin-top:12px;"><a class="kgh-inline-link" href="<?php echo esc_url( home_url('/') ); ?>"><?php echo esc_html( $strings['backHome'] ); ?></a></div>
+  <div class="kgh-container py-10">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg border-2 border-[#CAC8C8] p-6 md:p-8 text-center">
+      <div class="mb-2 text-3xl" aria-hidden="true">✅</div>
+      <h2 id="kgh-succ-heading" class="kgh-h2 mb-2"><?php echo esc_html( $strings['headingProcessing'] ); ?></h2>
+      <div id="kgh-succ-alert" class="mb-6" role="status" aria-live="polite">
+        <div class="notice notice-info"><p><?php echo esc_html( $strings['processing'] ); ?></p></div>
+      </div>
+      <div id="kgh-succ-recap" class="text-left space-y-1" style="display:none;">
+        <div id="kgh-succ-title" class="font-semibold">—</div>
+        <div id="kgh-succ-when" class="text-gray-700">—</div>
+        <div id="kgh-succ-guests" class="text-gray-700">—</div>
+        <div id="kgh-succ-total" class="mt-2 font-semibold">—</div>
+        <div id="kgh-succ-status" class="mt-2 text-green-700"><?php echo esc_html( $strings['paid'] ); ?></div>
+        <div class="pt-4 text-center">
+          <a class="kgh-btn--primary" href="<?php echo esc_url( function_exists('pll_home_url') ? pll_home_url() : home_url('/') ); ?>"><?php echo esc_html( $strings['backHome'] ); ?></a>
+        </div>
+      </div>
     </div>
   </div>
   <script>
@@ -234,10 +239,13 @@ add_shortcode('kgh_checkout_cancel', function () {
     // 'backHome'  => __( 'Back to Home', 'kgh-booking' ),
   ];
   ob_start(); ?>
-  <div class="kgh-outcome">
-    <h2><?php echo esc_html( $strings['heading'] ); ?></h2>
-    <p><?php echo esc_html( $strings['message'] ); ?></p>
-    <p><a class="kgh-inline-link" href="<?php echo esc_url( home_url('/') ); ?>"><?php echo esc_html( $strings['backHome'] ); ?></a></p>
+  <div class="kgh-container py-10">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg border-2 border-[#E7B7B7] p-6 md:p-8 text-center">
+      <div class="mb-2 text-3xl" aria-hidden="true">⚠️</div>
+      <h2 class="kgh-h2 mb-2"><?php echo esc_html( $strings['heading'] ); ?></h2>
+      <p class="text-gray-700 mb-4"><?php echo esc_html( $strings['message'] ); ?></p>
+      <a class="kgh-btn--primary" href="<?php echo esc_url( function_exists('pll_home_url') ? pll_home_url() : home_url('/') ); ?>"><?php echo esc_html( $strings['backHome'] ); ?></a>
+    </div>
   </div>
   <script>
   (function(){
@@ -372,7 +380,7 @@ add_shortcode('kgh_checkout', function(){
         </label>
         <button id="kgh-pay" type="button" class="kgh-button-primary" disabled><?php echo esc_html( $strings['payCta'] ); ?></button>
         <div id="kgh-co-loading" class="kgh-status" style="display:none;"><?php echo esc_html( $strings['processing'] ); ?></div>
-        <div><a id="kgh-back" class="kgh-inline-link" href="<?php echo esc_url( get_permalink($tour) ?: home_url('/') ); ?>"><?php echo esc_html( $strings['backToTour'] ); ?></a></div>
+        <div><a id="kgh-back" class="kgh-inline-link mt-2" href="<?php echo esc_url( get_permalink($tour) ?: home_url('/') ); ?>"><?php echo esc_html( $strings['backToTour'] ); ?></a></div>
       </form>
 
       <aside id="kgh-co-recap" class="kgh-checkout-summary" aria-live="polite">
@@ -389,6 +397,7 @@ add_shortcode('kgh_checkout', function(){
   (function(){
     const params = new URLSearchParams(window.location.search);
     const strings = <?php echo wp_json_encode( $strings ); ?>;
+    const currentLang = <?php echo wp_json_encode( function_exists('pll_current_language') ? pll_current_language('slug') : '' ); ?>;
     const tourId = parseInt((params.get('kgh_tour') || params.get('tour') || '0'), 10);
     const date = (params.get('kgh_date') || params.get('date') || '').trim();
     const time = (params.get('kgh_time') || params.get('time') || '').trim();
@@ -436,6 +445,7 @@ add_shortcode('kgh_checkout', function(){
         customer_first_name:elFirst.value.trim(),
         customer_last_name:elLast.value.trim(),
         customer_phone:elPhone.value.trim(),
+        lang: currentLang || undefined,
       };
       const order=await fetchJSON('/wp-json/kgh/v1/paypal/order',{method:'POST',body:JSON.stringify(orderPayload)});
       if(!order.ok){ const msg=order.status===409?strings.holdConflict:(order.body.message||strings.orderError); showError(msg); elLoad.style.display='none'; setPayEnabled(true); return; }

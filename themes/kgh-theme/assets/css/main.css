@@ -159,3 +159,13 @@ body {
   outline: none;
   text-decoration: underline;
 }
+
+/* Checkout layout + cards */
+.kgh-checkout { padding: 2rem 0; }
+.kgh-checkout-grid { display: grid; gap: 1.5rem; }
+.kgh-checkout-form, .kgh-checkout-summary { background:#fff; border:2px solid #CAC8C8; border-radius:8px; padding:1.25rem; }
+@media (min-width:768px){
+  .kgh-checkout-grid { grid-template-columns: 1fr 420px; align-items:start; }
+  .kgh-checkout-form { order:2; }
+  .kgh-checkout-summary { order:1; }
+}
