@@ -32,7 +32,7 @@ get_header();
 
     <!-- Lire d'autres articles -->
     <section class="mt-12 md:mt-16">
-    <h2 class="font-serif text-2xl md:text-3xl text-black mb-6">Read more articles</h2>
+    <h2 class="font-serif text-2xl md:text-3xl text-black mb-6"><?php echo esc_html__('Read more articles', 'kgh-theme'); ?></h2>
 
     <?php
     $current_id = get_the_ID();

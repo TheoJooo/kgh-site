@@ -186,7 +186,7 @@ get_header();
     <!-- TESTIMONIALS -->
     <section class="bg-white py-12 md:py-20">
     <div class="kgh-container">
-        <h2 class="font-serif text-2xl md:text-3xl text-black mb-6 md:mb-10">Testimonials</h2>
+    <h2 class="font-serif text-2xl md:text-3xl text-black mb-6 md:mb-10"><?php echo esc_html__('Testimonials', 'kgh-theme'); ?></h2>
 
         <?php
         // Témoignages (CPT "testimonial")
@@ -331,7 +331,7 @@ get_header();
     <div class="kgh-container">
       <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-6 md:gap-16">
         <!-- Title -->
-        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center">FAQ:</h2>
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center"><?php echo esc_html__('FAQ:', 'kgh-theme'); ?></h2>
 
         <!-- Accordion -->
         <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">
@@ -340,7 +340,7 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Can the weather cancel a tour?</span>
+              <span class="pr-7"><?php echo esc_html__('Can the weather cancel a tour?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>

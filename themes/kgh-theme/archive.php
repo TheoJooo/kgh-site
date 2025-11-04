@@ -28,18 +28,18 @@ get_header();
             <p class="text-gray-700 text-sm leading-relaxed line-clamp-3"><?php echo get_the_excerpt(); ?></p>
           </div>
           <div class="px-6 pb-6">
-            <a href="<?php the_permalink(); ?>" class="kgh-btn--ghost">Read more</a>
+            <a href="<?php the_permalink(); ?>" class="kgh-btn--ghost"><?php esc_html_e('Read more', 'kgh-theme'); ?></a>
           </div>
         </article>
       <?php endwhile; ?>
     </div>
 
-    <nav class="mt-10 flex items-center justify-between">
-      <div><?php previous_posts_link('← Newer'); ?></div>
-      <div><?php next_posts_link('Older →'); ?></div>
+    <nav class="mt-10 flex items-center justify-between" aria-label="<?php echo esc_attr__('Blog pagination', 'kgh-theme'); ?>">
+      <div><?php previous_posts_link( __('← Newer', 'kgh-theme') ); ?></div>
+      <div><?php next_posts_link( __('Older →', 'kgh-theme') ); ?></div>
     </nav>
   <?php else: ?>
-    <p>No posts found.</p>
+    <p><?php esc_html_e('No posts found.', 'kgh-theme'); ?></p>
   <?php endif; ?>
 </main>
 <?php get_footer(); ?>

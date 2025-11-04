@@ -6,6 +6,11 @@ get_header();
 
 // Page des articles + SCF (titre/intro éditables)
 $posts_page_id = (int) get_option('page_for_posts');
+// Polylang: map the posts page to the current language if available
+if ($posts_page_id && function_exists('pll_get_post')) {
+  $mapped = (int) pll_get_post($posts_page_id);
+  if ($mapped) $posts_page_id = $mapped;
+}
 
 $hero_title = __('Korean Food, Culture & Travel', 'kgh-theme');
 $hero_intro = '';

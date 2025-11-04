@@ -16,29 +16,29 @@ get_header();
   $GROUPS = [
     [
       'key'       => 'seoul_around',                   
-      'title'     => 'In Seoul & Nearby',
-      'subtitle'  => 'All our tours available in Seoul and accessible from Seoul!',
+      'title'     => __('In Seoul & Nearby', 'kgh-theme'),
+      'subtitle'  => __('All our tours available in Seoul and accessible from Seoul!', 'kgh-theme'),
       'area_like' => ['Seoul', 'Gyeonggi', 'Incheon'],
       'limit'     => 12,
     ],
     [
       'key'       => 'busan_south',
-      'title'     => 'Busan & Southern Korea',
-      'subtitle'  => 'These tours are outside of Seoul, we will help you organize your trip and guide you in the countryside of South Korea!',
+      'title'     => __('Busan & Southern Korea', 'kgh-theme'),
+      'subtitle'  => __('These tours are outside of Seoul, we will help you organize your trip and guide you in the countryside of South Korea!', 'kgh-theme'),
       'area_like' => ['Busan', 'Southern Korea', 'Gyeongsang', 'Jeolla', 'Jeju', 'Gyeongju'],
       'limit'     => 12,
     ],
     [
       'key'       => 'seasonal',
-      'title'     => 'Seasonal Tours',
-      'subtitle'  => 'These tours are only available during their seasons!',
+      'title'     => __('Seasonal Tours', 'kgh-theme'),
+      'subtitle'  => __('These tours are only available during their seasons!', 'kgh-theme'),
       'seasonal'  => true,
       'limit'     => 12,
     ],
     [
       'key'       => 'cooking',
-      'title'     => 'Cooking Classes',
-      'subtitle'  => 'Participate to one of our cooking class!',
+      'title'     => __('Cooking Classes', 'kgh-theme'),
+      'subtitle'  => __('Participate to one of our cooking class!', 'kgh-theme'),
       'cooking_class'   => true,
       'limit'     => 12,
     ],
@@ -168,8 +168,9 @@ get_header();
         <?php $short = wp_trim_words( wp_strip_all_tags( get_the_excerpt($post_id) ), 22, '' ); ?>
         <p class="kgh-card-ex-inline">
           <?php echo esc_html($short); ?>&nbsp;
-          <a href="<?php echo esc_url(get_permalink($post_id)); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr(get_the_title($post_id).' – View more'); ?>">
-            View more
+          <?php /* translators: %s: tour title */ ?>
+          <a href="<?php echo esc_url(get_permalink($post_id)); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr( sprintf(__('%s – View more', 'kgh-theme'), get_the_title($post_id)) ); ?>">
+            <?php esc_html_e('View more', 'kgh-theme'); ?>
           </a>
         </p>
       </div>
@@ -207,7 +208,7 @@ get_header();
           <?php echo $price_dollars ? esc_html__('from', 'kgh-theme') . ' $' . esc_html($price_dollars) : esc_html__('Price on request', 'kgh-theme'); ?>
         </span>
         <a href="<?php echo esc_url(get_permalink($post_id)); ?>" class="kgh-card-cta kgh-btn--tertiary">
-          View Details <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon_or('icon-right'); ?></span>
+          <?php esc_html_e('View Details', 'kgh-theme'); ?> <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon_or('icon-right'); ?></span>
         </a>
       </div>
     </article>
@@ -219,9 +220,9 @@ get_header();
   <!-- HERO -->
   <section class="bg-kgh-bg">
     <div class="kgh-container py-12 md:py-16 text-center">
-      <h1 class="kgh-h1 text-black mb-4">Our tours</h1>
+      <h1 class="kgh-h1 text-black mb-4"><?php echo esc_html__('Our tours', 'kgh-theme'); ?></h1>
       <p class="kgh-subtle max-w-3xl mx-auto mb-10 md:mb-12">
-        Across Seoul and in the whole country – crafted for authentic Korean experiences.
+        <?php echo esc_html__('Across Seoul and in the whole country – crafted for authentic Korean experiences.', 'kgh-theme'); ?>
       </p>
 
       <!-- Stats (4) -->
@@ -231,7 +232,7 @@ get_header();
             <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
               <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true"><?php echo kgh_icon_or('icon-smiley'); ?></span>
             </span>
-            <div><div class="text-2xl font-semibold text-black leading-tight">3000+</div><div class="text-gray-700 text-xs">Happy Gourmet Hunters</div></div>
+            <div><div class="text-2xl font-semibold text-black leading-tight">3000+</div><div class="text-gray-700 text-xs"><?php echo esc_html__('Happy Gourmet Hunters', 'kgh-theme'); ?></div></div>
           </div>
         </li>
         <li class="w-full max-w-[300px] md:max-w-[260px]">
@@ -239,7 +240,7 @@ get_header();
             <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
               <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true"><?php echo kgh_icon_or('icon-compass'); ?></span>
             </span>
-            <div><div class="text-2xl font-semibold text-black leading-tight">2000+</div><div class="text-gray-700 text-xs">Tours since 2010</div></div>
+            <div><div class="text-2xl font-semibold text-black leading-tight">2000+</div><div class="text-gray-700 text-xs"><?php echo esc_html__('Tours since 2010', 'kgh-theme'); ?></div></div>
           </div>
         </li>
         <li class="w-full max-w-[300px] md:max-w-[260px]">
@@ -247,7 +248,7 @@ get_header();
             <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
               <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true"><?php echo kgh_icon_or('icon-home'); ?></span>
             </span>
-            <div><div class="text-2xl font-semibold text-black leading-tight">1.8K+</div><div class="text-gray-700 text-xs">Addresses and Hidden Gems</div></div>
+            <div><div class="text-2xl font-semibold text-black leading-tight">1.8K+</div><div class="text-gray-700 text-xs"><?php echo esc_html__('Addresses and Hidden Gems', 'kgh-theme'); ?></div></div>
           </div>
         </li>
         <li class="w-full max-w-[300px] md:max-w-[260px]">
@@ -255,7 +256,7 @@ get_header();
             <span class="grid place-items-center w-12 h-12 rounded-xl bg-white">
               <span class="kgh-ico w-6 h-6 text-black" aria-hidden="true"><?php echo kgh_icon_or('icon-smiley'); ?></span>
             </span>
-            <div><div class="text-2xl font-semibold text-black leading-tight">6</div><div class="text-gray-700 text-xs">Amazing Guides</div></div>
+            <div><div class="text-2xl font-semibold text-black leading-tight">6</div><div class="text-gray-700 text-xs"><?php echo esc_html__('Amazing Guides', 'kgh-theme'); ?></div></div>
           </div>
         </li>
       </ul>
@@ -269,14 +270,14 @@ get_header();
       <div class="kgh-container">
         <header class="mb-6 md:mb-8 flex items-end justify-between gap-4">
           <div>
-            <h2 class="kgh-h1 text-black mb-2"><?php echo esc_html($g['title']); ?></h2>
-            <p class="kgh-subtle"><?php echo esc_html($g['subtitle']); ?></p>
+            <h2 class="kgh-h1 text-black mb-2"><?php echo esc_html( __($g['title'], 'kgh-theme') ); ?></h2>
+            <p class="kgh-subtle"><?php echo esc_html( __($g['subtitle'], 'kgh-theme') ); ?></p>
           </div>
 
           <!-- Controls -->
           <div class="hidden md:flex items-center gap-3">
-            <button type="button" class="kgh-carousel-btn" data-kgh-prev="<?php echo esc_attr($cid); ?>" aria-label="Previous">‹</button>
-            <button type="button" class="kgh-carousel-btn" data-kgh-next="<?php echo esc_attr($cid); ?>" aria-label="Next">›</button>
+            <button type="button" class="kgh-carousel-btn" data-kgh-prev="<?php echo esc_attr($cid); ?>" aria-label="<?php echo esc_attr__('Previous', 'kgh-theme'); ?>">‹</button>
+            <button type="button" class="kgh-carousel-btn" data-kgh-next="<?php echo esc_attr($cid); ?>" aria-label="<?php echo esc_attr__('Next', 'kgh-theme'); ?>">›</button>
           </div>
         </header>
 
@@ -294,8 +295,8 @@ get_header();
 
         <!-- Controls mobile -->
         <div class="mt-6 flex md:hidden items-center justify-center gap-3">
-          <button type="button" class="kgh-carousel-btn" data-kgh-prev="<?php echo esc_attr($cid); ?>" aria-label="Previous">‹</button>
-          <button type="button" class="kgh-carousel-btn" data-kgh-next="<?php echo esc_attr($cid); ?>" aria-label="Next">›</button>
+          <button type="button" class="kgh-carousel-btn" data-kgh-prev="<?php echo esc_attr($cid); ?>" aria-label="<?php echo esc_attr__('Previous', 'kgh-theme'); ?>">‹</button>
+          <button type="button" class="kgh-carousel-btn" data-kgh-next="<?php echo esc_attr($cid); ?>" aria-label="<?php echo esc_attr__('Next', 'kgh-theme'); ?>">›</button>
         </div>
       </div>
     </section>
@@ -307,7 +308,7 @@ get_header();
     <div class="kgh-container">
       <!-- Headline centered -->
       <p class="text-center text-lg max-w-3xl mx-auto mb-8 md:mb-12">
-        Authentic Korean food tours in Seoul:</br>hidden gems, small groups, and the stories behind every bite.
+        <?php echo wp_kses_post( __('Authentic Korean food tours in Seoul:</br>hidden gems, small groups, and the stories behind every bite.', 'kgh-theme') ); ?>
       </p>
 
       <!-- Pills: 1x4 desktop, stacked mobile -->
@@ -318,7 +319,7 @@ get_header();
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">Free 48h Cancellation</span>
+            <span class="text-black text-sm"><?php echo esc_html__('Free 48h Cancellation', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -328,7 +329,7 @@ get_header();
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">All Diets Available</span>
+            <span class="text-black text-sm"><?php echo esc_html__('All Diets Available', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -338,7 +339,7 @@ get_header();
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">No Tourist Traps</span>
+            <span class="text-black text-sm"><?php echo esc_html__('No Tourist Traps', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -348,7 +349,7 @@ get_header();
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">All Tastings Included</span>
+            <span class="text-black text-sm"><?php echo esc_html__('All Tastings Included', 'kgh-theme'); ?></span>
           </div>
         </li>
       </ul>
@@ -371,15 +372,15 @@ get_header();
 
         <!-- Contenu au-dessus -->
         <div class="relative z-10 text-center">
-          <p class="kgh-subtle text-black mb-6">Can’t find what you’re looking for?</p>
-          <h2 class="kgh-h1 text-black mb-5">Private tour</h2>
-          <p class="kgh-subtle mb-10">We can create a fully customized experience just for you!</p>
+          <p class="kgh-subtle text-black mb-6"><?php echo esc_html__('Can’t find what you’re looking for?', 'kgh-theme'); ?></p>
+          <h2 class="kgh-h1 text-black mb-5"><?php echo esc_html__('Private tour', 'kgh-theme'); ?></h2>
+          <p class="kgh-subtle mb-10"><?php echo esc_html__('We can create a fully customized experience just for you!', 'kgh-theme'); ?></p>
 
           <div class="flex flex-wrap items-center justify-center gap-4">
             <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
-              class="kgh-btn--quaternary hover:no-underline">Contact Us</a>
+              class="kgh-btn--quaternary hover:no-underline"><?php esc_html_e('Contact Us', 'kgh-theme'); ?></a>
             <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
-              class="kgh-btn--primary hover:no-underline">Request Custom Tour</a>
+              class="kgh-btn--primary hover:no-underline"><?php esc_html_e('Request Custom Tour', 'kgh-theme'); ?></a>
           </div>
         </div>
       </div>
@@ -391,7 +392,7 @@ get_header();
     <div class="kgh-container">
       <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-6 md:gap-16">
         <!-- Title -->
-        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center">FAQ:</h2>
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center"><?php echo esc_html__('FAQ:', 'kgh-theme'); ?></h2>
 
         <!-- Accordion -->
         <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">
@@ -400,13 +401,13 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Can the weather cancel a tour?</span>
+              <span class="pr-7"><?php echo esc_html__('Can the weather cancel a tour?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Tours run rain or shine; severe weather may reschedule. We'll contact you early with options or refunds.
+              <?php echo esc_html__('Tours run rain or shine! Don\'t forget your umbrella and enjoy Korea\'s rainy mood!', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -415,13 +416,13 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Can we customize or book a private tour?</span>
+              <span class="pr-7"><?php echo esc_html__('Can we customize or book a private tour?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Yes—private or custom routes available. Tell us interests, budget, and timing; we'll craft a tailored itinerary.
+              <?php echo esc_html__('Yes—private or custom routes available. Tell us interests, budget, and timing, we\'ll craft a tailored itinerary.', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -430,13 +431,13 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Is it suitable for dietary restrictions or allergies?</span>
+              <span class="pr-7"><?php echo esc_html__('Is it suitable for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Absolutely. We accommodate vegetarians, vegans, halal, gluten-free, and allergies. Just inform us early when booking.
+              <?php echo esc_html__('Absolutely. We accommodate vegetarians, vegans, halal, gluten-free, and allergies. Just inform us early when booking.', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -445,13 +446,13 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">What kind of places and food will we visit?</span>
+              <span class="pr-7"><?php echo esc_html__('What kind of places and food will we visit?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Hidden local markets, family-run eateries, street stalls; regional specialties, seasonal dishes, and classic Korean favorites.
+              <?php echo esc_html__('Hidden local markets, family-run eateries, street stalls; regional specialties, seasonal dishes, and classic Korean favorites.', 'kgh-theme'); ?>
             </div>
           </div>
         </div>
@@ -460,7 +461,7 @@ get_header();
         <div class="md:sticky md:top-20">
           <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
             class="kgh-btn--quaternary hover:no-underline whitespace-nowrap">
-            Personal Request
+            <?php esc_html_e('Personal Request', 'kgh-theme'); ?>
           </a>
         </div>
       </div>

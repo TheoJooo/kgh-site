@@ -269,28 +269,28 @@ if (!function_exists('kgh_fmt_duration')) {
               <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
               </span>
-              <span class="text-sm md:text-base">Free 24h Cancellation</span>
+              <span class="text-sm md:text-base"><?php echo esc_html__('Free 48h Cancellation', 'kgh-theme'); ?></span>
             </li>
             <!-- 2 -->
             <li class="flex flex-col items-center gap-2">
               <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
               </span>
-              <span class="text-sm md:text-base">All diets available</span>
+              <span class="text-sm md:text-base"><?php echo esc_html__('All diets available', 'kgh-theme'); ?></span>
             </li>
             <!-- 3 -->
             <li class="flex flex-col items-center gap-2">
               <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
               </span>
-              <span class="text-sm md:text-base">All tasting included</span>
+              <span class="text-sm md:text-base"><?php echo esc_html__('All tastings included', 'kgh-theme'); ?></span>
             </li>
             <!-- 4 -->
             <li class="flex flex-col items-center gap-2">
               <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : ''; ?>
               </span>
-              <span class="text-sm md:text-base">No tourist traps</span>
+              <span class="text-sm md:text-base"><?php echo esc_html__('No tourist traps', 'kgh-theme'); ?></span>
             </li>
           </ul>
         </div>
@@ -339,7 +339,7 @@ if (!function_exists('kgh_fmt_duration')) {
           <?php if (!empty($discover_items)): ?>
         <section class="mt-8 md:mt-12">
           <div class="rounded-lg bg-white p-6 md:p-8">
-            <h3 class="text-lg font-semibold text-black mb-6">What you’ll discover in this tour</h3>
+            <h3 class="text-lg font-semibold text-black mb-6"><?php echo esc_html__('What you’ll discover in this tour', 'kgh-theme'); ?></h3>
             <ul class="space-y-8">
               <?php foreach ($discover_items as $it): ?>
                 <li>
@@ -365,9 +365,9 @@ if (!function_exists('kgh_fmt_duration')) {
               <div class="flex items-center gap-5">
                 <span class="kgh-ico w-5 h-5 text-kgh-grey" aria-hidden="true"><?php echo kgh_icon('icon-alert-octagon'); ?></span>
                 <div class="min-w-0">
-                  <div class="text-xs font-semibold text-black">Dietary Requirements</div>
-                  <p class="text-xs text-gray-700">Please inform us of any allergies or dietary restrictions when booking.</p>
-                  <p class="text-xs text-gray-700">We can accommodate vegetarian, halal, and gluten-free needs.</p>
+                  <div class="text-xs font-semibold text-black"><?php echo esc_html__('Dietary Requirements', 'kgh-theme'); ?></div>
+                  <p class="text-xs text-gray-700"><?php echo esc_html__('Please inform us of any allergies or dietary restrictions when booking.', 'kgh-theme'); ?></p>
+                  <p class="text-xs text-gray-700"><?php echo esc_html__('We can accommodate vegetarian, halal, and gluten-free needs.', 'kgh-theme'); ?></p>
                 </div>
               </div>
             </div>
@@ -406,7 +406,7 @@ if (!function_exists('kgh_fmt_duration')) {
 
             <?php if ($mt_title || $mt_details): ?>
               <section class="mb-10 md:mb-12">
-                <h3 class="text-lg font-semibold text-black mb-4">Meeting Point</h3>
+                <h3 class="text-lg font-semibold text-black mb-4"><?php echo esc_html__('Meeting Point', 'kgh-theme'); ?></h3>
                 <div class="pl-4 border-l-2 border-black/90">
                   <?php if ($mt_title): ?>
                     <p class="font-semibold mb-1"><?php echo esc_html($mt_title); ?></p>
@@ -420,17 +420,17 @@ if (!function_exists('kgh_fmt_duration')) {
                   <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <?php if ($mt_gmaps): ?>
                       <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_gmaps); ?>" target="_blank" rel="noopener">
-                        Open in Google Maps
+                        <?php esc_html_e('Open in Google Maps', 'kgh-theme'); ?>
                       </a>
                     <?php endif; ?>
                     <?php if ($mt_naver): ?>
                       <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_naver); ?>" target="_blank" rel="noopener">
-                        Open in Naver Maps
+                        <?php esc_html_e('Open in Naver Maps', 'kgh-theme'); ?>
                       </a>
                     <?php endif; ?>
                     <?php if ($mt_kakao): ?>
                       <a class="<?php echo esc_attr($btn_base); ?>" href="<?php echo esc_url($mt_kakao); ?>" target="_blank" rel="noopener">
-                        Open in Kakao Maps
+                        <?php esc_html_e('Open in Kakao Maps', 'kgh-theme'); ?>
                       </a>
                     <?php endif; ?>
                   </div>
@@ -440,7 +440,7 @@ if (!function_exists('kgh_fmt_duration')) {
 
             <?php if ($end_title || $end_details): ?>
               <section>
-                <h3 class="text-lg font-semibold text-black mb-4">Ending Point</h3>
+                <h3 class="text-lg font-semibold text-black mb-4"><?php echo esc_html__('Ending Point', 'kgh-theme'); ?></h3>
                 <div class="pl-4 border-l-2 border-black/90">
                   <?php if ($end_title): ?>
                     <p class="font-semibold mb-1"><?php echo esc_html($end_title); ?></p>
@@ -574,13 +574,13 @@ if (!function_exists('kgh_fmt_duration')) {
         <!-- Tour Details (static for now) -->
         <section class="mt-8 md:mt-12">
           <div class="rounded-lg bg-white p-6 md:p-8">
-            <h3 class="text-lg font-semibold text-black mb-6">Tour Details</h3>
+            <h3 class="text-lg font-semibold text-black mb-6"><?php echo esc_html__('Tour Details', 'kgh-theme'); ?></h3>
 
             <!-- 2 columns: included / not included -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-8 mx-3">
               <!-- What's included -->
               <div>
-                <h4 class="font-medium text-black mb-3">What’s included</h4>
+                <h4 class="font-medium text-black mb-3"><?php echo esc_html__('What’s included', 'kgh-theme'); ?></h4>
                 <ul class="space-y-3">
                   <?php
                     // simple helper to print a checked line with your green icon
@@ -590,17 +590,17 @@ if (!function_exists('kgh_fmt_duration')) {
                         .   '<span class="text-black">'. esc_html($text) .'</span>'
                         . '</li>';
                     };
-                    $kgh_check('Transportation fees');
-                    $kgh_check('Expert Guide');
-                    $kgh_check('Cultural Insights');
-                    $kgh_check('Market navigation');
+                    $kgh_check( esc_html__('Transportation fees', 'kgh-theme') );
+                    $kgh_check( esc_html__('Expert Guide', 'kgh-theme') );
+                    $kgh_check( esc_html__('Cultural Insights', 'kgh-theme') );
+                    $kgh_check( esc_html__('Market navigation', 'kgh-theme') );
                   ?>
                 </ul>
               </div>
 
               <!-- What's not included -->
               <div>
-                <h4 class="font-medium text-black mb-3">What’s not included</h4>
+                <h4 class="font-medium text-black mb-3"><?php echo esc_html__('What’s not included', 'kgh-theme'); ?></h4>
                 <ul class="space-y-3">
                   <?php
                     // cross lines (typographic ×)
@@ -610,9 +610,9 @@ if (!function_exists('kgh_fmt_duration')) {
                         .   '<span class="text-black font-normal">'. esc_html($text) .'</span>'
                         . '</li>';
                     };
-                    $kgh_cross('Hotel pickup');
-                    $kgh_cross('Additional drinks');
-                    $kgh_cross('Souvenirs');
+                    $kgh_cross( esc_html__('Hotel pickup', 'kgh-theme') );
+                    $kgh_cross( esc_html__('Additional drinks', 'kgh-theme') );
+                    $kgh_cross( esc_html__('Souvenirs', 'kgh-theme') );
                   ?>
                 </ul>
               </div>
@@ -626,8 +626,8 @@ if (!function_exists('kgh_fmt_duration')) {
                   <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
                     <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
                   </span>
-                  <div class="text-sm font-semibold text-black">Photo Service</div>
-                  <div class="text-sm text-gray-700">Ask your guide to take pictures</div>
+                  <div class="text-sm font-semibold text-black"><?php echo esc_html__('Photo Service', 'kgh-theme'); ?></div>
+                  <div class="text-sm text-gray-700"><?php echo esc_html__('Ask your guide to take pictures', 'kgh-theme'); ?></div>
                 </div>
 
                 <!-- Hygiene -->
@@ -635,8 +635,8 @@ if (!function_exists('kgh_fmt_duration')) {
                   <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
                     <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
                   </span>
-                  <div class="text-sm font-semibold text-black">Hygienes Standards</div>
-                  <div class="text-sm text-gray-700">All venues inspected</div>
+                  <div class="text-sm font-semibold text-black"><?php echo esc_html__('Hygienes Standards', 'kgh-theme'); ?></div>
+                  <div class="text-sm text-gray-700"><?php echo esc_html__('All venues inspected', 'kgh-theme'); ?></div>
                 </div>
 
 
@@ -645,8 +645,8 @@ if (!function_exists('kgh_fmt_duration')) {
                   <span class="kgh-ico w-5 h-5 text-[#3B7D3B] mb-2" aria-hidden="true">
                     <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
                   </span>
-                  <div class="text-sm font-semibold text-black">All tastes included</div>
-                  <div class="text-sm text-gray-700">Choose what you want to eat</div>
+                  <div class="text-sm font-semibold text-black"><?php echo esc_html__('All tastes included', 'kgh-theme'); ?></div>
+                  <div class="text-sm text-gray-700"><?php echo esc_html__('Choose what you want to eat', 'kgh-theme'); ?></div>
                 </div>
               </div>
             </div>
@@ -658,7 +658,7 @@ if (!function_exists('kgh_fmt_duration')) {
     <?php if ($booking_enabled && $has_price): ?>
     <aside class="kgh-tour-aside">
       <section class="rounded-lg bg-white p-6 md:p-8">
-      <h3 class="text-lg font-semibold text-black mb-6">Check Availabilities & Prices</h3>
+      <h3 class="text-lg font-semibold text-black mb-6"><?php echo esc_html__('Check Availabilities & Prices', 'kgh-theme'); ?></h3>
       <?php
         // Optional SCF note displayed under the availability controls
         $avail_note = function_exists('SCF')
@@ -668,7 +668,7 @@ if (!function_exists('kgh_fmt_duration')) {
       ?>
 
       <?php if ($from_price_cents > 0): ?>
-        <p class="text-base text-black">from <strong><?php echo '$'.number_format($from_price_cents/100, 2); ?></strong> per person</p>
+        <p class="text-base text-black"><?php echo esc_html__('from', 'kgh-theme'); ?> <strong><?php echo '$'.number_format($from_price_cents/100, 2); ?></strong> <?php echo esc_html__('per person', 'kgh-theme'); ?></p>
       <?php endif; ?>
       <?php if ($avail_note !== ''): ?>
         <p class="mt-1 text-base text-gray-700"><?php echo esc_html($avail_note); ?></p>
@@ -679,16 +679,16 @@ if (!function_exists('kgh_fmt_duration')) {
       <label class="block mb-4">
         <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
           <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-calendar'); ?></span>
-          <span>Date</span>
+          <span><?php echo esc_html__('Date', 'kgh-theme'); ?></span>
         </div>
-        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="YYYY-MM-DD" readonly>
+        <input id="kgh-date" type="text" class="kgh-input w-full" placeholder="<?php echo esc_attr__('YYYY-MM-DD', 'kgh-theme'); ?>" readonly>
       </label>
 
       <!-- Time -->
       <label class="block mb-4">
         <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
           <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-clock'); ?></span>
-          <span>Starting Time</span>
+          <span><?php echo esc_html__('Starting Time', 'kgh-theme'); ?></span>
         </div>
         <select id="kgh-time" class="kgh-input w-full"></select>
       </label>
@@ -697,7 +697,7 @@ if (!function_exists('kgh_fmt_duration')) {
       <label class="block mb-4">
         <div class="flex items-center gap-2 text-sm font-semibold text-black mb-1">
           <span class="kgh-ico w-4 h-4" aria-hidden="true"><?php echo kgh_icon('icon-users'); ?></span>
-          <span>Guests</span>
+          <span><?php echo esc_html__('Guests', 'kgh-theme'); ?></span>
         </div>
         <select id="kgh-guests" class="kgh-input w-full">
           <option value="1">1</option>
@@ -706,19 +706,19 @@ if (!function_exists('kgh_fmt_duration')) {
 
       <hr class="kgh-separator">
       <div class="flex items-center justify-between text-base mb-2">
-        <span>Summary</span>
+        <span><?php echo esc_html__('Summary', 'kgh-theme'); ?></span>
         <span id="kgh-summary"></span>
       </div>
       <hr class="kgh-separator" style="margin-top:8px;margin-bottom:8px">
       <div class="flex items-center justify-between text-base font-semibold text-black mb-4">
-        <span>Total amount</span>
+        <span><?php echo esc_html__('Total amount', 'kgh-theme'); ?></span>
         <span id="kgh-total">$0.00</span>
       </div>
 
-      <button id="kgh-cta" class="kgh-btn--primary w-full">Book this tour</button>
+      <button id="kgh-cta" class="kgh-btn--primary w-full"><?php echo esc_html__('Book this tour', 'kgh-theme'); ?></button>
 
       <p id="kgh-no-slots" class="mt-3 text-sm text-gray-700" style="display:none">
-        No availability for this date
+        <?php echo esc_html__('No availability for this date', 'kgh-theme'); ?>
       </p>
       <p id="kgh-booking-error" class="mt-3 text-sm text-red-700" style="display:none"></p>
     </section>
@@ -731,9 +731,9 @@ if (!function_exists('kgh_fmt_duration')) {
       <section class="rounded-lg bg-white p-6 md:p-8">
       <div class="flex flex-col max-w-[400px]">
         <div class="flex flex-row items-center">
-          <span class="mr-4">to book this tour :</span>
+          <span class="mr-4"><?php echo esc_html__('to book this tour :', 'kgh-theme'); ?></span>
           <a href="#kgh-contact" class="kgh-btn--primary text-center">
-            Contact us
+            <?php esc_html_e('Contact us', 'kgh-theme'); ?>
           </a>
         </div>
       </div>

@@ -8,16 +8,16 @@ get_header(); ?>
     <div class="kgh-container py-10 md:py-24">
       <div class="grid md:grid-cols-10 md:items-center gap-8 md:gap-12">
         <div class="text-center md:text-left md:col-span-4">
-          <p class="kgh-overline mb-3">Discover Korea’s Culinary</br>Essence and Timeless Wellness</p>
-          <h1 class="kgh-h1 my-8">Chasing the Korea’s</br>Authentic Flavors!</h1>
-          <p class="kgh-subtle mb-8 max-w-[36ch] md:max-w-none mx-auto md:mx-0">Your journey into Korean food and</br>gastronomic culture starts here!</p>
+          <p class="kgh-overline mb-3"><?php echo wp_kses_post( __('Discover Korea’s Culinary</br>Essence and Timeless Wellness', 'kgh-theme') ); ?></p>
+          <h1 class="kgh-h1 my-8"><?php echo wp_kses_post( __('Chasing the Korea’s</br>Authentic Flavors!', 'kgh-theme') ); ?></h1>
+          <p class="kgh-subtle mb-8 max-w-[36ch] md:max-w-none mx-auto md:mx-0"><?php echo wp_kses_post( __('Your journey into Korean food and</br>gastronomic culture starts here!', 'kgh-theme') ); ?></p>
           <div class="flex flex-wrap items-center gap-3 justify-center md:justify-start">
-            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--primary hover:no-underline">Book a tour</a>
-            <a href="<?php echo esc_url( home_url('/contact/') ); ?>" class="kgh-btn--ghost hover:no-underline">Contact Us</a>
+            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--primary hover:no-underline"><?php esc_html_e('Book a tour', 'kgh-theme'); ?></a>
+            <a href="<?php echo esc_url( home_url('/contact/') ); ?>" class="kgh-btn--ghost hover:no-underline"><?php esc_html_e('Contact Us', 'kgh-theme'); ?></a>
           </div>
           <div class="kgh-google-review justify-center md:justify-start">
             <span class="kgh-google-stars">★★★★★</span>
-            <span>on Google</span>
+            <span><?php esc_html_e('on Google', 'kgh-theme'); ?></span>
           </div>
         </div>
         <div class="order-first md:order-none md:col-span-6">
@@ -110,8 +110,8 @@ get_header(); ?>
   <section class="bg-white py-12 md:py-20">
     <div class="kgh-container">
       <header class="mb-6 md:mb-10">
-        <h2 class="kgh-h1 text-black mb-2">Our tours</h2>
-        <p class="kgh-subtle">Korean Food & Cultural Walking Tours</p>
+        <h2 class="kgh-h1 text-black mb-2"><?php echo esc_html__('Our tours', 'kgh-theme'); ?></h2>
+        <p class="kgh-subtle"><?php echo esc_html__('Korean Food & Cultural Walking Tours', 'kgh-theme'); ?></p>
       </header>
 
       <?php if ( post_type_exists('tour') ) : ?>
@@ -255,8 +255,9 @@ get_header(); ?>
                     ?>
                     <p class="kgh-card-ex-inline">
                       <?php echo esc_html($short); ?>&nbsp;
-                      <a href="<?php the_permalink(); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr(get_the_title() . ' – View more'); ?>">
-                        View more
+                      <?php /* translators: %s: tour title */ ?>
+                      <a href="<?php the_permalink(); ?>" class="kgh-card-more" aria-label="<?php echo esc_attr( sprintf(__('%s – View more', 'kgh-theme'), get_the_title()) ); ?>">
+                        <?php esc_html_e('View more', 'kgh-theme'); ?>
                       </a>
                     </p>
                   </div>
@@ -306,7 +307,7 @@ get_header(); ?>
                       <?php echo $price_dollars ? esc_html__('from','kgh-theme') . ' $' . esc_html($price_dollars) : esc_html__('Price on request','kgh-theme'); ?>
                     </span>
                     <a href="<?php the_permalink(); ?>" class="kgh-card-cta kgh-btn--tertiary">
-                      View Details
+                      <?php esc_html_e('View Details', 'kgh-theme'); ?>
                       <span class="kgh-ico" aria-hidden="true"><?php echo kgh_icon('icon-right'); ?></span>
                     </a>
                   </div>
@@ -323,23 +324,23 @@ get_header(); ?>
 
           <div class="mt-8 flex items-center justify-between">
             <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--quaternary hover:no-underline">
-              View all tours
+              <?php esc_html_e('View all tours', 'kgh-theme'); ?>
             </a>
 
             <div class="flex items-center gap-4">
-              <button type="button" id="home-tours-prev" aria-label="Previous" class="kgh-btn--quaternary">
+              <button type="button" id="home-tours-prev" aria-label="<?php echo esc_attr__('Previous', 'kgh-theme'); ?>" class="kgh-btn--quaternary">
                 ‹
               </button>
-              <button type="button" id="home-tours-next" aria-label="Next" class="kgh-btn--quaternary">
+              <button type="button" id="home-tours-next" aria-label="<?php echo esc_attr__('Next', 'kgh-theme'); ?>" class="kgh-btn--quaternary">
                 ›
               </button>
             </div>
           </div>
           <?php else: ?>
-            <p class="text-gray-600">No tours yet.</p>
+            <p class="text-gray-600"><?php echo esc_html__('No tours yet.', 'kgh-theme'); ?></p>
           <?php endif; ?>
         <?php else: ?>
-        <p class="text-gray-600">Tours content type is not active right now.</p>
+        <p class="text-gray-600"><?php echo esc_html__('Tours content type is not active right now.', 'kgh-theme'); ?></p>
       <?php endif; ?>
     </div>
   </section>
@@ -349,7 +350,7 @@ get_header(); ?>
     <div class="kgh-container">
       <!-- Headline centered -->
       <p class="text-center text-lg max-w-3xl mx-auto mb-8 md:mb-12">
-        Authentic Korean food tours in Seoul:</br>hidden gems, small groups, and the stories behind every bite.
+        <?php echo wp_kses_post( __('Authentic Korean food tours in Seoul:</br>hidden gems, small groups, and the stories behind every bite.', 'kgh-theme') ); ?>
       </p>
 
       <!-- Pills: 1x4 desktop, stacked mobile -->
@@ -360,7 +361,7 @@ get_header(); ?>
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">Free 48h Cancellation</span>
+            <span class="text-black text-sm"><?php echo esc_html__('Free 48h Cancellation', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -370,7 +371,7 @@ get_header(); ?>
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">All Diets Available</span>
+            <span class="text-black text-sm"><?php echo esc_html__('All Diets Available', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -380,7 +381,7 @@ get_header(); ?>
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">No Tourist Traps</span>
+            <span class="text-black text-sm"><?php echo esc_html__('No Tourist Traps', 'kgh-theme'); ?></span>
           </div>
         </li>
 
@@ -390,7 +391,7 @@ get_header(); ?>
             <span class="kgh-ico w-5 h-5 text-[#3B7D3B]" aria-hidden="true">
               <?php echo function_exists('kgh_icon') ? kgh_icon('icon-check-validate') : '✓'; ?>
             </span>
-            <span class="text-black text-sm">All Tastings Included</span>
+            <span class="text-black text-sm"><?php echo esc_html__('All Tastings Included', 'kgh-theme'); ?></span>
           </div>
         </li>
       </ul>
@@ -413,15 +414,15 @@ get_header(); ?>
 
         <!-- Contenu au-dessus -->
         <div class="relative z-10 text-center">
-          <p class="kgh-subtle text-black mb-6">Can’t find what you’re looking for?</p>
-          <h2 class="kgh-h1 text-black mb-5">Private tour</h2>
-          <p class="kgh-subtle mb-10">We can create a fully customized experience just for you!</p>
+          <p class="kgh-subtle text-black mb-6"><?php echo esc_html__('Can’t find what you’re looking for?', 'kgh-theme'); ?></p>
+          <h2 class="kgh-h1 text-black mb-5"><?php echo esc_html__('Private tour', 'kgh-theme'); ?></h2>
+          <p class="kgh-subtle mb-10"><?php echo esc_html__('We can create a fully customized experience just for you!', 'kgh-theme'); ?></p>
 
           <div class="flex flex-wrap items-center justify-center gap-4">
             <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
-              class="kgh-btn--quaternary hover:no-underline">Contact Us</a>
+              class="kgh-btn--quaternary hover:no-underline"><?php esc_html_e('Contact Us', 'kgh-theme'); ?></a>
             <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
-              class="kgh-btn--primary hover:no-underline">Request Custom Tour</a>
+              class="kgh-btn--primary hover:no-underline"><?php esc_html_e('Request Custom Tour', 'kgh-theme'); ?></a>
           </div>
         </div>
       </div>
@@ -498,7 +499,7 @@ get_header(); ?>
   <!-- TESTIMONIALS -->
   <section class="bg-white py-12 md:py-20">
     <div class="kgh-container">
-        <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10">Testimonials</h2>
+        <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10"><?php echo esc_html__('Testimonials', 'kgh-theme'); ?></h2>
 
         <?php
         // Témoignages (CPT "testimonial")
@@ -561,7 +562,7 @@ get_header(); ?>
         </div>
 
         <?php else: ?>
-        <p class="kgh-subtle">Reviews coming soon.</p>
+        <p class="kgh-subtle"><?php echo esc_html__('Reviews coming soon.', 'kgh-theme'); ?></p>
         <?php endif; ?>
     </div>
   </section>
@@ -570,7 +571,7 @@ get_header(); ?>
     <!-- WHY KOREAN GOURMET HUNTERS -->
   <section class="bg-white py-14 md:py-24">
     <div class="kgh-container">
-      <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10">Why Korean Gourmet Hunters ?</h2>
+      <h2 class="font-serif text-2xl md:text-3xl text-bold text-black mb-6 md:mb-10"><?php echo esc_html__('Why Korean Gourmet Hunters ?', 'kgh-theme'); ?></h2>
 
 
       <?php
@@ -611,10 +612,10 @@ get_header(); ?>
               <?php endif; ?>
             </div>
             <div>
-              <h3 class="font-serif text-lg text-black leading-tight mb-2">Korean Wellness</h3>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2"><?php echo esc_html__('Korean Wellness', 'kgh-theme'); ?></h3>
               <p class="kgh-subtle text-sm md:text-base">
                 More than only Food: explore Korean medicine, local plants, and ancestral
-                wisdom from our forefathers. Experience the essence of Korean Wellness!
+                <?php echo esc_html__('wisdom from our forefathers. Experience the essence of Korean Wellness!', 'kgh-theme'); ?>
               </p>
             </div>
           </div>
@@ -629,7 +630,7 @@ get_header(); ?>
               <?php endif; ?>
             </div>
             <div>
-              <h3 class="font-serif text-lg text-black leading-tight mb-2">Working with the best Masters</h3>
+              <h3 class="font-serif text-lg text-black leading-tight mb-2"><?php echo esc_html__('Working with the best Masters', 'kgh-theme'); ?></h3>
               <p class="kgh-subtle text-sm md:text-base">
                 We work with the best Food Masters of Korea, who kept ancient traditions from our
                 ancestors. Our cooking classes are designed in order to show your the Korean
@@ -684,7 +685,7 @@ get_header(); ?>
     <div class="kgh-container">
       <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-6 md:gap-16">
         <!-- Title -->
-        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center">FAQ:</h2>
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-black md:pt-2 mx-14 text-center"><?php echo esc_html__('FAQ:', 'kgh-theme'); ?></h2>
 
         <!-- Accordion -->
         <div id="kgh-faq" class="w-full max-w-3xl mx-auto md:mx-0">
@@ -693,13 +694,13 @@ get_header(); ?>
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Can the weather cancel a tour?</span>
+              <span class="pr-7"><?php echo esc_html__('Can the weather cancel a tour?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Tours run rain or shine! Don't forget your umbrella and enjoy Korea's rainy mood!
+              <?php echo esc_html__('Tours run rain or shine! Don\'t forget your umbrella and enjoy Korea\'s rainy mood!', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -708,13 +709,13 @@ get_header(); ?>
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Can we customize or book a private tour?</span>
+              <span class="pr-7"><?php echo esc_html__('Can we customize or book a private tour?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Yes—private or custom routes available. Tell us interests, budget, and timing, we'll craft a tailored itinerary.
+              <?php echo esc_html__('Yes—private or custom routes available. Tell us interests, budget, and timing, we\'ll craft a tailored itinerary.', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -723,13 +724,13 @@ get_header(); ?>
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">Is it suitable for dietary restrictions or allergies?</span>
+              <span class="pr-7"><?php echo esc_html__('Is it suitable for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Absolutely. We accommodate vegetarians, vegans, halal, gluten-free, and allergies. Just inform us early when booking.
+              <?php echo esc_html__('Absolutely. We accommodate vegetarians, vegans, halal, gluten-free, and allergies. Just inform us early when booking.', 'kgh-theme'); ?>
             </div>
           </div>
 
@@ -738,13 +739,13 @@ get_header(); ?>
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7">What kind of places and food will we visit?</span>
+              <span class="pr-7"><?php echo esc_html__('What kind of places and food will we visit?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
             </button>
             <div data-faq-panel class="hidden pb-4 text-gray-700 text-sm md:text-base">
-              Hidden local markets, family-run eateries, street stalls; regional specialties, seasonal dishes, and classic Korean favorites.
+              <?php echo esc_html__('Hidden local markets, family-run eateries, street stalls; regional specialties, seasonal dishes, and classic Korean favorites.', 'kgh-theme'); ?>
             </div>
           </div>
         </div>
@@ -753,7 +754,7 @@ get_header(); ?>
         <div class="md:sticky md:top-20">
           <a href="<?php echo esc_url( home_url('/contact/') ); ?>"
             class="kgh-btn--quaternary hover:no-underline whitespace-nowrap">
-            Personal Request
+            <?php esc_html_e('Personal Request', 'kgh-theme'); ?>
           </a>
         </div>
       </div>
@@ -764,13 +765,13 @@ get_header(); ?>
   <section id="kgh-contact" class="mt-12 md:mt-16 scroll-mt-24">
     <?php
       get_template_part('template-parts/section', 'contact', [
-        'title'    => 'Contact us',
+        'title'    => __('Contact us', 'kgh-theme'),
         'services' => [
-          'Private tour inquiry',
-          'Group booking',
-          'Custom request',
+          __('Private tour inquiry', 'kgh-theme'),
+          __('Group booking', 'kgh-theme'),
+          __('Custom request', 'kgh-theme'),
         ],
-        // 'portrait_id' => 0, // optionnel : fixe un portrait spécifique
+      // 'portrait_id' => 0, // optionnel : fixe un portrait spécifique
       ]);
     ?>
   </section>
