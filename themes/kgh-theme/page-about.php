@@ -370,7 +370,7 @@ get_header();
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7"><?php echo esc_html__('Is it suitable for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
+              <span class="pr-7"><?php echo esc_html__('Do you offer options for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>

@@ -621,6 +621,21 @@ function kgh_badge_icon($slug) {
   }
 }
 
+function kgh_badge_label($slug){
+  $slug = trim(strtolower((string)$slug));
+  if ($slug === '') return '';
+
+  $map = [
+    'spicy'       => __('Spicy', 'kgh-theme'),
+    'traditional' => __('Traditional', 'kgh-theme'),
+    'night'       => __('Night', 'kgh-theme'),
+    'wellness'    => __('Wellness', 'kgh-theme'),
+    'halal'       => __('Halal', 'kgh-theme'),
+  ];
+
+  return $map[$slug] ?? ucwords(str_replace('-', ' ', $slug));
+}
+
 
 // === CPT "guide" ===
 add_action('init', function () {

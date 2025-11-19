@@ -131,14 +131,11 @@ if (!function_exists('kgh_fmt_duration')) {
       $badges = [];
       if (!empty($badge_raw)) {
         foreach ($badge_raw as $k => $v) {
-          if (is_int($k)) {                // ['spicy','traditional']
-            $slug  = trim((string) $v);
-            $label = ucwords(str_replace('-', ' ', $slug));
-          } else {                         // ['spicy' => 'Spicy'] or ['spicy' => 1]
-            $slug  = trim((string) $k);
-            $label = (is_string($v) && $v !== '') ? $v : ucwords(str_replace('-', ' ', $slug));
-          }
-          if ($slug !== '') $badges[] = ['slug'=>$slug,'label'=>$label];
+          $slug = is_int($k) ? trim((string)$v) : trim((string)$k);
+          if ($slug === '') continue;
+          $label = function_exists('kgh_badge_label') ? kgh_badge_label($slug) : ucwords(str_replace('-', ' ', $slug));
+          if ($label === '') continue;
+          $badges[] = ['slug'=>$slug,'label'=>$label];
         }
       }
       // limit like home if needed
@@ -749,11 +746,11 @@ if (!function_exists('kgh_fmt_duration')) {
     <?php
       // On passe un titre + une liste simple de services dont le nom du tour pour aider le staff
       get_template_part('template-parts/section', 'contact', [
-        'title'    => 'Contact us to book this tour',
+        'title'    => __('Contact us to book this tour', 'kgh-theme'),
         'services' => [
-          'Private tour inquiry',
-          'Group booking',
-          'Question about: ' . get_the_title($tour_id),
+          __('Private tour inquiry', 'kgh-theme'),
+          __('Group booking', 'kgh-theme'),
+          sprintf(__('Question about: %s', 'kgh-theme'), get_the_title($tour_id)),
         ],
         // 'portrait_id' => 0, // (optionnel) force un portrait spécifique si besoin
       ]);

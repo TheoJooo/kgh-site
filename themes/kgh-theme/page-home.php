@@ -199,9 +199,11 @@ get_header(); ?>
                         $badges = [];
                         if (!empty($badge_raw)) {
                           foreach ($badge_raw as $k => $v) {
-                            if (is_int($k)) { $slug = trim((string)$v); $label = ucwords(str_replace('-', ' ', $slug)); }
-                            else { $slug = trim((string)$k); $label = (is_string($v) && $v!=='') ? $v : ucwords(str_replace('-', ' ', $slug)); }
-                            if ($slug !== '') $badges[] = ['slug'=>$slug,'label'=>$label];
+                            $slug = is_int($k) ? trim((string)$v) : trim((string)$k);
+                            if ($slug === '') continue;
+                            $label = function_exists('kgh_badge_label') ? kgh_badge_label($slug) : ucwords(str_replace('-', ' ', $slug));
+                            if ($label === '') continue;
+                            $badges[] = ['slug'=>$slug,'label'=>$label];
                           }
                         }
                         $badges = array_slice($badges, 0, 3);
@@ -323,7 +325,15 @@ get_header(); ?>
           </div>
 
           <div class="mt-8 flex items-center justify-between">
-            <a href="<?php echo esc_url( home_url('/tours/') ); ?>" class="kgh-btn--quaternary hover:no-underline">
+            <?php
+              $kgh_tours_lang_slug = function_exists('pll_current_language') ? (string) pll_current_language('slug') : '';
+              $kgh_tours_path = '/tours/';
+              if ($kgh_tours_lang_slug && $kgh_tours_lang_slug !== 'en') {
+                $kgh_tours_path = sprintf('/%s/tours/', $kgh_tours_lang_slug);
+              }
+              $kgh_tours_url = home_url($kgh_tours_path);
+            ?>
+            <a href="<?php echo esc_url($kgh_tours_url); ?>" class="kgh-btn--quaternary hover:no-underline">
               <?php esc_html_e('View all tours', 'kgh-theme'); ?>
             </a>
 
@@ -724,7 +734,7 @@ get_header(); ?>
             <button type="button" data-faq-toggle
               class="w-full flex items-center justify-between gap-4 py-3 md:py-4 text-left text-[15px] md:text-base leading-snug"
               aria-expanded="false">
-              <span class="pr-7"><?php echo esc_html__('Is it suitable for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
+              <span class="pr-7"><?php echo esc_html__('Do you offer options for dietary restrictions or allergies?', 'kgh-theme'); ?></span>
               <span class="kgh-ico w-4 h-4 shrink-0 transition-transform" aria-hidden="true">
                 <?php echo function_exists('kgh_icon') ? kgh_icon('icon-chevron-down') : '˅'; ?>
               </span>
