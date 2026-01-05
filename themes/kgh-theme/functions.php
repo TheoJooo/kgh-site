@@ -884,6 +884,18 @@ function kgh_post_list_thumb($post_id = 0){
 
 
 
+// Handle contact form from the front-end (avoids /wp-admin/admin-post.php 403 on some hosts)
+add_action('template_redirect', function () {
+  if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    return;
+  }
+  if (empty($_POST['kgh_contact_send'])) {
+    return;
+  }
+  kgh_handle_contact_form();
+});
+
+
 // Handle contact form (logged-in + visitors)
 add_action('admin_post_kgh_contact_send',    'kgh_handle_contact_form');
 add_action('admin_post_nopriv_kgh_contact_send', 'kgh_handle_contact_form');

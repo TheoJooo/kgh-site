@@ -62,9 +62,9 @@ function kgh_schedule_validate(array $in) {
   $price = (int)($in['price_usd'] ?? $def['price_usd']);
   if ($price < 0) return new WP_Error('schedule_price', __('Price (USD cents) must be >= 0.', 'kgh-booking'));
 
-  // duration
+  // duration (allow any positive number of minutes)
   $dur = (int)($in['duration_min'] ?? $def['duration_min']);
-  if ($dur < 60 || $dur > 360) return new WP_Error('schedule_duration', __('Duration must be between 60 and 360 minutes.', 'kgh-booking'));
+  if ($dur < 1) return new WP_Error('schedule_duration', __('Duration must be a positive number of minutes.', 'kgh-booking'));
 
   // language
   $lang = strtoupper(trim((string)($in['language'] ?? $def['language'])));
@@ -223,7 +223,7 @@ function kgh_render_tour_schedule_metabox($post){
 
   // Duration
   echo '<div><label><strong>'.esc_html__('Duration (minutes)','kgh-booking').'</strong></label><br/>';
-  printf('<input type="number" name="kgh_schedule_duration_min" value="%s" min="60" max="360" step="1" style="width:140px;" placeholder="180">', esc_attr($duration));
+  printf('<input type="number" name="kgh_schedule_duration_min" value="%s" min="1" step="1" style="width:140px;" placeholder="180">', esc_attr($duration));
   echo '</div>';
 
   // Language

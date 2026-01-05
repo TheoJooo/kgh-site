@@ -27,6 +27,12 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
   $first_name     = sanitize_text_field($req->get_param('customer_first_name'));
   $last_name      = sanitize_text_field($req->get_param('customer_last_name'));
   $phone          = sanitize_text_field($req->get_param('customer_phone'));
+  $lang_param     = sanitize_text_field($req->get_param('lang'));
+
+  // If a desired language is provided, switch context for URL generation
+  if ($lang_param && function_exists('pll_switch_language')) {
+    pll_switch_language($lang_param);
+  }
 
   if ($tour_id <= 0 || !$slot_start_iso) {
     return new WP_Error('BAD_REQUEST', __('tour_id and slot_start_iso required', 'kgh-booking'), ['status'=>400]);
@@ -67,8 +73,65 @@ function kghp_create_paypal_order(WP_REST_Request $req) {
     $norm($last_name,20),
     $norm($phone,20)
   );
-  $success_url = function_exists('home_url') ? home_url('/checkout/success/') : '/checkout/success/';
-  $cancel_url  = function_exists('home_url') ? home_url('/checkout/cancel/')  : '/checkout/cancel/';
+  // Build success/cancel URLs in the current language (Polylang-aware)
+  if (function_exists('get_page_by_path')) {
+    $lang = function_exists('pll_current_language') ? (string) pll_current_language('slug') : '';
+
+    // Helper: resolve page by shortcode in current language
+    $resolve_by_shortcode = function($shortcode, $lang) {
+      $args = [
+        'post_type'      => 'page',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'suppress_filters'=> false,
+        'orderby'        => 'ID',
+        'order'          => 'ASC',
+      ];
+      // Filter by Polylang language taxonomy if available
+      if ($lang && taxonomy_exists('language')) {
+        $args['tax_query'] = [[
+          'taxonomy' => 'language',
+          'field'    => 'slug',
+          'terms'    => $lang,
+        ]];
+      }
+      $pages = get_posts($args);
+      foreach ($pages as $p) {
+        if (has_shortcode($p->post_content, $shortcode)) return (int) $p->ID;
+      }
+      return 0;
+    };
+
+    $succ_id = 0; $canc_id = 0;
+    $succ_page = get_page_by_path('checkout/success');
+    if ($succ_page) $succ_id = (int) $succ_page->ID;
+    $canc_page = get_page_by_path('checkout/cancel');
+    if ($canc_page) $canc_id = (int) $canc_page->ID;
+
+    if (function_exists('pll_get_post')) {
+      if ($succ_id) { $mapped = (int) pll_get_post($succ_id); if ($mapped) $succ_id = $mapped; }
+      if ($canc_id) { $mapped = (int) pll_get_post($canc_id); if ($mapped) $canc_id = $mapped; }
+    }
+
+    // Fallback: search by shortcode in current language
+    if (!$succ_id) $succ_id = $resolve_by_shortcode('kgh_checkout_success', $lang);
+    if (!$canc_id) $canc_id = $resolve_by_shortcode('kgh_checkout_cancel',  $lang);
+
+    $success_url = $succ_id ? get_permalink($succ_id) : home_url('/checkout/success/');
+    $cancel_url  = $canc_id ? get_permalink($canc_id) : home_url('/checkout/cancel/');
+  } else {
+    $success_url = function_exists('home_url') ? home_url('/checkout/success/') : '/checkout/success/';
+    $cancel_url  = function_exists('home_url') ? home_url('/checkout/cancel/')  : '/checkout/cancel/';
+  }
+
+  // Enforce current language on return URLs (Polylang supports ?lang=xx)
+  if (function_exists('pll_current_language')) {
+    $lang = (string) pll_current_language('slug');
+    if ($lang) {
+      $success_url = add_query_arg('lang', $lang, $success_url);
+      $cancel_url  = add_query_arg('lang', $lang,  $cancel_url);
+    }
+  }
 
   $body = [
     'intent' => 'CAPTURE',

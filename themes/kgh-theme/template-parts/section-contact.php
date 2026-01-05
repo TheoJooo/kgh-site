@@ -36,7 +36,7 @@ $portrait_url = $args['portrait_id']
   ? wp_get_attachment_image_url($args['portrait_id'], 'large')
   : get_theme_file_uri('assets/img/contact-fallback.png');
 
-$action  = esc_url( admin_url('admin-post.php') );
+$action  = esc_url( remove_query_arg('sent', add_query_arg(null, null)) );
 $success = isset($_GET['sent']) && $_GET['sent'] === '1';
 ?>
 
@@ -65,9 +65,10 @@ $success = isset($_GET['sent']) && $_GET['sent'] === '1';
           <p class="mb-6 text-green-700"><?php echo esc_html__("Thanks! Your message was sent. We’ll get back to you shortly.", 'kgh-theme'); ?></p>
         <?php endif; ?>
 
-        <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" class="kgh-contact-form space-y-4" novalidate>
+        <form method="post" action="<?php echo esc_url( $action ); ?>" class="kgh-contact-form space-y-4" novalidate>
           <?php wp_nonce_field('kgh_contact_send','kgh_contact_nonce'); ?>
           <input type="hidden" name="action" value="kgh_contact_send">
+          <input type="hidden" name="kgh_contact_send" value="1">
           <input type="hidden" name="redirect_to" value="<?php echo esc_url( add_query_arg(null,null) ); ?>">
 
           <div style="position:absolute;left:-10000px;top:auto;height:0;overflow:hidden;">
