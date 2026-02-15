@@ -531,6 +531,100 @@ add_filter('register_post_type_args', function($args, $post_type){
   return $args;
 }, 20, 2);
 
+if (!function_exists('kgh_tour_group_order_definitions')) {
+  function kgh_tour_group_order_definitions() {
+    return [
+      'seoul_around' => __('In Seoul & Nearby', 'kgh-theme'),
+      'busan_south'  => __('Busan & Southern Korea', 'kgh-theme'),
+      'seasonal'     => __('Seasonal Tours', 'kgh-theme'),
+      'cooking'      => __('Cooking Classes', 'kgh-theme'),
+    ];
+  }
+}
+
+if (!function_exists('kgh_tour_group_order_meta_key')) {
+  function kgh_tour_group_order_meta_key($group_key) {
+    return '_kgh_order_group_' . sanitize_key((string) $group_key);
+  }
+}
+
+if (!function_exists('kgh_get_tour_group_order_value')) {
+  function kgh_get_tour_group_order_value($post_id, $group_key) {
+    $raw = get_post_meta((int) $post_id, kgh_tour_group_order_meta_key($group_key), true);
+    if ($raw === '' || $raw === null || !is_numeric($raw)) {
+      return null;
+    }
+    return max(0, (int) $raw);
+  }
+}
+
+add_action('add_meta_boxes_tour', function() {
+  add_meta_box(
+    'kgh_tour_group_order',
+    __('Section Display Order', 'kgh-theme'),
+    'kgh_render_tour_group_order_metabox',
+    'tour',
+    'side',
+    'default'
+  );
+});
+
+function kgh_render_tour_group_order_metabox($post) {
+  wp_nonce_field('kgh_save_tour_group_order', 'kgh_tour_group_order_nonce');
+  echo '<p class="description">' .
+    esc_html__('Lower number appears first inside each section. Leave empty for default sorting.', 'kgh-theme') .
+    '</p>';
+
+  foreach (kgh_tour_group_order_definitions() as $group_key => $label) {
+    $field_id = 'kgh_tour_group_order_' . $group_key;
+    $value = get_post_meta($post->ID, kgh_tour_group_order_meta_key($group_key), true);
+    ?>
+    <p style="margin:10px 0 0;">
+      <label for="<?php echo esc_attr($field_id); ?>" style="display:block;font-weight:600;margin-bottom:4px;">
+        <?php echo esc_html($label); ?>
+      </label>
+      <input
+        id="<?php echo esc_attr($field_id); ?>"
+        name="kgh_tour_group_order[<?php echo esc_attr($group_key); ?>]"
+        type="number"
+        min="0"
+        step="1"
+        value="<?php echo esc_attr($value); ?>"
+        style="width:100%;">
+    </p>
+    <?php
+  }
+}
+
+add_action('save_post_tour', function($post_id) {
+  if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+  if (wp_is_post_revision($post_id)) return;
+  if (!current_user_can('edit_post', $post_id)) return;
+  if (!isset($_POST['kgh_tour_group_order_nonce'])) return;
+  if (!wp_verify_nonce($_POST['kgh_tour_group_order_nonce'], 'kgh_save_tour_group_order')) return;
+
+  $payload = [];
+  if (isset($_POST['kgh_tour_group_order']) && is_array($_POST['kgh_tour_group_order'])) {
+    $payload = wp_unslash($_POST['kgh_tour_group_order']);
+  }
+
+  foreach (kgh_tour_group_order_definitions() as $group_key => $_label) {
+    $meta_key = kgh_tour_group_order_meta_key($group_key);
+    $raw = isset($payload[$group_key]) ? trim((string) $payload[$group_key]) : '';
+
+    if ($raw === '') {
+      delete_post_meta($post_id, $meta_key);
+      continue;
+    }
+    if (!is_numeric($raw)) {
+      delete_post_meta($post_id, $meta_key);
+      continue;
+    }
+
+    update_post_meta($post_id, $meta_key, (string) max(0, (int) $raw));
+  }
+});
+
 
 // Inline un SVG depuis /assets/icons/*.svg
 function kgh_icon($name){
@@ -924,7 +1018,7 @@ function kgh_handle_contact_form(){
   }
 
   // Destinataire principal
-  $to = 'info@koreangourmethunters.com';
+  $to = 'dining.kang@gmail.com';
 
   // Sujet + contenu
   $site   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);

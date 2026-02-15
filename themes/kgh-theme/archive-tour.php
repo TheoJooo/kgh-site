@@ -44,11 +44,12 @@ get_header();
     ],
   ];
 
-    // Helper: query par groupe  ✅ CORRIGÉ
+    // Helper: query par groupe
     function kgh_query_group(array $g){
+    $limit = isset($g['limit']) ? max(1, (int)$g['limit']) : 12;
     $args = [
         'post_type'      => 'tour',
-        'posts_per_page' => isset($g['limit']) ? (int)$g['limit'] : 12,
+        'posts_per_page' => -1, // tri custom en PHP, puis découpe au bon nombre
         'post_status'    => 'publish',
         'orderby'        => 'date',
         'order'          => 'DESC',
@@ -90,7 +91,50 @@ get_header();
         $args['meta_query']['relation'] = 'AND';
     }
 
-    return new WP_Query($args); // ✅ IMPORTANT : retourner l’objet
+    $q = new WP_Query($args);
+    if (!$q->have_posts()) {
+      return $q;
+    }
+
+    $group_key = isset($g['key']) ? sanitize_key((string)$g['key']) : '';
+    $date_score = static function($post){
+      $raw = (!empty($post->post_date_gmt) && $post->post_date_gmt !== '0000-00-00 00:00:00')
+        ? $post->post_date_gmt
+        : $post->post_date;
+      $ts = strtotime((string)$raw);
+      return $ts ?: 0;
+    };
+
+    usort($q->posts, function($a, $b) use ($group_key, $date_score){
+      $a_custom = function_exists('kgh_get_tour_group_order_value') ? kgh_get_tour_group_order_value($a->ID, $group_key) : null;
+      $b_custom = function_exists('kgh_get_tour_group_order_value') ? kgh_get_tour_group_order_value($b->ID, $group_key) : null;
+      $a_has_custom = ($a_custom !== null);
+      $b_has_custom = ($b_custom !== null);
+
+      if ($a_has_custom && $b_has_custom && $a_custom !== $b_custom) {
+        return $a_custom <=> $b_custom;
+      }
+      if ($a_has_custom !== $b_has_custom) {
+        return $a_has_custom ? -1 : 1;
+      }
+
+      $a_date = $date_score($a);
+      $b_date = $date_score($b);
+      if ($a_date !== $b_date) {
+        return $b_date <=> $a_date;
+      }
+
+      return ((int)$a->ID) <=> ((int)$b->ID);
+    });
+
+    if (count($q->posts) > $limit) {
+      $q->posts = array_slice($q->posts, 0, $limit);
+    }
+    $q->post_count = count($q->posts);
+    $q->found_posts = $q->post_count;
+    $q->max_num_pages = 1;
+
+    return $q;
   }
 
   // Helper: icône
